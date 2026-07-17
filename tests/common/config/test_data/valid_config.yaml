@@ -1,0 +1,22 @@
+dataset:
+  path: "data/raw"
+  num_classes: 5
+
+preprocessing:
+  pipeline:
+    - crop_black_border
+    - ben_graham
+
+training:
+  batch_size: 32
+  epochs: 20
+  num_workers: 4
+  device: "cuda"
+
+model:
+  name: "resnet50"
+  pretrained: true
+
+experiment:
+  name: "baseline"
+  seed: 42

@@ -1,0 +1,15 @@
+dataset:
+  path: "data/raw"
+  num_classes: 5
+
+preprocessing:
+  pipeline:
+    - crop_black_border
+
+model:
+  name: "resnet50"
+  pretrained: true
+
+experiment:
+  name: "baseline"
+  seed: 42
