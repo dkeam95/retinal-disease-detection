@@ -33,8 +33,6 @@ class TrainingConfig:
 
 
 @dataclass(frozen=True, slots=True)
-
-
 class ModelConfig:
     """Model configuration"""
 

@@ -12,7 +12,6 @@ from common.config.exceptions import (
 )
 from common.config.types import ProjectConfig
 
-
 TEST_DATA_DIR = Path(__file__).parent / "test_data"
 
 
