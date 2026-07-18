@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
+import albumentations as A # type: ignore[import-untyped]
+from albumentations.pytorch import ToTensorV2 # type: ignore[import-untyped]
 
 from common.config.types import PreprocessingConfig
 

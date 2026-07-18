@@ -1,0 +1,48 @@
+# ==========================================================
+# Dataset Configuration
+# ==========================================================
+dataset:
+  # Root directory of the dataset
+  path: data/ddr
+
+  # Annotation file
+  annotation_file: train.txt
+
+  # Directory containing images
+  image_directory: train
+
+  # Number of classes
+  num_classes: 5
+
+# ==========================================================
+# Preprocessing Configuration
+# ==========================================================
+preprocessing:
+  pipeline:
+    - resize
+    - normalize
+    - to_tensor
+
+# ==========================================================
+# Model Configuration
+# ==========================================================
+model:
+  architecture: efficientnet_b0
+  pretrained: true
+  num_classes: 5
+
+# ==========================================================
+# Training Configuration
+# ==========================================================
+training:
+  batch_size: 16
+  epochs: 100
+  num_workers: 4
+  device: cuda
+
+# ==========================================================
+# Experiment Configuration
+# ==========================================================
+experiment:
+  name: baseline_efficientnet_b0
+  seed: 42

@@ -27,4 +27,4 @@ class InvalidConfigurationError(ConfigurationError):
 class ConfigurationParsingError(ConfigurationError):
     """Raised when a configuration file cannot be parsed."""
 
-    pass
+    pass 

@@ -3,6 +3,7 @@
 This module contains immutable configuration objects used
 throughout the project.
 """
+from typing import Literal
 from pathlib import Path
 from dataclasses import dataclass
 
@@ -72,15 +73,26 @@ class TrainingConfig:
     batch_size: int
     epochs: int
     num_workers: int
-    device: str
+    device: Literal[
+        "cpu",
+        "cuda",
+        "mps"
+    ]
 
 
 @dataclass(frozen=True, slots=True)
 class ModelConfig:
-    """Model configuration"""
+    """Model configuration.
 
-    name: str
+    Attributes:
+        name: Model architecture name (e.g. "resnet18", "densenet121").
+        pretrained: Whether to use pre-trained weights.
+        num_classes: Number of output classes.
+    """
+
+    architecture: str
     pretrained: bool
+    num_classes: int
 
 
 @dataclass(frozen=True, slots=True)
