@@ -3,15 +3,24 @@
 This module contains immutable configuration objects used
 throughout the project.
 """
-
+from pathlib import Path
 from dataclasses import dataclass
 
 
 @dataclass(frozen=True, slots=True)
 class DatasetConfig:
-    """Dataset configuration."""
+    """Dataset configuration.
+    
+    Attributes:
+    path: Root directory of the dataset.
+    annotation_file: Annotation filename (e.g. "train.txt").
+    image_directory: Directory containing dataset images.
+    num_classes:Number of dataset classes.
+    """
 
-    path: str
+    path: Path
+    annotation_file: str
+    image_directory: str
     num_classes: int
 
 

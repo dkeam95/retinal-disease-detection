@@ -1,25 +1,31 @@
-"""Custom exceptions for the dataset module."""
+"""Custom exceptions for the dataset module.
+
+This module defines all dataset-specific exceptions used during
+dataset initialization and sample loading.
+"""
 
 
 class DatasetError(Exception):
     """Base exception for all dataset-related errors."""
 
-    pass
-
 
 class DatasetNotFoundError(DatasetError):
-    """Raised when the dataset directory or metadata file is missing."""
-
-    pass
+    """Raised when the dataset directory does not exist."""
 
 
-class InvalidMetadataError(DatasetError):
-    """Raised when the metadata file has an invalid cchema or is corrupted."""
+class AnnotationFileNotFoundError(DatasetError):
+    """Raised when the annotation file cannot be found."""
 
-    pass
+
+class InvalidAnnotationError(DatasetError):
+    """Raised when the annotation file has invalid structure
+    or contains invalid values.
+    """
+
+
+class ImageLoadingError(DatasetError):
+    """Raised when an image cannot be loaded from disk."""
 
 
 class EmptyDatasetError(DatasetError):
-    """Raised when the dataset directory contains no valid samples."""
-
-    pass
+    """Raised when dataset contains no samples."""

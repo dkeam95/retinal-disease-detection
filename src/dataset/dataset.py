@@ -1,108 +1,93 @@
-"""Custom  PyTorch Dataset implementation for retinal disease detection."""
+"""Pytorch dataset implementation for retinal disease detection."""
+from __future__ import annotations
 
-import csv
-from pathlib import Path
 from torch.utils.data import Dataset
 
+from pathlib import Path
+from typing import cast
+
+import cv2
+import numpy as np
+
+from dataset.parser import load_annotations
+from numpy.typing import NDArray
 from common.config.types import DatasetConfig
-from dataset.exceptions import (
-    DatasetNotFoundError,
-    EmptyDatasetError,
-    InvalidMetadataError,
-)
 from dataset.types import DataSample
+from dataset.exceptions import ImageLoadingError, EmptyDatasetError
 
+class RetinalDataset(Dataset[DataSample]):
+    """PyTorch dataset for retinal disease classification."""
 
-class RetinalDataset:
-    """Dataset class for loading and parsing retinal fundus images."""
 
     def __init__(self, config: DatasetConfig) -> None:
-        """Initialize the dataset with configuration parameters.
+        """Initialize the dataset.
 
-        Args:
-            config: Configuration object containing data paths and metadata.
+        Parameters:
+        config: DatasetConfig
+            Dataset configuration
         """
+
         self._config = config
-        self._samples: list[DataSample] = []
-        self._load_metadata()
+        self._annotations = load_annotations(
+            annotation_file=(self._config.path / self._config.annotation_file),
+            image_directory=(self._config.path / self._config.image_directory)
+        )
+
+        if not self._annotations:
+            raise EmptyDatasetError(
+                f"Dataset contains no annotation records"
+            )
+        
+
 
     def __len__(self) -> int:
-        """Return the total number of samples in the dataset.
+        """Return the number of samples in the dataset."""
+        return len(self._annotations)
 
-        Returns:
-            The total sample count.
-        """
-        return len(self._samples)
 
-    def __getitem__(self, index: int) -> tuple[str, int]:
-        """Fetch a single data sample by its index.
-
-        Args:
-            index: The index of the item to retrieve.
-
-        Returns:
-            A tuple containing the image path as a string and the integer label.
-        """
-        sample = self._samples[index]
-        return str(sample.image_path), sample.label
-
-    def _load_metadata(self) -> None:
-        """Parse the metadata file and populate the internal samples list.
-
-        Raises:
-            DatasetNotFoundError: If the dataset path or metadata does not exist.
-            InvalidMetadataError: If the metadata layout is unreadable or corrupted.
-            EmptyDatasetError: If no valid image samples are loaded.
+    def _load_image(self, image_path: Path) -> NDArray[np.uint8]:
+        """Load an image from disk.
+        
+           Parameters:
+           image_path: Path
+               Path to the image file
+           
+           Returns:
+           NDArray[np.uint8]
+               Loaded image as a NumPy array
+           
+           Raises:
+           ImageLoadingError
+               If the image cannot be loaded
         """
 
-        dataset_root = Path(self._config.path)
-        metadata_file = dataset_root / "metadata.csv"
+        image = cv2.imread(str(image_path), cv2.IMREAD_COLOR)
 
-        if not dataset_root.exists() or not metadata_file.exists():
-            raise DatasetNotFoundError(
-                f"Dataset root or metadata.csv not found at: {dataset_root}"
+        if image is None:
+            raise ImageLoadingError(
+                f"Failed to load image: {image_path}"
             )
 
-        try:
-            with open(metadata_file, mode="r", encoding="utf-8") as f:
-                reader = csv.DictReader(f)
+        return cast(NDArray[np.uint8], image)
 
-                # Check for required SCV columns
-                if reader.fieldnames is None or not {"image_id", "label"}.issubset(
-                    reader.fieldnames
-                ):
-                    raise InvalidMetadataError(
-                        "Metadata CSV must contain 'image_id' and 'label' columns."
-                    )
 
-                for row_idx, row in enumerate(reader, start=1):
-                    image_id = row.get("image_id")
-                    label_str = row.get("label")
+    def __getitem__(self, index: int) -> DataSample:
+        """Get a dataset sample by index.
+        
+           Parameters:
+           index: int
+               Index of the sample to retrieve
+           
+           Returns:
+           DataSample
+               Dataset sample containing image and label
+        """
+        annotation = self._annotations[index]
 
-                    if not image_id or label_str is None:
-                        raise InvalidMetadataError(
-                            f"Missing values at row {row_idx} in metadata.csv"
-                        )
+        image = self._load_image(annotation.image_path)
 
-                    try:
-                        label = int(label_str)
-                    except ValueError as err:
-                        raise InvalidMetadataError(
-                            f"Invalid label format at row {row_idx}: {label_str}"
-                        ) from err
-
-                    image_path = dataset_root / "images" / image_id
-
-                    # Store sample if the image file exists on disk
-                    if image_path.exists():
-                        self._samples.append(
-                            DataSample(image_path=image_path, label=label)
-                        )
-
-        except (IOError, OSError) as err:
-            raise InvalidMetadataError(f"Failed to read metadata file: {err}") from err
-
-        if not self._samples:
-            raise EmptyDatasetError(
-                f"No valid image samples discovered in: {dataset_root / 'images'}"
-            )
+        return DataSample(
+            image=image,
+            label=annotation.label,
+            image_path=annotation.image_path
+        )
