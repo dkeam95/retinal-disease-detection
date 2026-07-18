@@ -1,17 +1,30 @@
 # Model Module
 
-## Responsibility
+## Purpose
 
-The model module is responsible only for creating neural network models.
+The model module is responsible for constructing neural network models
+from a configuration object.
 
-It does not perform:
+---
+
+## Responsibilities
+
+This module is responsible only for:
+
+- creating neural network models;
+- selecting the requested architecture;
+- returning an initialized `torch.nn.Module`.
+
+This module does **not** perform:
 
 - dataset loading;
 - image preprocessing;
 - training;
 - evaluation;
 - inference;
-- checkpoint management.
+- checkpoint management;
+- optimizer creation;
+- scheduler creation.
 
 ---
 
@@ -19,6 +32,22 @@ It does not perform:
 
 ```python
 create_model(config: ModelConfig) -> torch.nn.Module
+```
+
+---
+
+## Input
+
+```text
+ModelConfig
+```
+
+---
+
+## Output
+
+```text
+torch.nn.Module
 ```
 
 ---
@@ -33,10 +62,12 @@ create_model(config: ModelConfig) -> torch.nn.Module
 
 ## File Structure
 
-```
+```text
 model/
 ├── __init__.py
+├── builder.py
 ├── factory.py
+├── registry.py
 └── README.md
 ```
 
@@ -44,11 +75,17 @@ model/
 
 ## Workflow
 
-```
+```text
 ModelConfig
       │
       ▼
 create_model()
+      │
+      ▼
+MODEL_REGISTRY
+      │
+      ▼
+builder()
       │
       ▼
 torch.nn.Module
@@ -58,24 +95,45 @@ torch.nn.Module
 
 ## Supported Architectures
 
-Initially the module will support:
+### Current
 
 - EfficientNet-B0
 
-The architecture is designed for future extension:
+### Planned
 
 - EfficientNet family
 - ResNet family
+- DenseNet family
 - ConvNeXt family
-- Vision Transformer family
+- Vision Transformer (ViT) family
+- Swin Transformer family
 
-without changing the public API.
+The module is designed so that new architectures can be added without modifying the public API or the model factory.
 
 ---
 
 ## Design Principles
 
-- Single Responsibility Principle
+The module follows the following design principles:
+
+- Single Responsibility Principle (SRP)
 - Configuration-driven model creation
-- Framework-independent project architecture
-- Easy model replacement
+- Registry pattern
+- Factory pattern
+- Easy architecture replacement
+- Extensible design
+- Minimal coupling between modules
+
+---
+
+## Future Extensions
+
+Future versions of this module may include:
+
+- loading pretrained checkpoints;
+- automatic model registration;
+- custom architectures;
+- feature extractor builders;
+- layer freezing utilities;
+- backbone replacement utilities;
+- support for custom classification heads.
