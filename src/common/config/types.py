@@ -26,9 +26,43 @@ class DatasetConfig:
 
 @dataclass(frozen=True, slots=True)
 class PreprocessingConfig:
-    """Preprocessing configuration."""
+    """Image preprocessing configuration.
 
-    pipeline: list[str]
+    Attributes:
+        image_size:
+            Target image size.
+
+        mean:
+            Channel-wise mean used for normalization.
+
+        std:
+            Channel-wise standard deviation used for normalization.
+
+        horizontal_flip_prob:
+            Probability of applying horizontal flip.
+
+        vertical_flip_prob:
+            Probability of applying vertical flip.
+
+        rotation_limit:
+            Maximum rotation angle in degrees.
+
+        brightness_contrast_prob:
+            Probability of applying brightness/contrast augmentation.
+    """
+
+    image_size: int
+
+    mean: tuple[float, float, float]
+    std: tuple[float, float, float]
+
+    horizontal_flip_prob: float
+    vertical_flip_prob: float
+
+    rotation_limit: int
+
+    brightness_contrast_prob: float
+
 
 
 @dataclass(frozen=True, slots=True)
