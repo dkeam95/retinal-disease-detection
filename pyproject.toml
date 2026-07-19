@@ -101,3 +101,10 @@ exclude = [
     "^data/",
     "^notebooks/"
 ]
+
+[[tool.mypy.overrides]]
+module = [
+    "albumentations",
+    "albumentations.*"
+]
+ignore_missing_imports = true

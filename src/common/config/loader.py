@@ -143,6 +143,7 @@ class ConfigLoader:
                     horizontal_flip_prob=data["preprocessing"]["horizontal_flip_prob"],
                     vertical_flip_prob=data["preprocessing"]["vertical_flip_prob"],
                     rotation_limit=data["preprocessing"]["rotation_limit"],
+                    rotation_prob=data["preprocessing"]["rotation_prob"],
                     brightness_contrast_prob=data["preprocessing"]["brightness_contrast_prob"],
                 ),
                 training=TrainingConfig(

@@ -1,60 +1,143 @@
 # Preprocessing Module
 
-## Purpose
+## Responsibility
 
-The preprocessing module is responsible for transforming raw dataset
-samples into model-ready inputs.
+The preprocessing module is responsible only for transforming raw images
+into tensors suitable for neural network input.
 
-This module performs image preprocessing and data augmentation while
-remaining independent from the dataset, model, and training pipeline.
+It does not perform:
 
----
-
-## Responsibilities
-
-- Build preprocessing pipelines.
-- Apply image augmentations.
-- Normalize images.
-- Convert images to tensors.
-- Provide separate pipelines for training, validation, and testing.
-
----
-
-## Out of Scope
-
-This module does NOT:
-
-- Load images from disk.
-- Read dataset annotations.
-- Train models.
-- Create DataLoaders.
-- Perform inference.
+- dataset loading;
+- annotation parsing;
+- model creation;
+- training;
+- evaluation;
+- inference.
 
 ---
 
 ## Public API
 
-Planned public interface:
+```python
+build_train_pipeline(config: PreprocessingConfig) -> A.Compose
 
-- build_train_pipeline()
-- build_validation_pipeline()
-- build_test_pipeline()
+build_validation_pipeline(config: PreprocessingConfig) -> A.Compose
+
+build_test_pipeline(config: PreprocessingConfig) -> A.Compose
+```
 
 ---
 
 ## Dependencies
 
-- Albumentations
-- OpenCV
-- NumPy
-- PyTorch
+- albumentations
+- albumentations.pytorch
+- torch
+- numpy
+- common.config
 
 ---
 
-## Status
+## File Structure
 
-- [x] Module initialized
-- [ ] Configuration
-- [ ] Pipeline implementation
-- [ ] Custom transforms
-- [ ] Tests
+```
+preprocessing/
+├── __init__.py
+├── config.py
+├── exceptions.py
+├── pipeline.py
+├── transforms.py
+├── types.py
+└── README.md
+```
+
+---
+
+## Workflow
+
+```
+Raw Image (NumPy)
+        │
+        ▼
+Resize
+        │
+        ▼
+Optional Augmentations
+        │
+        ├── Horizontal Flip
+        ├── Vertical Flip
+        ├── Rotation
+        └── Brightness / Contrast
+        │
+        ▼
+Normalize
+        │
+        ▼
+ToTensorV2
+        │
+        ▼
+Torch Tensor
+```
+
+---
+
+## Pipelines
+
+### Training
+
+```
+Resize
+    │
+    ▼
+Horizontal Flip (optional)
+    │
+    ▼
+Vertical Flip (optional)
+    │
+    ▼
+Rotation (optional)
+    │
+    ▼
+Brightness / Contrast (optional)
+    │
+    ▼
+Normalize
+    │
+    ▼
+ToTensorV2
+```
+
+### Validation
+
+```
+Resize
+    │
+    ▼
+Normalize
+    │
+    ▼
+ToTensorV2
+```
+
+### Testing
+
+```
+Resize
+    │
+    ▼
+Normalize
+    │
+    ▼
+ToTensorV2
+```
+
+---
+
+## Design Principles
+
+- Single Responsibility Principle
+- Configuration-driven preprocessing
+- Reusable transformations
+- No duplicated pipelines
+- Strong typing
+- Easy extension with new augmentations

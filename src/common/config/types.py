@@ -61,6 +61,7 @@ class PreprocessingConfig:
     vertical_flip_prob: float
 
     rotation_limit: int
+    rotation_prob: float
 
     brightness_contrast_prob: float
 
