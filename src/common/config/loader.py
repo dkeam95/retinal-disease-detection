@@ -131,23 +131,38 @@ class ConfigLoader:
         try:
             return ProjectConfig(
                 dataset=DatasetConfig(
-                    **data["dataset"],
+                    path=Path(data["dataset"]["path"]),
+                    annotation_file=data["dataset"]["annotation_file"],
+                    image_directory=data["dataset"]["image_directory"],
+                    num_classes=data["dataset"]["num_classes"],
                 ),
                 preprocessing=PreprocessingConfig(
-                    **data["preprocessing"],
+                    image_size=data["preprocessing"]["image_size"],
+                    mean=tuple(data["preprocessing"]["mean"]),
+                    std=tuple(data["preprocessing"]["std"]),
+                    horizontal_flip_prob=data["preprocessing"]["horizontal_flip_prob"],
+                    vertical_flip_prob=data["preprocessing"]["vertical_flip_prob"],
+                    rotation_limit=data["preprocessing"]["rotation_limit"],
+                    brightness_contrast_prob=data["preprocessing"]["brightness_contrast_prob"],
                 ),
                 training=TrainingConfig(
-                    **data["training"],
+                    batch_size=data["training"]["batch_size"],
+                    epochs=data["training"]["epochs"],
+                    num_workers=data["training"]["num_workers"],
+                    device=data["training"]["device"],
                 ),
                 model=ModelConfig(
-                    **data["model"],
+                    architecture=data["model"]["architecture"],
+                    pretrained=data["model"]["pretrained"],
+                    num_classes=data["model"]["num_classes"],
                 ),
                 experiment=ExperimentConfig(
-                    **data["experiment"],
+                    name=data["experiment"]["name"],
+                    seed=data["experiment"]["seed"],
                 ),
             )
 
-        except (TypeError, KeyError) as error:
+        except (TypeError, KeyError, ValueError) as error:
             raise InvalidConfigurationError(
                 f"Invalid configuration: {error}"
             ) from error

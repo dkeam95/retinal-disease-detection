@@ -2,22 +2,32 @@
 Dataset module for retinal disease detection.
 """
 
+from dataset.dataset import RetinalDataset
+from dataset.parser import load_annotations
+
+from dataset.types import (
+    AnnotationRecord,
+    DataSample,
+)
+
 from dataset.exceptions import (
-    AnnotationFileNotFoundError,
     DatasetError,
     DatasetNotFoundError,
-    EmptyDatasetError,
-    ImageLoadingError,
+    AnnotationFileNotFoundError,
     InvalidAnnotationError,
+    ImageLoadingError,
+    EmptyDatasetError,
 )
-from dataset.types import DataSample
 
 __all__ = [
-    "AnnotationFileNotFoundError",
+    "RetinalDataset",
+    "load_annotations",
+    "AnnotationRecord",
+    "DataSample",
     "DatasetError",
     "DatasetNotFoundError",
-    "ImageLoadingError",
+    "AnnotationFileNotFoundError",
     "InvalidAnnotationError",
-    "DataSample",
-    "EmptyDatasetError"
+    "ImageLoadingError",
+    "EmptyDatasetError",
 ]

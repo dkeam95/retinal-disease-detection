@@ -1,4 +1,5 @@
-"""Type definitions for the dataset module.
+"""
+Type definitions for the dataset module.
 
 This module contains immutable data structures shared across the
 dataset pipeline.
@@ -15,14 +16,8 @@ from numpy.typing import NDArray
 
 @dataclass(frozen=True, slots=True)
 class AnnotationRecord:
-    """Represents a single annotation entry.
-
-    Attributes:
-        image_path: Path
-            Absolute or relative path to the source image.
-
-        label: int
-            Integer class label
+    """
+    Represents a single dataset annotation.
     """
 
     image_path: Path
@@ -31,19 +26,10 @@ class AnnotationRecord:
 
 @dataclass(frozen=True, slots=True)
 class DataSample:
-    """Represents a single sample loaded from the dataset.
-
-    Attributes:
-        image: NDArray[np.uint8]
-            Image loaded from disk.
-
-        label: int
-            Integer class label.
-
-        image_path:
-            Absolute or relative path to the source image.
+    """
+    Represents a single dataset sample.
     """
 
+    image_path: Path
     image: NDArray[np.uint8]
     label: int
-    image_path: Path

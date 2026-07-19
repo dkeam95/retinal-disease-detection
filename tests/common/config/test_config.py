@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from common.config.config import ConfigLoader
+from common.config import ConfigLoader
 from common.config.exceptions import (
     ConfigFileNotFoundError,
     ConfigurationParsingError,
@@ -20,11 +20,10 @@ def test_load_valid_configuration() -> None:
 
     config = ConfigLoader.load(TEST_DATA_DIR / "valid_config.yaml")
 
-    assert isinstance(config, ProjectConfig)
-    assert config.dataset.path == "data/raw"
+    assert config.dataset.path == Path("data/raw")
     assert config.dataset.num_classes == 5
     assert config.training.batch_size == 32
-    assert config.model.name == "resnet50"
+    assert config.model.architecture == "resnet50"
     assert config.experiment.seed == 42
 
 

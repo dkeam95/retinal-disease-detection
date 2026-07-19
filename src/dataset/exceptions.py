@@ -1,4 +1,5 @@
-"""Custom exceptions for the dataset module.
+"""
+Custom exceptions for the dataset module.
 
 This module defines all dataset-specific exceptions used during
 dataset initialization and sample loading.
@@ -18,9 +19,7 @@ class AnnotationFileNotFoundError(DatasetError):
 
 
 class InvalidAnnotationError(DatasetError):
-    """Raised when the annotation file has invalid structure
-    or contains invalid values.
-    """
+    """Raised when an annotation file is invalid."""
 
 
 class ImageLoadingError(DatasetError):
@@ -28,4 +27,4 @@ class ImageLoadingError(DatasetError):
 
 
 class EmptyDatasetError(DatasetError):
-    """Raised when dataset contains no samples."""
+    """Raised when a dataset contains no samples."""
