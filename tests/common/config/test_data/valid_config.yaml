@@ -36,6 +36,26 @@ model:
   pretrained: true
   num_classes: 5
 
+loss:
+  name: "cross_entropy"
+  class_weights: false
+  gamma: 2.0
+  alpha: null
+  beta: 0.9999
+  reduction: "mean"
+
+metrics:
+  primary:
+    - "qwk"
+    - "macro_f1"
+
+  secondary:
+    - "accuracy"
+    - "precision"
+    - "recall"
+
+  per_class: true
+
 experiment:
   name: "baseline"
   seed: 42

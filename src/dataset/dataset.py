@@ -2,21 +2,21 @@
 PyTorch dataset implementation for retinal disease detection.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from pathlib import Path
-from typing import cast
+from pathlib import Path            # Object-oriented filesystem path navigation
+from typing import cast             # Type hint utility to inform static type checkers
 
-import cv2
-import numpy as np
-from numpy.typing import NDArray
+import cv2                          # OpenCV library for fast image I/O and color space conversions
+import numpy as np                  # Fundamental package for array manipulation
+from numpy.typing import NDArray    # Type hint for NumPy array shapes and dtypes
 
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset  # PyTorch base class for custom dataset loaders
 
-from common.config.types import DatasetConfig
-from dataset.exceptions import ImageLoadingError
-from dataset.parser import load_annotations
-from dataset.types import DataSample
+from common.config.types import DatasetConfig     # Dataclass holding dataset configuration properties
+from dataset.exceptions import ImageLoadingError  # Domain-specific exception raised when OpenCV fails to read an image
+from dataset.parser import load_annotations       # Utility function to parse annotation file into records
+from dataset.types import DataSample              # Typed object containing loaded sample data (image array, label, path)
 
 
 class RetinalDataset(Dataset[DataSample]):
@@ -34,6 +34,7 @@ class RetinalDataset(Dataset[DataSample]):
             Dataset configuration.
         """
 
+        # Parse and cache annotation records using absolute/relative resolved paths
         self._annotations = load_annotations(
             annotation_file=config.path / config.annotation_file,
             image_directory=config.path / config.image_directory,
@@ -43,6 +44,7 @@ class RetinalDataset(Dataset[DataSample]):
         """
         Return the number of samples in the dataset.
         """
+        # Returns the total count of parsed dataset samples
         return len(self._annotations)
 
     def _load_image(
@@ -68,21 +70,25 @@ class RetinalDataset(Dataset[DataSample]):
             If the image cannot be loaded.
         """
 
+        # Read image file using OpenCV in standard 3-channel color mode
         image = cv2.imread(
             str(image_path),
             cv2.IMREAD_COLOR,
         )
 
+        # Check if cv2 returned None (file missing, corrupt, or unsupported format)
         if image is None:
             raise ImageLoadingError(
                 f"Failed to load image: {image_path}"
             )
 
+        # OpenCV loads images in BGR format by default; convert to standard RGB
         image = cv2.cvtColor(
             image,
             cv2.COLOR_BGR2RGB,
         )
 
+        # Cast array to explicit uint8 NDArray for type checking safety
         return cast(
             NDArray[np.uint8],
             image,
@@ -106,17 +112,21 @@ class RetinalDataset(Dataset[DataSample]):
             Loaded dataset sample.
         """
 
+        # Explicitly validate bounds to prevent silent negative or out-of-range indexing bugs
         if not 0 <= index < len(self):
             raise IndexError(
                 f"Dataset index out of range: {index}"
             )
 
+        # Retrieve target annotation metadata record
         annotation = self._annotations[index]
 
+        # Load RGB image array from disk using verified path
         image = self._load_image(
             annotation.image_path,
         )
 
+        # Construct and return strongly typed DataSample object
         return DataSample(
             image_path=annotation.image_path,
             image=image,

@@ -5,27 +5,29 @@ This module provides functionality for loading YAML configuration
 files and converting them into strongly typed configuration objects.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from pathlib import Path
-from typing import Any
+from pathlib import Path              # Standard library for object-oriented filesystem paths
+from typing import Any                # Type hint for arbitrary dictionary values
 
-import yaml
+import yaml                           # PyYAML library for parsing YAML files
 
 from .exceptions import (
-    ConfigFileNotFoundError,
-    ConfigurationParsingError,
-    InvalidConfigurationError,
+    ConfigFileNotFoundError,    # Raised when the targeted YAML file does not exist
+    ConfigurationParsingError,  # Raised when YAML parsing encounters syntax errors
+    InvalidConfigurationError,  # Raised when schema or mandatory fields are invalid/missing
 )
 from .types import (
-    DatasetConfig,
-    ExperimentConfig,
-    ModelConfig,
-    PreprocessingConfig,
-    ProjectConfig,
-    TrainingConfig,
+    DatasetConfig,              # Dataclass for dataset directory and class configuration
+    ExperimentConfig,           # Dataclass for experiment metadata and seeds
+    LossConfig,                 # Dataclass for loss function hyperparameters
+    MetricsConfig,              # Dataclass for evaluation metric configurations
+    ModelConfig,                # Dataclass for neural network architecture properties
+    PreprocessingConfig,        # Dataclass for image transformation and augmentation parameters
+    ProjectConfig,              # Root dataclass containing all sub-configurations
+    TrainingConfig,             # Dataclass for training and hardware parameters
 )
-from .validator import validate_config
+from .validator import validate_config  # Function that performs domain-specific validation rules
 
 
 class ConfigLoader:
@@ -58,10 +60,13 @@ class ConfigLoader:
             If the configuration is invalid.
         """
 
+        # Step 1: Read raw YAML dictionary from disk
         data = ConfigLoader._read_yaml(path)
 
+        # Step 2: Convert raw dictionary to strongly typed dataclass structures
         config = ConfigLoader._to_project_config(data)
 
+        # Step 3: Validate logical assertions and value boundaries on the typed config
         validate_config(config)
 
         return config
@@ -82,27 +87,33 @@ class ConfigLoader:
             Parsed YAML content.
         """
 
+        # Ensure path is a Path object for unified filesystem operations
         path = Path(path)
 
+        # Check if the configuration file exists before attempting to open
         if not path.exists():
             raise ConfigFileNotFoundError(
                 f"Configuration file not found: {path}"
             )
 
         try:
+            # Safely open and parse the YAML file using UTF-8 encoding
             with path.open("r", encoding="utf-8") as file:
                 data = yaml.safe_load(file)
 
         except yaml.YAMLError as error:
+            # Wrap PyYAML syntax/parsing errors in a domain-specific exception
             raise ConfigurationParsingError(
                 "Failed to parse YAML configuration."
             ) from error
 
+        # Guard against completely empty files
         if data is None:
             raise InvalidConfigurationError(
                 "Configuration file is empty."
             )
 
+        # Ensure the root element of the parsed YAML is a key-value dictionary
         if not isinstance(data, dict):
             raise InvalidConfigurationError(
                 "Configuration root must be a dictionary."
@@ -129,17 +140,18 @@ class ConfigLoader:
         """
 
         try:
+            # Instantiate typed dataclasses by extracting values from dictionary keys
             return ProjectConfig(
                 dataset=DatasetConfig(
-                    path=Path(data["dataset"]["path"]),
+                    path=Path(data["dataset"]["path"]),  # Convert path string to Path instance
                     annotation_file=data["dataset"]["annotation_file"],
                     image_directory=data["dataset"]["image_directory"],
                     num_classes=data["dataset"]["num_classes"],
                 ),
                 preprocessing=PreprocessingConfig(
                     image_size=data["preprocessing"]["image_size"],
-                    mean=tuple(data["preprocessing"]["mean"]),
-                    std=tuple(data["preprocessing"]["std"]),
+                    mean=tuple(data["preprocessing"]["mean"]),  # Convert list to immutable tuple
+                    std=tuple(data["preprocessing"]["std"]),    # Convert list to immutable tuple
                     horizontal_flip_prob=data["preprocessing"]["horizontal_flip_prob"],
                     vertical_flip_prob=data["preprocessing"]["vertical_flip_prob"],
                     rotation_limit=data["preprocessing"]["rotation_limit"],
@@ -157,6 +169,20 @@ class ConfigLoader:
                     pretrained=data["model"]["pretrained"],
                     num_classes=data["model"]["num_classes"],
                 ),
+                loss=LossConfig(
+                    name=data["loss"]["name"],
+                    # Optional parameter extraction with fallback defaults
+                    class_weights=data["loss"].get("class_weights", False),
+                    gamma=data["loss"].get("gamma", 2.0),
+                    alpha=data["loss"].get("alpha"),
+                    beta=data["loss"].get("beta", 0.9999),
+                    reduction=data["loss"].get("reduction", "mean"),
+                ),
+                metrics=MetricsConfig(
+                    primary=tuple(data["metrics"]["primary"]),      # Convert primary metric names to tuple
+                    secondary=tuple(data["metrics"]["secondary"]),  # Convert secondary metric names to tuple
+                    per_class=data["metrics"].get("per_class", True),
+                ),
                 experiment=ExperimentConfig(
                     name=data["experiment"]["name"],
                     seed=data["experiment"]["seed"],
@@ -164,6 +190,7 @@ class ConfigLoader:
             )
 
         except (TypeError, KeyError, ValueError) as error:
+            # Catch key access errors or type conversion issues and raise a clean validation exception
             raise InvalidConfigurationError(
                 f"Invalid configuration: {error}"
             ) from error

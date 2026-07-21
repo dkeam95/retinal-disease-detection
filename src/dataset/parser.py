@@ -5,17 +5,18 @@ This module is responsible for reading dataset annotation files
 and converting them into AnnotationRecord objects.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from pathlib import Path
+from pathlib import Path            # Object-oriented filesystem path navigation
 
+# Domain-specific dataset exceptions for missing files, parsing errors, or empty datasets
 from dataset.exceptions import (
     AnnotationFileNotFoundError,
     InvalidAnnotationError,
     EmptyDatasetError,
 )
 
-from dataset.types import AnnotationRecord
+from dataset.types import AnnotationRecord  # Dataclass structure representing a single sample record
 
 
 def load_annotations(
@@ -51,23 +52,30 @@ def load_annotations(
         If the annotation file contains no valid samples.
     """
 
+    # Check if the requested annotation file exists before attempting to read
     if not annotation_file.exists():
         raise AnnotationFileNotFoundError(
             f"Annotation file not found: {annotation_file}"
         )
 
+    # Empty list to store processed annotation records
     annotations: list[AnnotationRecord] = []
 
+    # Safely open and read annotation file line-by-line using UTF-8 encoding
     with annotation_file.open("r", encoding="utf-8") as file:
 
+        # Iterate over each line in the annotation file
         for line_number, line in enumerate(file, start=1):
             line = line.strip()
 
+            # Skip empty lines or whitespace-only lines
             if not line:
                 continue
 
+            # Split line into components expecting exactly [filename, label]
             parts = line.split()
 
+            # Check if the line contains exactly 2 components: the filename and the class label
             if len(parts) != 2:
                 raise InvalidAnnotationError(
                     f"Invalid annotation format "
@@ -76,6 +84,7 @@ def load_annotations(
 
             filename, label_text = parts
 
+            # Parse string class label into integer
             try:
                 label = int(label_text)
 
@@ -85,19 +94,23 @@ def load_annotations(
                     f"at line {line_number}: {label_text}"
                 ) from error
 
+            # Class labels in classification datasets must be non-negative
             if label < 0:
                 raise InvalidAnnotationError(
                     f"Negative class label "
                     f"at line {line_number}: {label}"
                 )
 
+            # Construct absolute/resolved target path for the image file
             image_path = image_directory / filename
 
+            # Ensure the referenced image file exists on the filesystem
             if not image_path.exists():
                 raise InvalidAnnotationError(
                     f"Image not found: {image_path}"
                 )
 
+            # Record validated sample entry
             annotations.append(
                 AnnotationRecord(
                     image_path=image_path,
@@ -105,6 +118,7 @@ def load_annotations(
                 )
             )
 
+    # Ensure dataset contains at least one valid sample entry
     if not annotations:
         raise EmptyDatasetError(
             "The annotation file contains no samples."
