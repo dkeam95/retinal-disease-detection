@@ -5,6 +5,7 @@ F1 metric for multi-class classification.
 from __future__ import annotations
 
 from sklearn.metrics import f1_score
+from metrics._validation import validate_shapes
 from torch import Tensor
 
 
@@ -12,28 +13,6 @@ _SUPPORTED_AVERAGES = {
     "macro",
     "weighted",
 }
-
-
-def _validate_shapes(
-    logits: Tensor,
-    targets: Tensor,
-) -> None:
-    """Validate metric input shapes."""
-
-    if logits.ndim != 2:
-        raise ValueError(
-            "Logits must have shape (batch_size, num_classes)."
-        )
-
-    if targets.ndim != 1:
-        raise ValueError(
-            "Targets must have shape (batch_size,)."
-        )
-
-    if logits.shape[0] != targets.shape[0]:
-        raise ValueError(
-            "Batch size mismatch between logits and targets."
-        )
 
 
 def _validate_average(
@@ -55,11 +34,6 @@ def compute_f1(
     """
     Compute F1 score.
     """
-
-    _validate_shapes(
-        logits,
-        targets,
-    )
 
     _validate_average(
         average,
