@@ -2,96 +2,41 @@
 
 ## Purpose
 
-This module contains evaluation metrics used to assess diabetic retinopathy classification models.
+Provides evaluation metrics for diabetic retinopathy classification.
 
-All metrics operate on model logits `(N, C)` and ground-truth labels `(N,)`.
+The module operates directly on model logits and ground-truth labels.
 
 ---
 
 ## Implemented Metrics
 
-### Accuracy
+| Metric                   | Description                          | Medical relevance                          |
+| ------------------------ | ------------------------------------ | ------------------------------------------ |
+| Accuracy                 | Overall classification accuracy      | General quality                            |
+| Precision                | Positive prediction quality          | False positive control                     |
+| Recall                   | Sensitivity                          | False negative control                     |
+| F1 Score                 | Balance between Precision and Recall | General classifier evaluation              |
+| Quadratic Weighted Kappa | Ordinal agreement metric             | ⭐ Primary metric for diabetic retinopathy |
 
-File:
+---
 
-```text
-accuracy.py
-```
+## Input
 
-Computes overall classification accuracy.
+All metrics accept
 
-Returns:
+```python
+logits: Tensor (N, C)
 
-```text
-float
+targets: Tensor (N,)
 ```
 
 ---
 
-### Precision
+## Output
 
-File:
+Every metric returns
 
-```text
-precision.py
-```
-
-Uses `sklearn.metrics.precision_score`.
-
-Supported averaging strategies:
-
-- macro
-- weighted
-
-Returns:
-
-```text
-float
-```
-
----
-
-### Recall
-
-File:
-
-```text
-recall.py
-```
-
-Uses `sklearn.metrics.recall_score`.
-
-Supported averaging strategies:
-
-- macro
-- weighted
-
-Returns:
-
-```text
-float
-```
-
----
-
-### F1 Score
-
-File:
-
-```text
-f1.py
-```
-
-Uses `sklearn.metrics.f1_score`.
-
-Supported averaging strategies:
-
-- macro
-- weighted
-
-Returns:
-
-```text
+```python
 float
 ```
 
@@ -99,21 +44,48 @@ float
 
 ## Validation
 
-Every metric validates:
+Every metric validates
 
-- logits shape
-- targets shape
+- logits dimensions
+- targets dimensions
 - batch size consistency
 
 ---
 
 ## Unit Tests
 
-Every metric contains tests for:
+Each metric contains
 
-- perfect predictions
-- partially correct predictions
-- invalid arguments
+- perfect prediction test
+- partial prediction test
+- invalid input tests
 - shape validation
 
-All implemented metrics are fully covered by unit tests.
+Quadratic Weighted Kappa additionally contains
+
+- deterministic evaluation
+
+---
+
+## Why Quadratic Weighted Kappa?
+
+Unlike Accuracy, QWK considers the ordinal nature of diabetic retinopathy stages.
+
+For example
+
+```
+0 → 1
+```
+
+is penalized much less than
+
+```
+0 → 4
+```
+
+making it the standard evaluation metric used in:
+
+- APTOS
+- EyePACS
+- Messidor
+- most DR research papers
