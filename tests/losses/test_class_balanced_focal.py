@@ -87,9 +87,9 @@ def test_backward_loss() -> None:
 
     loss.backward()
 
-    print(f"\nGradient shape = {logits.grad.shape}")
-
     assert logits.grad is not None
+    print(f"\nGradient shape = {logits.grad.shape}")
+    
     assert logits.grad.shape == logits.shape
     print("\nGradient computed successfully")
 

@@ -1,98 +1,123 @@
 # Losses Module
 
-## Responsibility
+## Overview
 
-The losses module is responsible only for creating loss functions used
-during neural network training.
+The `losses` module provides a modular and extensible interface for
+building loss functions used during model training.
 
-It does not perform:
-
-- model creation;
-- dataset loading;
-- image preprocessing;
-- training loops;
-- metric computation;
-- checkpoint management.
-
----
-
-## Public API
-
-```python
-create_loss(config: LossConfig) -> torch.nn.Module
-```
-
----
-
-## Dependencies
-
-- torch
-- common.config
-
----
-
-## File Structure
-
-```text
-losses/
-├── __init__.py
-├── factory.py
-├── registry.py
-├── cross_entropy.py
-├── weighted_cross_entropy.py
-├── focal.py
-├── class_balanced_focal.py
-└── README.md
-```
-
----
-
-## Workflow
-
-```text
-LossConfig
-      │
-      ▼
-create_loss()
-      │
-      ▼
-Loss Registry
-      │
-      ▼
-Selected Loss
-      │
-      ▼
-torch.nn.Module
-```
+The module follows the **Factory + Registry** design pattern,
+allowing new loss functions to be added without modifying
+the training pipeline.
 
 ---
 
 ## Supported Loss Functions
 
-Initially the module supports:
+| Loss                      | Description                                                                               |
+| ------------------------- | ----------------------------------------------------------------------------------------- |
+| Cross Entropy             | Standard multi-class classification loss.                                                 |
+| Weighted Cross Entropy    | Cross Entropy with class weights for imbalanced datasets.                                 |
+| Focal Loss                | Reduces the contribution of easy samples and focuses learning on difficult examples.      |
+| Class-Balanced Focal Loss | Combines effective-number class weighting with Focal Loss for highly imbalanced datasets. |
 
-- CrossEntropyLoss
-- Weighted CrossEntropyLoss
-- Focal Loss
-- Class Balanced Focal Loss
+---
 
-The architecture is designed for future extension:
+## Module Structure
 
-- Label Smoothing Cross Entropy
-- Dice Loss
-- Tversky Loss
-- PolyLoss
-- LDAM Loss
+```text
+losses/
 
-without changing the public API.
+├── __init__.py
+├── factory.py
+├── registry.py
+
+├── cross_entropy.py
+├── weighted_cross_entropy.py
+├── focal.py
+├── class_balanced_focal.py
+```
+
+---
+
+## Architecture
+
+```text
+LossConfig
+      │
+      ▼
+build_loss()
+      │
+      ▼
+LOSS_REGISTRY
+      │
+      ▼
+Builder Function
+      │
+      ▼
+nn.Module
+```
+
+The training pipeline never directly creates loss functions.
+Instead, it always uses:
+
+```python
+criterion = build_loss(
+    config.loss,
+    class_weights,
+)
+```
+
+---
+
+## Adding a New Loss Function
+
+1. Implement a new loss module.
+
+```text
+losses/my_loss.py
+```
+
+2. Implement a builder function.
+
+```python
+build_my_loss(
+    config,
+    class_weights,
+)
+```
+
+3. Register the builder.
+
+```python
+LOSS_REGISTRY["my_loss"] = build_my_loss
+```
+
+No other code changes are required.
+
+---
+
+## Testing
+
+All loss implementations include unit tests covering:
+
+- forward computation
+- reduction modes
+- gradient computation
+- invalid configuration handling
+
+Run tests:
+
+```bash
+pytest tests/losses
+```
 
 ---
 
 ## Design Principles
 
-- Single Responsibility Principle
+- Single Responsibility Principle (SRP)
+- Open/Closed Principle (OCP)
 - Factory Pattern
 - Registry Pattern
-- Configuration-driven loss creation
 - Strong typing
-- Easy extension without modifying the Trainer
+- Fully testable components
