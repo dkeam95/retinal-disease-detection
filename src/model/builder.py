@@ -1,47 +1,52 @@
-"""Model builders.
-
-This module contains factory function responsible for
-constructing neural network architectures."""
+"""
+Model builders.
+"""
 
 from __future__ import annotations
 
-import timm
 from torch import nn
 
 from common.config.types import ModelConfig
-from model.exceptions import ModelInitializationError
+from model.backbone import build_backbone
+from model.classification_model import ClassificationModel
+from model.classifier import build_classifier
 
 
 def build_timm_model(model_name: str, config: ModelConfig) -> nn.Module:
-    """Build a TIMM classification model.
+    """
+    Build a classification model.
 
     Args:
         model_name:
-            TIMM model architecture.
+            TIMM backbone name.
 
         config:
             Model configuration.
 
-        Returns:
-            Initialized neural network.
-
-        Raises:
-            ModelInitializationError:
-                If model creation fails.
+    Returns:
+        Classification model.
     """
 
-    try:
-        model = timm.create_model(
-            model_name=model_name,
-            pretrained=config.pretrained,
-            num_classes=config.num_classes
+    backbone = build_backbone(
+        model_name=model_name,
+        config=config,
+    )
+
+    if not hasattr(
+        backbone,
+        "num_features",
+    ):
+        raise AttributeError(
+            f"Backbone '{model_name}' "
+            "does not expose num_features."
         )
 
-    except Exception as error:
-        raise ModelInitializationError(
-            f"Failed to initialize model "
-            f"{model_name}"
-        ) from error
+    classifier = build_classifier(
+        in_features=backbone.num_features,
+        config=config,
+    )
 
-    return model
-        
+    return ClassificationModel(
+        backbone=backbone,
+        classifier=classifier,
+    )
