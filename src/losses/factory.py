@@ -1,18 +1,32 @@
-"""Loss factory."""
+"""
+Loss factory.
+"""
 
-from __future__ import annotations  # Enables modern type hints (Python 3.7+)
+from __future__ import annotations
 
-from torch import Tensor            # PyTorch Tensor type hint
-from torch import nn                # Base class for neural network loss modules
+from torch import Tensor
+from torch import nn
 
-from common.config.types import LossConfig  # Configuration object holding loss hyperparameters
+from common.config.types import LossConfig
 
-from .registry import LOSS_REGISTRY  # Global registry mapping loss names to builder functions
+from losses.exceptions import (
+    UnknownLossError,
+)
+from losses.loss_names import (
+    LossName,
+)
+from losses.registry import (
+    LOSS_REGISTRY,
+)
 
 
-def build_loss(config: LossConfig, class_weights: Tensor | None = None) -> nn.Module:
-    """Build a loss function from configuration.
-    
+def build_loss(
+    config: LossConfig,
+    class_weights: Tensor | None = None,
+) -> nn.Module:
+    """
+    Build a loss function from configuration.
+
     Args:
         config:
             Loss configuration.
@@ -24,28 +38,33 @@ def build_loss(config: LossConfig, class_weights: Tensor | None = None) -> nn.Mo
         Configured loss function.
 
     Raises:
-        ValueError:
-            If the requested loss function is not registered.
+        UnknownLossError:
+            If the requested loss function is not supported.
     """
 
-    # Retrieve the builder function from registry using loss name key from configuration
-    builder = LOSS_REGISTRY.get(
-        config.name
-    )
+    try:
+        loss_name = LossName(
+            config.name,
+        )
 
-    # Handle unregistered loss types by raising a informative ValueError with available choices
-    if builder is None:
+    except ValueError as error:
         available_losses = ", ".join(
-            sorted(LOSS_REGISTRY.keys())
+            loss.value
+            for loss in LossName
         )
 
-        raise ValueError(
-            f"Unknown loss function: {config.name!r}. "
-            f"Available losses: {available_losses}"
-        )
+        raise UnknownLossError(
+            f"Unknown loss function: "
+            f"{config.name!r}. "
+            f"Available losses: "
+            f"{available_losses}"
+        ) from error
 
-    # Execute selected loss builder passing config parameters and optional class weights
+    builder = LOSS_REGISTRY[
+        loss_name
+    ]
+
     return builder(
         config,
-        class_weights
+        class_weights,
     )

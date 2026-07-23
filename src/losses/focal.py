@@ -1,17 +1,29 @@
-"""Focal Loss implementation."""
+"""
+Focal Loss implementation.
+"""
 
-from __future__ import annotations  # Enables modern type hints (Python 3.7+)
+from __future__ import annotations
 
-import torch                        # Core PyTorch library for tensor computations
-import torch.nn.functional as F     # Functional interface for loss functions and activations
-from torch import Tensor            # Type annotation for PyTorch multi-dimensional arrays
-from torch import nn                # Neural network modules base class
+import torch
+import torch.nn.functional as F
+from torch import Tensor
+from torch import nn
 
-from common.config.types import LossConfig  # Configuration object holding loss hyperparameters
+from common.config.types import LossConfig
+
+from losses.exceptions import (
+    LossInitializationError,
+)
 
 
 class FocalLoss(nn.Module):
-    """Implementation of Focal Loss."""
+    """
+    Implementation of Focal Loss.
+
+    Reference:
+        Lin et al., "Focal Loss for Dense Object Detection"
+        https://arxiv.org/abs/1708.02002
+    """
 
     def __init__(
         self,
@@ -19,7 +31,8 @@ class FocalLoss(nn.Module):
         alpha: float | None,
         reduction: str,
     ) -> None:
-        """Initialize Focal Loss.
+        """
+        Initialize Focal Loss.
 
         Args:
             gamma:
@@ -30,15 +43,33 @@ class FocalLoss(nn.Module):
 
             reduction:
                 Reduction method.
+
+        Raises:
+            LossInitializationError:
+                If configuration parameters are invalid.
         """
 
         super().__init__()
 
-        # Focusing parameter (gamma >= 0) that down-weights easy examples
+        if gamma < 0:
+            raise LossInitializationError(
+                "Gamma must be non-negative."
+            )
+
+        supported_reductions = {
+            "mean",
+            "sum",
+            "none",
+        }
+
+        if reduction not in supported_reductions:
+            raise LossInitializationError(
+                f"Unsupported reduction: "
+                f"{reduction}"
+            )
+
         self._gamma = gamma
-        # Optional weighting factor (alpha) to address class imbalance
         self._alpha = alpha
-        # Loss reduction strategy ('mean', 'sum', or 'none')
         self._reduction = reduction
 
     def forward(
@@ -46,68 +77,67 @@ class FocalLoss(nn.Module):
         logits: Tensor,
         targets: Tensor,
     ) -> Tensor:
-        """Compute Focal Loss.
+        """
+        Compute Focal Loss.
 
         Args:
             logits:
-                Model predictions before softmax.
+                Raw model predictions.
 
             targets:
                 Ground-truth class indices.
 
         Returns:
-            Computed loss.
+            Computed focal loss.
         """
 
-        # Compute per-sample unreduced cross entropy loss: CE(p_t) = -log(p_t)
         cross_entropy_loss = F.cross_entropy(
             logits,
             targets,
             reduction="none",
         )
 
-        # Reconstruct model probability for the correct target class: p_t = exp(-CE)
-        pt = torch.exp(-cross_entropy_loss)
+        pt = torch.exp(
+            -cross_entropy_loss,
+        )
 
-        # Apply focal weighting term: FL(p_t) = (1 - p_t)^gamma * CE(p_t)
         focal_loss = (
             (1.0 - pt) ** self._gamma
         ) * cross_entropy_loss
 
-        # Scale by class balancing parameter alpha if specified
         if self._alpha is not None:
-            focal_loss = self._alpha * focal_loss
+            focal_loss = (
+                self._alpha
+                * focal_loss
+            )
 
-        # Apply requested reduction across the batch
         if self._reduction == "mean":
             return focal_loss.mean()
 
         if self._reduction == "sum":
             return focal_loss.sum()
 
-        if self._reduction == "none":
-            return focal_loss
-
-        raise ValueError(
-            f"Unsupported reduction: {self._reduction}"
-        )
+        return focal_loss
 
 
 def build_focal_loss(
     config: LossConfig,
     class_weights: Tensor | None = None,
 ) -> nn.Module:
-    """Build a Focal Loss instance.
+    """
+    Build a Focal Loss instance.
 
     Args:
         config:
             Loss configuration.
 
+        class_weights:
+            Reserved for API compatibility.
+
     Returns:
         Configured Focal Loss instance.
     """
 
-    # Instantiate FocalLoss using parameters extracted from the configuration schema
     return FocalLoss(
         gamma=config.gamma,
         alpha=config.alpha,

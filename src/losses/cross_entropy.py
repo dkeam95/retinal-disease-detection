@@ -1,23 +1,34 @@
-"""Standart Cross Entropy loss builder."""
+"""
+Standard Cross Entropy loss builder.
+"""
 
-from __future__ import annotations          # Enables modern type hints (Python 3.7+)
+from __future__ import annotations
 
-from torch import nn                        # PyTorch neural network modules and loss functions
+from torch import Tensor
+from torch import nn
 
-from torch import Tensor                    # PyTorch tensor class
-from common.config.types import LossConfig  # Configuration object holding loss hyperparameters
+from common.config.types import LossConfig
 
 
-def build_cross_entropy(config: LossConfig, class_weights: Tensor | None = None) -> nn.Module:
-    """Build the standart Cross Entropy loss.
+def build_cross_entropy(
+    config: LossConfig,
+    class_weights: Tensor | None = None,
+) -> nn.Module:
+    """
+    Build the standard Cross Entropy loss.
 
     Args:
-        config: Loss configuration.
+        config:
+            Loss configuration.
+
+        class_weights:
+            Optional class weights.
 
     Returns:
-        Cross Entropy loss instance.
+        Configured Cross Entropy loss.
     """
-    # Instantiate standard PyTorch CrossEntropyLoss passing the reduction mode ('mean', 'sum', or 'none')
+
     return nn.CrossEntropyLoss(
-        reduction=config.reduction
+        weight=class_weights,
+        reduction=config.reduction,
     )
