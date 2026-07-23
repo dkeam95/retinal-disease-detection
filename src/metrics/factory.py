@@ -2,14 +2,13 @@
 Metric factory.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from metrics.metric_names import MetricName
+from metrics.metric_names import MetricName  # Strongly typed enum/type for metric identifiers
 from metrics.registry import (
-    MetricFunction,
-    get_metric,
+    MetricFunction,  # Type alias for metric function signatures
+    get_metric,       # Lookup function to fetch metric implementation from registry
 )
-
 
 
 def build_metrics(
@@ -29,11 +28,13 @@ def build_metrics(
         Dictionary of metric functions.
     """
 
+    # Initialize empty registry map for active metric instances
     metrics: dict[
         MetricName,
         MetricFunction,
     ] = {}
 
+    # Iterate through requested metric names and retrieve corresponding functions from registry
     for metric_name in metric_names:
 
         metrics[
@@ -42,4 +43,5 @@ def build_metrics(
             metric_name,
         )
 
+    # Return configured dictionary mapping metric names to executable functions
     return metrics

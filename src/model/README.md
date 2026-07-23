@@ -1,139 +1,187 @@
 # Model Module
 
-## Purpose
+## Overview
 
-The model module is responsible for constructing neural network models
-from a configuration object.
+The `model` module is responsible for constructing neural network architectures used for diabetic retinopathy classification.
+
+The module follows a configuration-driven and modular architecture, allowing different backbone networks to be selected without modifying the training pipeline.
 
 ---
 
 ## Responsibilities
 
-This module is responsible only for:
-
-- creating neural network models;
-- selecting the requested architecture;
-- returning an initialized `torch.nn.Module`.
-
-This module does **not** perform:
-
-- dataset loading;
-- image preprocessing;
-- training;
-- evaluation;
-- inference;
-- checkpoint management;
-- optimizer creation;
-- scheduler creation.
+- Register supported model architectures.
+- Build neural network models.
+- Instantiate models from configuration.
+- Validate requested model architectures.
+- Provide model-specific exceptions.
+- Serve as the entry point for model creation.
 
 ---
 
-## Public API
+## Architecture
 
-```python
-create_model(config: ModelConfig) -> torch.nn.Module
 ```
-
----
-
-## Input
-
-```text
 ModelConfig
+      │
+      ▼
+ModelFactory
+      │
+      ▼
+ModelRegistry
+      │
+      ▼
+ModelBuilder
+      │
+      ▼
+PyTorch Model
 ```
 
 ---
 
-## Output
+## Module Structure
 
-```text
-torch.nn.Module
 ```
-
----
-
-## Dependencies
-
-- torch
-- timm
-- common.config
-
----
-
-## File Structure
-
-```text
 model/
-├── __init__.py
+│
 ├── builder.py
+├── exceptions.py
 ├── factory.py
+├── model_names.py
 ├── registry.py
 └── README.md
 ```
 
 ---
 
-## Workflow
+## Components
 
-```text
-ModelConfig
-      │
-      ▼
-create_model()
-      │
-      ▼
-MODEL_REGISTRY
-      │
-      ▼
-builder()
-      │
-      ▼
-torch.nn.Module
-```
+### builder.py
+
+Responsible for constructing PyTorch models.
+
+Currently provides a generic TIMM builder capable of creating any supported TIMM architecture.
 
 ---
 
-## Supported Architectures
+### factory.py
 
-### Current
+Creates neural network models from a `ModelConfig`.
+
+The factory is the only public entry point used by the training pipeline.
+
+---
+
+### registry.py
+
+Stores the mapping between model architecture names and their corresponding builder functions.
+
+Adding support for a new model only requires registering it in this file.
+
+---
+
+### model_names.py
+
+Contains the `ModelArchitecture` enumeration.
+
+Using `StrEnum` prevents invalid architecture names and improves IDE autocomplete and static type checking.
+
+---
+
+### exceptions.py
+
+Defines all model-specific exceptions.
+
+Current exceptions:
+
+- `ModelError`
+- `UnknownModelArchitectureError`
+- `ModelInitializationError`
+
+---
+
+## Current Supported Architectures
 
 - EfficientNet-B0
 
-### Planned
+Future planned architectures:
 
-- EfficientNet family
-- ResNet family
-- DenseNet family
-- ConvNeXt family
-- Vision Transformer (ViT) family
-- Swin Transformer family
+- EfficientNet-B3
+- ConvNeXt
+- ResNet
+- Vision Transformer (ViT)
+- Swin Transformer
 
-The module is designed so that new architectures can be added without modifying the public API or the model factory.
+---
+
+## Public API
+
+```python
+from model.factory import create_model
+
+model = create_model(config)
+```
+
+The rest of the project should never instantiate models directly.
+
+---
+
+## Tests
+
+```
+tests/model/
+│
+├── test_builder.py
+├── test_exceptions.py
+└── test_model_names.py
+```
 
 ---
 
 ## Design Principles
 
-The module follows the following design principles:
-
-- Single Responsibility Principle (SRP)
-- Configuration-driven model creation
-- Registry pattern
-- Factory pattern
-- Easy architecture replacement
-- Extensible design
-- Minimal coupling between modules
+- Single Responsibility Principle.
+- Configuration-driven architecture.
+- Registry-based model selection.
+- Strong typing using `StrEnum`.
+- Centralized model creation through a factory.
+- Easily extensible without modifying existing code.
 
 ---
 
-## Future Extensions
+## Extending the Module
 
-Future versions of this module may include:
+To add a new architecture:
 
-- loading pretrained checkpoints;
-- automatic model registration;
-- custom architectures;
-- feature extractor builders;
-- layer freezing utilities;
-- backbone replacement utilities;
-- support for custom classification heads.
+1. Add a new value to `ModelArchitecture`.
+2. Register the architecture in `MODEL_REGISTRY`.
+3. No changes to the factory are required.
+4. Add unit tests for the new architecture.
+
+---
+
+## Future Improvements
+
+The current implementation creates complete TIMM classification models.
+
+In future iterations the architecture will evolve into:
+
+```
+Backbone
+      │
+      ▼
+Feature Extractor
+      │
+      ▼
+Classification Head
+```
+
+This separation will support:
+
+- Fine-tuning
+- Feature extraction
+- Grad-CAM
+- Custom classification heads
+- Metric learning
+- ArcFace
+- Flexible transfer learning

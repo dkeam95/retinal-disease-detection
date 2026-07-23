@@ -1,38 +1,47 @@
-"""
-Model builders.
+"""Model builders.
 
-This module contains factory functions responsible for
-constructing neural network architectures.
-"""
+This module contains factory function responsible for
+constructing neural network architectures."""
 
-from __future__ import annotations           # Enables modern type hints (Python 3.7+)
+from __future__ import annotations
 
-import timm                                  # PyTorch Image Models library providing pre-trained computer vision architectures
-from torch import nn                         # Neural network modules base class
+import timm
+from torch import nn
 
-from common.config.types import ModelConfig  # Configuration object holding architecture hyperparameters
+from common.config.types import ModelConfig
+from model.exceptions import ModelInitializationError
 
 
-def build_efficientnet_b0(config: ModelConfig) -> nn.Module:
+def build_timm_model(model_name: str, config: ModelConfig) -> nn.Module:
+    """Build a TIMM classification model.
+
+    Args:
+        model_name:
+            TIMM model architecture.
+
+        config:
+            Model configuration.
+
+        Returns:
+            Initialized neural network.
+
+        Raises:
+            ModelInitializationError:
+                If model creation fails.
     """
-    Build an EfficientNet-B0 model.
 
-    Parameters
-    ----------
-    config : ModelConfig
-        Model configuration.
+    try:
+        model = timm.create_model(
+            model_name=model_name,
+            pretrained=config.pretrained,
+            num_classes=config.num_classes
+        )
 
-    Returns
-    -------
-    nn.Module
-        Initialized EfficientNet-B0 model.
-    """
-
-    # Instantiate EfficientNet-B0 model via timm with specified weights and classification head dimensions
-    model = timm.create_model(
-        model_name="efficientnet_b0",
-        pretrained=config.pretrained,    # Download/load pre-trained ImageNet weights if True
-        num_classes=config.num_classes,  # Adjust the output dimension of the final fully-connected layer
-    )
+    except Exception as error:
+        raise ModelInitializationError(
+            f"Failed to initialize model "
+            f"{model_name}"
+        ) from error
 
     return model
+        

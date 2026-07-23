@@ -72,10 +72,6 @@ def test_partial_f1() -> None:
 
     print(f"\nF1 = {score:.4f}")
 
-    #
-    # После первого запуска заменим
-    # на значение, вычисленное sklearn.
-    #
     assert score == pytest.approx(
         0.7333333333333333,
         abs=1e-2

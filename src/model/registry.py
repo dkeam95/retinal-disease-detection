@@ -1,27 +1,23 @@
-"""
-Registry of available model builders.
+"""Registry of available model builders.
 
 This module maps model architecture names to their
-corresponding builder functions.
+corresponding builder  functions.
 """
 
-from __future__ import annotations     # Enables modern type hints (Python 3.7+)
+from __future__ import annotations
 
-from collections.abc import Callable   # Type hint for callable builder functions
+from collections.abc import Callable
 
-from torch import nn                   # Neural network modules base class
+from torch import nn
 
-from common.config.types import ModelConfig      # Configuration object holding architecture parameters
-from model.builder import build_efficientnet_b0  # Builder function for EfficientNet-B0 architecture
+from common.config.types import ModelConfig
+from model.builder import build_timm_model
+from model.model_names import ModelArchitecture
 
 
-# Type alias for builder functions accepting ModelConfig and returning a PyTorch Module
-ModelBuilder = Callable[
-    [ModelConfig],
-    nn.Module,
-]
+ModelBuilder = Callable[[ModelConfig], nn.Module]
 
-# Registry mapping architecture key strings to their factory builder functions
-MODEL_REGISTRY: dict[str, ModelBuilder] = {
-    "efficientnet_b0": build_efficientnet_b0,
+MODEL_REGISTRY = {
+    ModelArchitecture.EFFICIENTNET_B0:
+        lambda config: build_timm_model("efficientnet_b0", config)
 }

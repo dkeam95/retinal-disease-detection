@@ -72,11 +72,6 @@ def test_partial_recall() -> None:
 
     print(f"\nRecall = {recall:.4f}")
 
-    #
-    # После первого запуска заменим 0.0
-    # на реальное значение Recall,
-    # вычисленное sklearn.
-    #
     assert recall == pytest.approx(
         0.7333333333333333,
         abs=1e-2
