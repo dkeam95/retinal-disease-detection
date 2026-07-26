@@ -10,6 +10,7 @@ from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 from pathlib import Path            # Object-oriented filesystem path navigation
 
 # Domain-specific dataset exceptions for missing files, parsing errors, or empty datasets
+
 from dataset.exceptions import (
     AnnotationFileNotFoundError,
     InvalidAnnotationError,
@@ -58,6 +59,18 @@ def load_annotations(
             f"Annotation file not found: {annotation_file}"
         )
 
+    # Ensure image directory exists
+    if not image_directory.exists():
+        raise InvalidAnnotationError(
+            f"Image directory not found: {image_directory}"
+        )
+
+    # Ensure provided path is actually a directory
+    if not image_directory.is_dir():
+        raise InvalidAnnotationError(
+            f"Image directory is not a directory: {image_directory}"
+        )
+
     # Empty list to store processed annotation records
     annotations: list[AnnotationRecord] = []
 
@@ -94,15 +107,15 @@ def load_annotations(
                     f"at line {line_number}: {label_text}"
                 ) from error
 
-            # Class labels in classification datasets must be non-negative
-            if label < 0:
+            # Validate class label range
+            if label not in range(5):
                 raise InvalidAnnotationError(
-                    f"Negative class label "
+                    f"Invalid class label "
                     f"at line {line_number}: {label}"
                 )
 
             # Construct absolute/resolved target path for the image file
-            image_path = image_directory / filename
+            image_path = (image_directory / filename).resolve()
 
             # Ensure the referenced image file exists on the filesystem
             if not image_path.exists():

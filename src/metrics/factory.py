@@ -1,13 +1,18 @@
 """
-Metric factory.
+Metric factory module.
+
+This module provides factory functions to construct and instantiate dictionaries
+mapping metric identifiers to their corresponding calculation functions.
 """
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from metrics.metric_names import MetricName  # Strongly typed enum/type for metric identifiers
+from metrics.metric_names import (
+    MetricName,
+)
 from metrics.registry import (
-    MetricFunction,  # Type alias for metric function signatures
-    get_metric,       # Lookup function to fetch metric implementation from registry
+    MetricFunction,
+    get_metric,
 )
 
 
@@ -18,30 +23,34 @@ def build_metrics(
     MetricFunction,
 ]:
     """
-    Build metric dictionary.
+    Build a dictionary mapping metric identifiers to metric functions.
 
     Args:
         metric_names:
-            Metrics to build.
+            List of requested metric enum identifiers to build.
 
     Returns:
-        Dictionary of metric functions.
+        dict[MetricName, MetricFunction]:
+            Dictionary mapping each requested MetricName to its corresponding
+            registered MetricFunction callable.
+
+    Raises:
+        UnknownMetricError:
+            If any requested metric name is not found in the registry.
     """
 
-    # Initialize empty registry map for active metric instances
+    # Initialize empty registry mapping for constructed metrics
     metrics: dict[
         MetricName,
         MetricFunction,
     ] = {}
 
-    # Iterate through requested metric names and retrieve corresponding functions from registry
+    # Look up and associate each metric name with its registered implementation
     for metric_name in metric_names:
-
         metrics[
             metric_name
         ] = get_metric(
             metric_name,
         )
 
-    # Return configured dictionary mapping metric names to executable functions
     return metrics

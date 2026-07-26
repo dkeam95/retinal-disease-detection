@@ -1,10 +1,14 @@
-"""Custom exceptions for the preprocessing module.
+"""
+Custom exceptions for the preprocessing module.
 
 This module defines all preprocessing-specific exceptions used during
-pipeline construction and image preprocessing."""
+pipeline construction and image preprocessing.
+"""
+
+from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
 
-class PreprocessingError():
+class PreprocessingError(Exception):
     """Base exception for all preprocessing-related errors."""
 
 

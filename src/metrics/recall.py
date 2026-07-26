@@ -1,15 +1,23 @@
 """
 Recall metric for multi-class classification.
+
+This module provides functions to compute the multi-class recall score across
+predicted and target class labels.
 """
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from sklearn.metrics import recall_score  # Scikit-learn recall / sensitivity evaluation metric
-from torch import Tensor  # Type annotation for PyTorch multi-dimensional arrays
+from sklearn.metrics import recall_score
+from torch import Tensor
 
-from metrics._validation import validate_shapes  # Helper function for verifying tensor dimensions
+from metrics._validation import (
+    validate_shapes,
+)
+from metrics.exceptions import (
+    MetricInitializationError,
+)
 
-# Set of allowed multi-class averaging methods ('macro' or 'weighted')
+# Supported multi-class aggregation strategies
 _SUPPORTED_AVERAGES = {
     "macro",
     "weighted",
@@ -19,21 +27,29 @@ _SUPPORTED_AVERAGES = {
 def _validate_average(
     average: str,
 ) -> None:
-    """Validate averaging strategy.
+    """
+    Validate the requested averaging strategy.
 
     Args:
         average:
-            Averaging strategy.
+            Averaging strategy identifier.
 
     Raises:
-        ValueError:
-            If averaging strategy is unsupported.
+        MetricInitializationError:
+            If the strategy is not supported.
     """
 
-    # Ensure requested averaging strategy is within supported options
+    # Ensure the requested strategy is supported
     if average not in _SUPPORTED_AVERAGES:
-        raise ValueError(
-            f"Unsupported averaging strategy: {average}"
+        supported = ", ".join(
+            sorted(_SUPPORTED_AVERAGES)
+        )
+
+        raise MetricInitializationError(
+            f"Unsupported averaging strategy: "
+            f"{average}. "
+            f"Supported values: "
+            f"{supported}."
         )
 
 
@@ -42,26 +58,29 @@ def compute_recall(
     targets: Tensor,
     average: str = "macro",
 ) -> float:
-    """Compute recall score.
+    """
+    Compute multi-class recall score.
 
     Args:
         logits:
-            Model output logits of shape (N, C).
-
+            Unnormalized model output tensor of shape (N, C).
         targets:
-            Ground-truth labels of shape (N,).
-
+            Ground-truth class labels tensor of shape (N,).
         average:
-            Averaging strategy ('macro' or 'weighted'). Defaults to 'macro'.
+            Averaging strategy ("macro" or "weighted"). Defaults to "macro".
 
     Returns:
-        Recall score as a float scalar.
+        float:
+            Computed recall score as a float scalar.
     """
 
-    # Validate input tensor shapes and ranks
-    validate_shapes(logits, targets)
+    # Validate input tensor shapes and batch alignment
+    validate_shapes(
+        logits,
+        targets,
+    )
 
-    # Validate averaging mode parameter
+    # Validate averaging strategy
     _validate_average(
         average,
     )
@@ -71,7 +90,7 @@ def compute_recall(
         dim=1,
     )
 
-    # Calculate recall score using scikit-learn on CPU NumPy arrays, suppressing zero-division warnings
+    # Compute recall score using scikit-learn
     return float(
         recall_score(
             y_true=targets.cpu().numpy(),

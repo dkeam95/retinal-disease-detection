@@ -2,14 +2,14 @@
 Weighted Cross Entropy loss builder.
 """
 
-from __future__ import annotations
+from __future__ import annotations              # Enables modern type hints (Python 3.7+)
 
-from torch import Tensor
-from torch import nn
+from torch import Tensor                        # Type annotation for PyTorch Tensors
+from torch import nn                            # PyTorch base module class
 
-from common.config.types import LossConfig
+from common.config.types import LossConfig      # Configuration dataclass for loss parameters
 
-from losses.exceptions import (
+from losses.exceptions import (                  # Exception raised when loss setup fails
     LossInitializationError,
 )
 
@@ -37,12 +37,12 @@ def build_weighted_cross_entropy(
     """
 
     if class_weights is None:
-        raise LossInitializationError(
+        raise LossInitializationError(          # Ensure class weights tensor is explicitly provided
             "Weighted Cross Entropy requires "
             "class weights."
         )
 
-    return nn.CrossEntropyLoss(
-        weight=class_weights,
-        reduction=config.reduction,
+    return nn.CrossEntropyLoss(                 # Instantiate weighted PyTorch CrossEntropyLoss
+        weight=class_weights,                   # Pass required class weighting tensor
+        reduction=config.reduction,             # Set reduction strategy (mean, sum, none)
     )

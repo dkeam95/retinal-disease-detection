@@ -1,42 +1,54 @@
-"""Quadratic Weighted Kappa Metric for ordinal classification."""
+"""
+Quadratic Weighted Kappa metric for ordinal classification.
+
+This module provides functions to compute Cohen's Quadratic Weighted Kappa (QWK)
+score across predicted and target class labels.
+"""
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from sklearn.metrics import cohen_kappa_score  # Scikit-learn Cohen's kappa evaluation metric
-from torch import Tensor  # Type annotation for PyTorch multi-dimensional arrays
+from sklearn.metrics import cohen_kappa_score
+from torch import Tensor
 
-from metrics._validation import validate_shapes  # Helper function for verifying tensor dimensions
+from metrics._validation import (
+    validate_shapes,
+)
 
 
 def compute_quadratic_weighted_kappa(
     logits: Tensor,
     targets: Tensor,
 ) -> float:
-    """Compute quadratic weighted kappa (Cohen's kappa with quadratic weighting).
+    """
+    Compute Quadratic Weighted Kappa (QWK) score.
 
     Args:
         logits:
-            Logits of shape (batch_size, num_classes).
-
+            Unnormalized model output tensor of shape (N, C).
         targets:
-            Ground truth labels of shape (batch_size,).
+            Ground-truth class labels tensor of shape (N,).
 
     Returns:
-        The quadratic weighted kappa score as a float scalar.
+        float:
+            Computed Quadratic Weighted Kappa score as a float scalar.
     """
 
-    # Validate input tensor shapes and ranks
-    validate_shapes(logits, targets)
-
-    # Convert logits to predicted classes along class dimension (dim=1)
-    predictions = logits.argmax(dim=1)
-
-    # Compute Cohen's kappa score with quadratic weights on CPU NumPy arrays
-    score = cohen_kappa_score(
-        y1=targets.cpu().numpy(),
-        y2=predictions.cpu().numpy(),
-        weights="quadratic",
+    # Validate input tensor shapes and batch alignment
+    validate_shapes(
+        logits,
+        targets,
     )
 
-    # Return quadratic weighted kappa score as float
-    return float(score)
+    # Extract class index with highest predicted logit along class dimension (dim=1)
+    predictions = logits.argmax(
+        dim=1,
+    )
+
+    # Compute Quadratic Weighted Kappa using scikit-learn
+    return float(
+        cohen_kappa_score(
+            y1=targets.cpu().numpy(),
+            y2=predictions.cpu().numpy(),
+            weights="quadratic",
+        )
+    )

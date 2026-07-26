@@ -1,4 +1,12 @@
-"""Unit tests for the configuration loader."""
+"""
+Unit tests for the configuration loader module.
+
+This module contains unit tests verifying that `ConfigLoader` correctly parses valid YAML
+configuration files into `ProjectConfig` instances, and properly raises domain-specific
+exceptions on missing files, malformed syntax, non-dictionary root structures, or missing required sections.
+"""
+
+from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
 from pathlib import Path  # Object-oriented filesystem path navigation
 
@@ -17,7 +25,9 @@ TEST_DATA_DIR = Path(__file__).parent / "test_data"
 
 
 def test_load_valid_configuration() -> None:
-    """Verify that a valid configuration is loaded successfully."""
+    """
+    Verify that a valid YAML configuration file is loaded into a strongly-typed ProjectConfig.
+    """
 
     # Load and parse a known valid YAML configuration file
     config = ConfigLoader.load(TEST_DATA_DIR / "valid_config.yaml")
@@ -37,7 +47,9 @@ def test_load_valid_configuration() -> None:
 
 
 def test_missing_configuration_file() -> None:
-    """Verify that loading a missing configuration file raises an exception."""
+    """
+    Verify that attempting to load a non-existent configuration file raises ConfigFileNotFoundError.
+    """
 
     # Attempting to load a non-existent file path must trigger ConfigFileNotFoundError
     with pytest.raises(ConfigFileNotFoundError):
@@ -45,7 +57,9 @@ def test_missing_configuration_file() -> None:
 
 
 def test_malformed_yaml() -> None:
-    """Verify that malformed YAML raises a parsing exception."""
+    """
+    Verify that loading a file with invalid YAML syntax raises ConfigurationParsingError.
+    """
 
     # Passing a file with invalid YAML syntax must trigger ConfigurationParsingError
     with pytest.raises(ConfigurationParsingError):
@@ -53,7 +67,9 @@ def test_malformed_yaml() -> None:
 
 
 def test_invalid_root_object() -> None:
-    """Verify that the configuration root must be a dictionary."""
+    """
+    Verify that configuration files where the root object is not a mapping raise InvalidConfigurationError.
+    """
 
     # YAML files whose top-level element is not a mapping/dict must trigger InvalidConfigurationError
     with pytest.raises(InvalidConfigurationError):
@@ -61,7 +77,9 @@ def test_invalid_root_object() -> None:
 
 
 def test_missing_required_section() -> None:
-    """Verify that a missing section raises an exception."""
+    """
+    Verify that a configuration file missing a mandatory section raises InvalidConfigurationError.
+    """
 
     # YAML files missing mandatory configuration sections must fail validation
     with pytest.raises(InvalidConfigurationError):

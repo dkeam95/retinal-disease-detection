@@ -2,12 +2,12 @@
 Standard Cross Entropy loss builder.
 """
 
-from __future__ import annotations
+from __future__ import annotations              # Enables modern type hints (Python 3.7+)
 
-from torch import Tensor
-from torch import nn
+from torch import Tensor                        # Type annotation for PyTorch Tensors
+from torch import nn                            # PyTorch base module class
 
-from common.config.types import LossConfig
+from common.config.types import LossConfig      # Configuration dataclass for loss parameters
 
 
 def build_cross_entropy(
@@ -28,7 +28,7 @@ def build_cross_entropy(
         Configured Cross Entropy loss.
     """
 
-    return nn.CrossEntropyLoss(
-        weight=class_weights,
-        reduction=config.reduction,
+    return nn.CrossEntropyLoss(                 # Instantiate standard PyTorch CrossEntropyLoss
+        weight=class_weights,                   # Apply optional class weighting tensor
+        reduction=config.reduction,             # Set reduction strategy (mean, sum, none)
     )

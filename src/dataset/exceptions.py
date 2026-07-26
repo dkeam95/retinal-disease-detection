@@ -5,6 +5,8 @@ This module defines all dataset-specific exceptions used during
 dataset initialization and sample loading.
 """
 
+from __future__ import annotations  # Enables modern type hints (Python 3.7+)
+
 
 class DatasetError(Exception):
     """Base exception for all dataset-related errors."""

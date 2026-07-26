@@ -1,17 +1,21 @@
 """
 Class-Balanced Focal Loss implementation.
+
+This loss function is a variation of focal loss that is designed to address
+class imbalance in the dataset.
+
 """
 
-from __future__ import annotations
+from __future__ import annotations              # Enables modern type hints (Python 3.7+)
 
-import torch
-import torch.nn.functional as F
-from torch import Tensor
-from torch import nn
+import torch                                    # PyTorch tensor library
+import torch.nn.functional as F                 # Functional interface for standard loss routines
+from torch import Tensor                        # Type annotation for PyTorch Tensors
+from torch import nn                            # PyTorch base module class
 
-from common.config.types import LossConfig
+from common.config.types import LossConfig      # Configuration dataclass for loss parameters
 
-from losses.exceptions import (
+from losses.exceptions import (                  # Exception raised when loss setup fails
     LossInitializationError,
 )
 
@@ -22,7 +26,7 @@ class ClassBalancedFocalLoss(nn.Module):
 
     """
 
-    _class_weights: Tensor
+    _class_weights: Tensor                      # Type hint for registered class weights buffer
 
     def __init__(
         self,
@@ -48,29 +52,29 @@ class ClassBalancedFocalLoss(nn.Module):
                 If configuration parameters are invalid.
         """
 
-        super().__init__()
+        super().__init__()                      # Initialize parent PyTorch nn.Module class
 
         if gamma < 0:
-            raise LossInitializationError(
+            raise LossInitializationError(      # Validate that gamma focus parameter is non-negative
                 "Gamma must be non-negative."
             )
 
-        supported_reductions = {
+        supported_reductions = {                # Set of valid reduction modes
             "mean",
             "sum",
             "none",
         }
 
         if reduction not in supported_reductions:
-            raise LossInitializationError(
+            raise LossInitializationError(      # Validate reduction parameter against allowed set
                 f"Unsupported reduction: "
                 f"{reduction}"
             )
 
-        self._gamma = gamma
-        self._reduction = reduction
+        self._gamma = gamma                     # Store focusing parameter
+        self._reduction = reduction             # Store reduction strategy name
 
-        self.register_buffer(
+        self.register_buffer(                   # Register class weights as module persistent buffer
             "_class_weights",
             class_weights,
         )
@@ -94,28 +98,28 @@ class ClassBalancedFocalLoss(nn.Module):
             Computed loss.
         """
 
-        cross_entropy_loss = F.cross_entropy(
+        cross_entropy_loss = F.cross_entropy(   # Calculate unreduced weighted cross entropy
             logits,
             targets,
             weight=self._class_weights,
             reduction="none",
         )
 
-        pt = torch.exp(
+        pt = torch.exp(                         # Estimate class probabilities p_t from CE loss
             -cross_entropy_loss,
         )
 
-        focal_loss = (
+        focal_loss = (                          # Apply focal weighting factor (1 - p_t)^gamma
             (1.0 - pt) ** self._gamma
         ) * cross_entropy_loss
 
         if self._reduction == "mean":
-            return focal_loss.mean()
+            return focal_loss.mean()            # Return mean loss across batch
 
         if self._reduction == "sum":
-            return focal_loss.sum()
+            return focal_loss.sum()             # Return total sum of losses across batch
 
-        return focal_loss
+        return focal_loss                       # Return raw loss tensor without reduction
 
 
 def build_class_balanced_focal_loss(
@@ -141,12 +145,12 @@ def build_class_balanced_focal_loss(
     """
 
     if class_weights is None:
-        raise LossInitializationError(
+        raise LossInitializationError(          # Ensure class weights are explicitly provided
             "Class-Balanced Focal Loss "
             "requires class weights."
         )
 
-    return ClassBalancedFocalLoss(
+    return ClassBalancedFocalLoss(              # Instantiate ClassBalancedFocalLoss module
         gamma=config.gamma,
         reduction=config.reduction,
         class_weights=class_weights,

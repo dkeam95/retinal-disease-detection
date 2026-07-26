@@ -1,6 +1,13 @@
-"""Unit tests for Focal Loss."""
+"""
+Unit tests for the Focal Loss implementation.
 
-from __future__ import annotations # Enables modern type hints (Python 3.7+)
+This module contains unit tests verifying proper behavior of Focal Loss, including
+mathematical equivalence to CrossEntropyLoss when gamma=0, reduction modes ('mean',
+'sum', 'none'), gradient flow during backpropagation, non-negativity guarantees,
+and near-zero loss on confident correct predictions.
+"""
+
+from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
 import torch  # Core PyTorch library
 
@@ -9,21 +16,23 @@ from losses.focal import build_focal_loss  # Factory function that instantiates 
 
 
 def test_gamma_zero_matches_cross_entropy() -> None:
-    """Focal Loss with gamma=0 must equal CrossEntropyLoss"""
+    """
+    Verify that Focal Loss with gamma=0 produces results identical to standard CrossEntropyLoss.
+    """
 
     # Mock model predictions (2 samples, 3 classes)
     logits = torch.tensor(
         [
             [2.0, 0.5, -1.0],
-            [0.1, 1.5, 0.3]
+            [0.1, 1.5, 0.3],
         ],
-        dtype=torch.float32
+        dtype=torch.float32,
     )
 
     # True class labels (sample 0 -> class 0, sample 1 -> class 1)
     targets = torch.tensor(
         [0, 1],
-        dtype=torch.long
+        dtype=torch.long,
     )
 
     # Configuration for Focal Loss with gamma=0.0
@@ -31,7 +40,7 @@ def test_gamma_zero_matches_cross_entropy() -> None:
         name="focal",
         alpha=None,
         gamma=0.0,
-        reduction="mean"
+        reduction="mean",
     )
 
     # Instantiate custom Focal Loss
@@ -48,22 +57,31 @@ def test_gamma_zero_matches_cross_entropy() -> None:
     assert torch.allclose(
         focal_value,
         cross_entropy_value,
-        atol=1e-6
+        atol=1e-6,
     )
 
 
 def test_reduction_mean() -> None:
-    """Verify that reduction='mean' returns a scalar."""
+    """
+    Verify that reduction='mean' averages loss across the batch to return a scalar.
+    """
 
     # Generate random logits batch (4 samples, 5 classes)
-    logits = torch.randn(4, 5, dtype=torch.float32)
-    targets = torch.tensor([0, 1, 2, 3], dtype=torch.long)
+    logits = torch.randn(
+        4,
+        5,
+        dtype=torch.float32,
+    )
+    targets = torch.tensor(
+        [0, 1, 2, 3],
+        dtype=torch.long,
+    )
 
     config = LossConfig(
         name="focal",
         gamma=2.0,
         alpha=None,
-        reduction="mean"  # Average loss across the batch
+        reduction="mean",
     )
 
     criterion = build_focal_loss(config)
@@ -74,16 +92,26 @@ def test_reduction_mean() -> None:
 
 
 def test_reduction_sum() -> None:
-    """Verify that reduction='sum' returns a scalar."""
+    """
+    Verify that reduction='sum' accumulates losses across the batch to return a scalar.
+    """
 
-    logits = torch.randn(4, 5, dtype=torch.float32)
-    targets = torch.tensor([0, 1, 2, 3], dtype=torch.long)
-    
+    # Generate random logits batch (4 samples, 5 classes)
+    logits = torch.randn(
+        4,
+        5,
+        dtype=torch.float32,
+    )
+    targets = torch.tensor(
+        [0, 1, 2, 3],
+        dtype=torch.long,
+    )
+
     config = LossConfig(
         name="focal",
         alpha=None,
         gamma=2.0,
-        reduction="sum"  # Sum losses across the batch
+        reduction="sum",
     )
 
     criterion = build_focal_loss(config)
@@ -94,16 +122,26 @@ def test_reduction_sum() -> None:
 
 
 def test_reduction_none() -> None:
-    """Verify that reduction='none' returns one loss per sample."""
+    """
+    Verify that reduction='none' returns unreduced per-sample losses.
+    """
 
-    logits = torch.randn(4, 5, dtype=torch.float32)
-    targets = torch.tensor([0, 1, 2, 3], dtype=torch.long)
+    # Generate random logits batch (4 samples, 5 classes)
+    logits = torch.randn(
+        4,
+        5,
+        dtype=torch.float32,
+    )
+    targets = torch.tensor(
+        [0, 1, 2, 3],
+        dtype=torch.long,
+    )
 
     config = LossConfig(
         name="focal",
         alpha=None,
         gamma=2.0,
-        reduction="none"  # Disable reduction to keep individual sample losses
+        reduction="none",
     )
 
     criterion = build_focal_loss(config)
@@ -115,23 +153,28 @@ def test_reduction_none() -> None:
 
 
 def test_backward_pass() -> None:
-    """Verify that gradients are computed correctly."""
+    """
+    Verify that gradients are correctly calculated and populated during backpropagation.
+    """
 
-    # `requires_grad=True` enables autograd tracking for backpropagation
+    # Enable autograd tracking for backpropagation
     logits = torch.randn(
         4,
         5,
         dtype=torch.float32,
-        requires_grad=True
+        requires_grad=True,
     )
 
-    targets = torch.tensor([0, 1, 2, 3], dtype=torch.long)
+    targets = torch.tensor(
+        [0, 1, 2, 3],
+        dtype=torch.long,
+    )
 
     config = LossConfig(
         name="focal",
         alpha=None,
         gamma=2.0,
-        reduction="mean"
+        reduction="mean",
     )
 
     criterion = build_focal_loss(config)
@@ -146,16 +189,26 @@ def test_backward_pass() -> None:
 
 
 def test_is_non_negative() -> None:
-    """Verify that the loss value is always non-negative."""
+    """
+    Verify that computed Focal Loss values are non-negative.
+    """
 
-    logits = torch.randn(4, 5, dtype=torch.float32)
-    targets = torch.tensor([0, 1, 2, 3], dtype=torch.long)
+    # Generate random logits batch (4 samples, 5 classes)
+    logits = torch.randn(
+        4,
+        5,
+        dtype=torch.float32,
+    )
+    targets = torch.tensor(
+        [0, 1, 2, 3],
+        dtype=torch.long,
+    )
 
     config = LossConfig(
         name="focal",
         alpha=None,
         gamma=2.0,
-        reduction="mean"
+        reduction="mean",
     )
 
     criterion = build_focal_loss(config)
@@ -166,11 +219,11 @@ def test_is_non_negative() -> None:
 
 
 def test_perfect_prediction() -> None:
-    """Verify that perfect predictions produce near-zero loss."""
+    """
+    Verify that highly confident, correct predictions produce near-zero loss.
+    """
 
-    # Extremely high logit values for target classes (15.0 vs -5.0)
-    # Sample 0: Target class 0 has logit 15.0
-    # Sample 1: Target class 1 has logit 15.0
+    # High logit values for target classes (15.0 vs -5.0)
     logits = torch.tensor(
         [
             [15.0, -5.0, -5.0, -5.0, -5.0],
@@ -179,7 +232,10 @@ def test_perfect_prediction() -> None:
         dtype=torch.float32,
     )
 
-    targets = torch.tensor([0, 1], dtype=torch.long)
+    targets = torch.tensor(
+        [0, 1],
+        dtype=torch.long,
+    )
 
     config = LossConfig(
         name="focal",

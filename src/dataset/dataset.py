@@ -1,5 +1,9 @@
 """
 PyTorch dataset implementation for retinal disease detection.
+
+This dataset is designed to load retinal images and their corresponding labels
+from disk and provide them to the PyTorch training pipeline.
+
 """
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
@@ -44,6 +48,7 @@ class RetinalDataset(Dataset[DataSample]):
         """
         Return the number of samples in the dataset.
         """
+
         # Returns the total count of parsed dataset samples
         return len(self._annotations)
 
@@ -70,6 +75,12 @@ class RetinalDataset(Dataset[DataSample]):
             If the image cannot be loaded.
         """
 
+        # Ensure image file exists before attempting to read it
+        if not image_path.exists():
+            raise ImageLoadingError(
+                f"Image file does not exist: {image_path}"
+            )
+
         # Read image file using OpenCV in standard 3-channel color mode
         image = cv2.imread(
             str(image_path),
@@ -80,6 +91,18 @@ class RetinalDataset(Dataset[DataSample]):
         if image is None:
             raise ImageLoadingError(
                 f"Failed to load image: {image_path}"
+            )
+
+        # Validate image dimensionality
+        if image.ndim != 3:
+            raise ImageLoadingError(
+                f"Invalid image dimensions: {image.shape}"
+            )
+
+        # Validate image channel count
+        if image.shape[2] != 3:
+            raise ImageLoadingError(
+                f"Expected 3-channel image but got shape {image.shape}"
             )
 
         # OpenCV loads images in BGR format by default; convert to standard RGB

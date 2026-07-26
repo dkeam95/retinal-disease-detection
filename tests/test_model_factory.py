@@ -1,41 +1,54 @@
-"""Tests for the model factory."""
+"""
+Tests for the model factory module.
+
+This module contains unit tests verifying that model creation functions correctly
+instantiate supported model architectures and handle invalid architecture names appropriately.
+"""
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-import pytest  # Testing framework for asserting exceptions and test execution
-from torch import nn  # PyTorch base module class
+import pytest
+from torch import nn
 
-from common.config.types import ModelConfig  # Dataclass defining model architecture parameters
-from model.factory import create_model  # Factory function that instantiates PyTorch models
+from common.config.types import ModelConfig
+from model.exceptions import UnknownModelArchitectureError
+from model.factory import create_model
 
 
 def test_create_efficientnet_b0() -> None:
-    """Factory should create an EfficientNet-B0 model."""
+    """
+    Verify that the factory correctly builds an EfficientNet-B0 PyTorch module.
+    """
 
-    # Configuration specifying EfficientNet-B0 architecture with custom class count
+    # Initialize model configuration for non-pretrained EfficientNet-B0 with 5 classes
     config = ModelConfig(
         architecture="efficientnet_b0",
-        pretrained=False,  # Disable loading pre-trained weights for fast unit testing
-        num_classes=5
+        pretrained=False,
+        num_classes=5,
     )
 
-    # Instantiate model using the factory function
+    # Instantiate the neural network model via the factory
     model = create_model(config)
 
-    # Verify that the returned object inherits from torch.nn.Module
+    # Assert that the created model is a valid PyTorch nn.Module instance
     assert isinstance(model, nn.Module)
 
 
 def test_unknown_architecture() -> None:
-    """Factory should raise ValueError for unknown architecture."""
+    """
+    Verify that requesting an unsupported architecture raises UnknownModelArchitectureError.
+    """
 
-    # Configuration with an unsupported architecture identifier
+    # Initialize configuration with an unregistered model architecture name
     config = ModelConfig(
         architecture="unknown",
         pretrained=False,
-        num_classes=5
+        num_classes=5,
     )
 
-    # Verify that passing an invalid architecture raises a ValueError
-    with pytest.raises(ValueError):
+    # Assert that UnknownModelArchitectureError is raised with the expected error message
+    with pytest.raises(
+        UnknownModelArchitectureError,
+        match="Unsupported model architecture",
+    ):
         create_model(config)

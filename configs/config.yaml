@@ -46,3 +46,15 @@ training:
 experiment:
   name: baseline_efficientnet_b0
   seed: 42
+
+# ==========================================================
+# DataLoader Configuration
+# ==========================================================
+
+dataloader:
+  batch_size: 16
+  num_workers: 4
+  shuffle: true
+  pin_memory: true
+  drop_last: false
+  persistent_workers: true

@@ -1,4 +1,7 @@
-"""Metric name definitions."""
+"""Metric name definitions.
+
+This module is responsible for defining metric names.
+"""
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 

@@ -1,65 +1,96 @@
-"""Precision metric for multi-class classification."""
+"""
+Precision metric for multi-class classification.
+
+This module provides functions to compute the multi-class precision score across
+predicted and target class labels.
+"""
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from sklearn.metrics import precision_score  # Scikit-learn precision evaluation metric
-from torch import Tensor  # Type annotation for PyTorch multi-dimensional arrays
+from sklearn.metrics import precision_score
+from torch import Tensor
 
-from metrics._validation import validate_shapes  # Helper function for verifying tensor dimensions
+from metrics._validation import (
+    validate_shapes,
+)
+from metrics.exceptions import (
+    MetricInitializationError,
+)
 
-# Set of allowed multi-class averaging methods ('macro' or 'weighted')
+# Supported multi-class aggregation strategies
 _SUPPORTED_AVERAGES = {
     "macro",
     "weighted",
 }
 
 
-def _validate_average(average: str) -> None:
-    """Validate averaging strategy.
+def _validate_average(
+    average: str,
+) -> None:
+    """
+    Validate the requested averaging strategy.
 
     Args:
         average:
-            Averaging strategy.
+            Averaging strategy identifier.
 
     Raises:
-        ValueError:
-            If averaging strategy is unsupported.
+        MetricInitializationError:
+            If the strategy is not supported.
     """
 
-    # Ensure requested averaging strategy is within supported options
+    # Ensure the requested strategy is supported
     if average not in _SUPPORTED_AVERAGES:
-        raise ValueError(
-            f"Unsupported averaging strategy: {average}"
+        supported = ", ".join(
+            sorted(_SUPPORTED_AVERAGES)
+        )
+
+        raise MetricInitializationError(
+            f"Unsupported averaging strategy: "
+            f"{average}. "
+            f"Supported values: "
+            f"{supported}."
         )
 
 
-def compute_precision(logits: Tensor, targets: Tensor, average: str = "macro") -> float:
-    """Compute precision score.
+def compute_precision(
+    logits: Tensor,
+    targets: Tensor,
+    average: str = "macro",
+) -> float:
+    """
+    Compute multi-class precision score.
 
     Args:
         logits:
-            Model output logits of shape (N, C).
-
+            Unnormalized model output tensor of shape (N, C).
         targets:
-            Ground-truth labels of shape (N,).
-
+            Ground-truth class labels tensor of shape (N,).
         average:
-            Averaging strategy ('macro' or 'weighted'). Defaults to 'macro'.
+            Averaging strategy ("macro" or "weighted"). Defaults to "macro".
 
     Returns:
-        Precision score as a float scalar.
+        float:
+            Computed precision score as a float scalar.
     """
 
-    # Validate input tensor shapes and ranks
-    validate_shapes(logits, targets)
+    # Validate input tensor shapes and batch alignment
+    validate_shapes(
+        logits,
+        targets,
+    )
 
-    # Validate averaging mode parameter
-    _validate_average(average)
+    # Validate averaging strategy
+    _validate_average(
+        average,
+    )
 
     # Extract class index with highest predicted logit along class dimension (dim=1)
-    predictions = logits.argmax(dim=1)
+    predictions = logits.argmax(
+        dim=1,
+    )
 
-    # Calculate precision score using scikit-learn on CPU NumPy arrays, suppressing zero-division warnings
+    # Compute precision score using scikit-learn
     return float(
         precision_score(
             y_true=targets.cpu().numpy(),

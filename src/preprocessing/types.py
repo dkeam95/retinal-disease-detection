@@ -7,12 +7,14 @@ pipeline.
 
 from __future__ import annotations
 
-from numpy.typing import NDArray
 import numpy as np
+from numpy.typing import NDArray
 from torch import Tensor
 
 # Input image before preprocessing.
+
 ImageArray = NDArray[np.uint8]
 
 # Output tensor after preprocessing.
+
 ImageTensor = Tensor

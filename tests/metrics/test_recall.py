@@ -1,24 +1,39 @@
+"""
+Unit tests for the Recall evaluation metric.
+
+This module contains unit tests verifying the correct computation of the multi-class
+Recall score under various conditions, including perfect predictions, partial agreement,
+unsupported averaging strategy handling, and input tensor shape validation.
+"""
+
+from __future__ import annotations  # Enables modern type hints (Python 3.7+)
+
 import pytest
 import torch
 
 from common.classes import DRClass
+from metrics.exceptions import MetricInitializationError
 from metrics.recall import compute_recall
 
 
 def test_perfect_recall() -> None:
-    """Verify perfect predictions produce recall of 1.0."""
+    """
+    Verify that completely correct predictions produce a Recall score of 1.0.
+    """
 
+    # Prepare logits where each sample precisely predicts its true target class
     logits = torch.tensor(
         [
-            [10.0, 0.0, 0.0, 0.0, 0.0],  # -> No DR
-            [0.0, 10.0, 0.0, 0.0, 0.0],  # -> Mild
-            [0.0, 0.0, 10.0, 0.0, 0.0],  # -> Moderate
-            [0.0, 0.0, 0.0, 10.0, 0.0],  # -> Severe
-            [0.0, 0.0, 0.0, 0.0, 10.0],  # -> Proliferative
+            [10.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 10.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 10.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 10.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 10.0],
         ],
         dtype=torch.float32,
     )
 
+    # Set matching targets covering all diabetic retinopathy classes
     targets = torch.tensor(
         [
             DRClass.NO_DR,
@@ -30,6 +45,7 @@ def test_perfect_recall() -> None:
         dtype=torch.long,
     )
 
+    # Compute macro Recall score
     recall = compute_recall(
         logits,
         targets,
@@ -37,23 +53,30 @@ def test_perfect_recall() -> None:
 
     print(f"\nRecall = {recall:.4f}")
 
-    assert recall == pytest.approx(1.0)
+    # Assert score is exactly 1.0
+    assert recall == pytest.approx(
+        1.0,
+    )
 
 
 def test_partial_recall() -> None:
-    """Verify partially correct predictions."""
+    """
+    Verify that partially correct predictions produce the expected macro Recall score.
+    """
 
+    # Define logits with partial misclassifications across batch
     logits = torch.tensor(
         [
-            [10.0, 0.0, 0.0, 0.0, 0.0],  # -> No DR
-            [0.0, 10.0, 0.0, 0.0, 0.0],  # -> Mild
-            [0.0, 0.0, 0.0, 10.0, 0.0],  # -> Severe (wrong)
-            [0.0, 0.0, 0.0, 0.0, 10.0],  # -> Proliferative
-            [0.0, 0.0, 10.0, 0.0, 0.0],  # -> Moderate
+            [10.0, 0.0, 0.0, 0.0, 0.0],  # Predicts NO_DR
+            [0.0, 10.0, 0.0, 0.0, 0.0],  # Predicts MILD_NPDR
+            [0.0, 0.0, 0.0, 10.0, 0.0],  # Predicts SEVERE_NPDR
+            [0.0, 0.0, 0.0, 0.0, 10.0],  # Predicts PROLIFERATIVE_DR
+            [0.0, 0.0, 10.0, 0.0, 0.0],  # Predicts MODERATE_NPDR
         ],
         dtype=torch.float32,
     )
 
+    # Define ground truth targets for partial match
     targets = torch.tensor(
         [
             DRClass.NO_DR,
@@ -65,6 +88,7 @@ def test_partial_recall() -> None:
         dtype=torch.long,
     )
 
+    # Compute Recall score on partially correct batch
     recall = compute_recall(
         logits,
         targets,
@@ -72,20 +96,25 @@ def test_partial_recall() -> None:
 
     print(f"\nRecall = {recall:.4f}")
 
+    # Assert score matches expected value within tolerance (sklearn uses zero_division=0)
     assert recall == pytest.approx(
-        0.7333333333333333,
-        abs=1e-2
+        0.7,
+        abs=1e-2,
     )
 
 
 def test_invalid_average() -> None:
-    """Verify unsupported averaging strategy raises ValueError."""
+    """
+    Verify that passing an unsupported averaging strategy raises MetricInitializationError.
+    """
 
+    # Dummy logits for 4 samples across 5 classes
     logits = torch.randn(
         4,
         5,
     )
 
+    # Dummy target labels
     targets = torch.tensor(
         [
             DRClass.NO_DR,
@@ -96,8 +125,9 @@ def test_invalid_average() -> None:
         dtype=torch.long,
     )
 
+    # Assert that MetricInitializationError is raised for invalid average parameter
     with pytest.raises(
-        ValueError,
+        MetricInitializationError,
         match="Unsupported averaging strategy",
     ):
         compute_recall(
@@ -112,13 +142,17 @@ def test_invalid_average() -> None:
 
 
 def test_shape_mismatch() -> None:
-    """Verify shape validation."""
+    """
+    Verify that mismatched batch dimensions between logits and targets raise MetricInitializationError.
+    """
 
+    # Logits with batch size of 4
     logits = torch.randn(
         4,
         5,
     )
 
+    # Targets with mismatched batch size of 3
     targets = torch.tensor(
         [
             DRClass.NO_DR,
@@ -128,8 +162,9 @@ def test_shape_mismatch() -> None:
         dtype=torch.long,
     )
 
+    # Assert that MetricInitializationError is raised due to batch size mismatch
     with pytest.raises(
-        ValueError,
+        MetricInitializationError,
         match="Batch size mismatch",
     ):
         compute_recall(

@@ -26,6 +26,7 @@ from .types import (
     PreprocessingConfig,        # Dataclass for image transformation and augmentation parameters
     ProjectConfig,              # Root dataclass containing all sub-configurations
     TrainingConfig,             # Dataclass for training and hardware parameters
+    DataLoaderConfig,           # Dataclass for dataloader parameters
 )
 from .validator import validate_config  # Function that performs domain-specific validation rules
 
@@ -163,6 +164,14 @@ class ConfigLoader:
                     epochs=data["training"]["epochs"],
                     num_workers=data["training"]["num_workers"],
                     device=data["training"]["device"],
+                ),
+                dataloader=DataLoaderConfig(
+                    batch_size=data["dataloader"]["batch_size"],
+                    num_workers=data["dataloader"]["num_workers"],
+                    shuffle=data["dataloader"]["shuffle"],
+                    pin_memory=data["dataloader"]["pin_memory"],
+                    drop_last=data["dataloader"]["drop_last"],
+                    persistent_workers=data["dataloader"]["persistent_workers"],
                 ),
                 model=ModelConfig(
                     architecture=data["model"]["architecture"],

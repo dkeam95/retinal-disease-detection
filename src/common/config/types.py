@@ -68,6 +68,36 @@ class PreprocessingConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class DataLoaderConfig:
+    """Dataloader configuration.
+
+    Attributes:
+        batch_size:
+            Batch size.
+        shuffle:
+            Whether to shuffle the data.
+        num_workers:
+            Number of worker processes.
+        pin_memory:
+            Whether to pin memory.
+        drop_last:
+            Whether to drop the last batch.
+        persistent_workers:
+            Whether to use persistent workers.
+        weight_class_balance:
+            Whether to weight the classes.
+    """
+
+    batch_size: int  # Number of training images per optimization step
+    shuffle: bool    # Whether to shuffle the data
+    num_workers: int # Number of worker processes
+    pin_memory: bool # Whether to pin memory
+    drop_last: bool  # Whether to drop the last batch
+    persistent_workers: bool  # Whether to use persistent workers
+    weight_class_balance: bool = False # Whether to weight the classes
+
+
+@dataclass(frozen=True, slots=True)
 class TrainingConfig:
     """Training configuration.
     
@@ -90,6 +120,7 @@ class TrainingConfig:
         "cuda",
         "mps"
     ]  # Allowed execution hardware targets (CPU, NVIDIA CUDA GPU, or Apple Silicon MPS)
+
 
 
 @dataclass(frozen=True, slots=True)
@@ -200,3 +231,6 @@ class ProjectConfig:
     loss: LossConfig                  # Nested loss function hyperparameter configuration
     metrics: MetricsConfig            # Nested evaluation metrics settings
     experiment: ExperimentConfig      # Nested experiment logging and seeding properties
+    dataloader: DataLoaderConfig      # Nested dataloader configuration
+
+
