@@ -1,6 +1,7 @@
 # ==========================================================
 # Dataset Configuration
 # ==========================================================
+
 dataset:
   # Root directory of the dataset
   path: data/ddr
@@ -17,44 +18,149 @@ dataset:
 # ==========================================================
 # Preprocessing Configuration
 # ==========================================================
+
 preprocessing:
   pipeline:
     - resize
     - normalize
     - to_tensor
 
+  resize:
+    height: 512
+    width: 512
+
+  normalize:
+    mean: [0.485, 0.456, 0.406]
+    std: [0.229, 0.224, 0.225]
+
 # ==========================================================
 # Model Configuration
 # ==========================================================
+
 model:
   architecture: efficientnet_b0
   pretrained: true
   num_classes: 5
 
 # ==========================================================
-# Training Configuration
+# Loss Configuration
 # ==========================================================
-training:
-  batch_size: 16
-  epochs: 100
-  num_workers: 4
-  device: cuda
+
+loss:
+  name: cross_entropy
+
+  # Label smoothing improves generalization.
+  label_smoothing: 0.1
 
 # ==========================================================
-# Experiment Configuration
+# Optimizer Configuration
 # ==========================================================
-experiment:
-  name: baseline_efficientnet_b0
-  seed: 42
+
+optimizer:
+  name: adamw
+
+  learning_rate: 0.0003
+
+  weight_decay: 0.0001
+
+# ==========================================================
+# Scheduler Configuration
+# ==========================================================
+
+scheduler:
+  name: cosine
+
+  eta_min: 1.0e-6
+
+# ==========================================================
+# Training Configuration
+# ==========================================================
+
+training:
+  epochs: 100
+
+  # auto | cpu | cuda
+  device: auto
+
+  # Reproducibility
+  deterministic: true
+  cudnn_benchmark: false
+
+  # Gradient accumulation
+  gradient_accumulation_steps: 1
+
+  # Validation every N epochs
+  validation_frequency: 1
+
+# ==========================================================
+# Mixed Precision Configuration
+# ==========================================================
+
+mixed_precision:
+  enabled: true
+
+  # float16 | bfloat16
+  dtype: float16
 
 # ==========================================================
 # DataLoader Configuration
 # ==========================================================
 
 dataloader:
-  batch_size: 16
+  batch_size: 8
+
   num_workers: 4
+
   shuffle: true
+
   pin_memory: true
-  drop_last: false
+
   persistent_workers: true
+
+  drop_last: false
+
+# ==========================================================
+# Checkpoint Configuration
+# ==========================================================
+
+checkpoint:
+  directory: checkpoints
+
+  save_best: true
+
+  save_latest: true
+
+  save_every_epoch: true
+
+  monitor: val_loss
+
+# ==========================================================
+# Early Stopping Configuration
+# ==========================================================
+
+early_stopping:
+  enabled: true
+
+  patience: 10
+
+  monitor: val_loss
+
+  min_delta: 0.001
+
+# ==========================================================
+# Logging Configuration
+# ==========================================================
+
+logging:
+  log_every_n_steps: 20
+
+# ==========================================================
+# Experiment Configuration
+# ==========================================================
+
+experiment:
+  name: baseline_efficientnet_b0
+
+  seed: 42
+
+  output_directory: experiments

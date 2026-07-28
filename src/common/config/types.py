@@ -4,141 +4,102 @@ This module contains immutable configuration objects used
 throughout the project.
 """
 
-from dataclasses import dataclass  # Decorator to automatically generate special methods (__init__, __repr__, etc.)
-from pathlib import Path           # Object-oriented filesystem paths
-from typing import Literal         # Type hint for restricting string values to a specific set of allowed options
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Literal
 
 
 @dataclass(frozen=True, slots=True)
 class DatasetConfig:
     """Dataset configuration.
-    
+
     Attributes:
-        path:
-           Root directory of the dataset.
-        annotation_file:
-           Annotation filename (e.g. "train.txt").
-        image_directory:
-           Directory containing dataset images.
-        num_classes:
-           Number of dataset classes.
+        path: Root directory of the dataset.
+        annotation_file: Annotation filename (e.g. "train.txt").
+        image_directory: Directory containing dataset images.
+        num_classes: Number of dataset classes.
     """
 
-    path: Path            # Root directory path on disk
-    annotation_file: str  # Name of annotation/label file
-    image_directory: str  # Subfolder containing raw images
-    num_classes: int      # Total number of target classification categories
+    path: Path
+    annotation_file: str
+    image_directory: str
+    num_classes: int
 
 
 @dataclass(frozen=True, slots=True)
 class PreprocessingConfig:
     """Image preprocessing configuration.
-    
+
     Attributes:
-        image_size:
-           Target image size.
-        mean:
-           Channel-wise mean used for normalization.
-        std:
-           Channel-wise standard deviation used for normalization.
-        horizontal_flip_prob:
-           Probability of applying horizontal flip.
-        vertical_flip_prob:
-           Probability of applying vertical flip.
-        rotation_limit:
-           Maximum rotation angle in degrees.
-        rotation_prob:
-           Probability of applying rotation.
-        brightness_contrast_prob:
-           Probability of applying brightness/contrast augmentation.
+        image_size: Target image size (height, width).
+        mean: Channel-wise mean used for normalization.
+        std: Channel-wise standard deviation used for normalization.
+        horizontal_flip_prob: Probability of applying horizontal flip.
+        vertical_flip_prob: Probability of applying vertical flip.
+        rotation_limit: Maximum rotation angle in degrees.
+        rotation_prob: Probability of applying rotation.
+        brightness_contrast_prob: Probability of applying brightness/contrast augmentation.
     """
 
-    image_size: int  # Spatial dimension (height/width) for image resizing
-
-    mean: tuple[float, float, float]  # RGB normalization mean values
-    std: tuple[float, float, float]   # RGB normalization standard deviation values
-
-    horizontal_flip_prob: float       # Augmentation probability for horizontal flipping [0.0, 1.0]
-    vertical_flip_prob: float         # Augmentation probability for vertical flipping [0.0, 1.0]
-
-    rotation_limit: int               # Maximum angle threshold for random image rotations
-    rotation_prob: float              # Augmentation probability for applying rotation [0.0, 1.0]
-
-    brightness_contrast_prob: float   # Probability of adjusting brightness/contrast [0.0, 1.0]
+    image_size: tuple[int, int]
+    mean: tuple[float, float, float]
+    std: tuple[float, float, float]
+    horizontal_flip_prob: float
+    vertical_flip_prob: float
+    rotation_limit: int
+    rotation_prob: float
+    brightness_contrast_prob: float
 
 
 @dataclass(frozen=True, slots=True)
 class DataLoaderConfig:
-    """Dataloader configuration.
+    """DataLoader configuration parameters.
 
     Attributes:
-        batch_size:
-            Batch size.
-        shuffle:
-            Whether to shuffle the data.
-        num_workers:
-            Number of worker processes.
-        pin_memory:
-            Whether to pin memory.
-        drop_last:
-            Whether to drop the last batch.
-        persistent_workers:
-            Whether to use persistent workers.
-        weight_class_balance:
-            Whether to weight the classes.
+        batch_size: Number of training images per optimization step.
+        shuffle: Whether to shuffle the data.
+        num_workers: Subprocess count for parallel PyTorch DataLoader fetching.
+        pin_memory: Whether to pin memory for faster GPU transfer.
+        drop_last: Whether to drop the last incomplete batch.
+        persistent_workers: Whether to keep worker processes alive between epochs.
+        weight_class_balance: Whether to weight the classes.
     """
 
-    batch_size: int  # Number of training images per optimization step
-    shuffle: bool    # Whether to shuffle the data
-    num_workers: int # Number of worker processes
-    pin_memory: bool # Whether to pin memory
-    drop_last: bool  # Whether to drop the last batch
-    persistent_workers: bool  # Whether to use persistent workers
-    weight_class_balance: bool = False # Whether to weight the classes
+    batch_size: int
+    shuffle: bool
+    num_workers: int
+    pin_memory: bool
+    drop_last: bool
+    persistent_workers: bool
+    weight_class_balance: bool = False
 
 
 @dataclass(frozen=True, slots=True)
 class TrainingConfig:
-    """Training configuration.
-    
+    """Training optimization and runtime configuration.
+
     Attributes:
-        batch_size:
-            Number of samples per batch.
-        epochs:
-            Number of training epochs.
-        num_workers:
-            Number of data loader workers.
-        device:
-            Device to train on.
+        epochs: Total passes through the full training dataset.
+        device: Allowed execution hardware targets (CPU, NVIDIA CUDA GPU, or Apple Silicon MPS).
     """
 
-    batch_size: int  # Number of training images per optimization step
-    epochs: int      # Total passes through the full training dataset
-    num_workers: int # Subprocess count for parallel PyTorch DataLoader fetching
-    device: Literal[
-        "cpu",
-        "cuda",
-        "mps"
-    ]  # Allowed execution hardware targets (CPU, NVIDIA CUDA GPU, or Apple Silicon MPS)
-
+    epochs: int
+    device: Literal["cpu", "cuda", "mps"]
 
 
 @dataclass(frozen=True, slots=True)
 class ModelConfig:
-    """Model configuration.
+    """Neural network architecture configuration.
 
     Attributes:
-        architecture: 
-            Model architecture name (e.g. "resnet18", "densenet121").
-        pretrained: 
-            Whether to use pre-trained weights.
-        num_classes: 
-            Number of output classes.
+        architecture: Backbone model identifier string.
+        pretrained: Flag to initialize backbone with ImageNet pretrained weights.
+        num_classes: Number of output neurons in the final classification layer.
     """
 
-    architecture: str  # Backbone model identifier string
-    pretrained: bool   # Flag to initialize backbone with ImageNet pretrained weights
-    num_classes: int   # Number of output neurons in the final classification layer
+    architecture: str
+    pretrained: bool
+    num_classes: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -146,91 +107,70 @@ class LossConfig:
     """Loss function configuration.
 
     Attributes:
-        name: 
-            Loss function name.
-        class_weights: 
-            Whether to use class weights.
-        gamma: 
-            Gamma parameter for focal loss.
-        alpha: 
-            Alpha parameter for focal loss.
-        beta: 
-            Beta parameter for focal loss.
-        reduction: 
-            Reduction method for loss.
+        name: Loss function identifier (e.g., "ce", "focal", "cb_focal").
+        class_weights: Flag to enable loss weighting by inverse class frequencies.
+        gamma: Focusing parameter modulating easy vs hard examples in Focal Loss.
+        alpha: Optional balancing factor for class imbalance in Focal Loss.
+        beta: Hyperparameter for Class-Balanced loss calculation.
+        reduction: Batch loss reduction technique ("mean", "sum", or "none").
     """
 
-    name: str                    # Loss function identifier (e.g., "ce", "focal", "cb_focal")
-    class_weights: bool = False  # Flag to enable loss weighting by inverse class frequencies
-    gamma: float = 2.0           # Focusing parameter modulating easy vs hard examples in Focal Loss
-    alpha: float | None = None   # Optional balancing factor for class imbalance in Focal Loss
-    beta: float = 0.9999         # Hyperparameter for Class-Balanced loss calculation
-    reduction: str = "mean"      # Batch loss reduction technique ("mean", "sum", or "none")
+    name: str
+    class_weights: bool = False
+    gamma: float = 2.0
+    alpha: float | None = None
+    beta: float = 0.9999
+    reduction: str = "mean"
 
 
 @dataclass(frozen=True, slots=True)
 class MetricsConfig:
-    """Metrics configuration.
-    
+    """Evaluation metrics configuration.
+
     Attributes:
-        primary:
-            Metrics used for model selection.
-
-        secondary:
-            Additional metrics.
-
-        per_class:
-            Whether to compute per-class metrics.
+        primary: Tuple of main performance metrics for model checkpointing.
+        secondary: Tuple of auxiliary metrics to track during evaluation.
+        per_class: Flag to compute breakdown metrics for each individual class.
     """
 
-    primary: tuple[str, ...]    # Tuple of main performance metrics for model checkpointing
-    secondary: tuple[str, ...]  # Tuple of auxiliary metrics to track during evaluation
-    per_class: bool = True      # Flag to compute breakdown metrics for each individual class
+    primary: tuple[str, ...]
+    secondary: tuple[str, ...]
+    per_class: bool = True
 
 
 @dataclass(frozen=True, slots=True)
 class ExperimentConfig:
-    """Experiment configuration.
+    """Experiment metadata and reproducibility configuration.
 
     Attributes:
-        name: 
-            Experiment name.
-        seed: 
-            Random seed for reproducibility.
+        name: Unique experiment identifier for logging and tracking.
+        seed: Global random seed ensuring deterministic training runs.
     """
 
-    name: str  # Unique experiment identifier for logging and tracking
-    seed: int  # Global random seed ensuring deterministic training runs
+    name: str
+    seed: int
 
 
 @dataclass(frozen=True, slots=True)
 class ProjectConfig:
-    """Root project configuration.
-    
+    """Root project configuration aggregating all subsystem configs.
+
     Attributes:
-        dataset: 
-            Dataset configuration.
-        preprocessing: 
-            Preprocessing configuration.
-        training: 
-            Training configuration.
-        model: 
-            Model configuration.
-        loss: 
-            Loss function configuration.
-        metrics: 
-            Metrics configuration.
-        experiment: 
-            Experiment configuration.
+        dataset: Dataset configuration.
+        preprocessing: Image preprocessing and augmentation settings.
+        dataloader: DataLoader configuration.
+        training: Training hyperparameters and device runtime settings.
+        model: Neural network architecture properties.
+        loss: Loss function hyperparameter configuration.
+        metrics: Evaluation metrics settings.
+        experiment: Experiment logging and seeding properties.
     """
 
-    dataset: DatasetConfig            # Nested dataset configuration object
-    preprocessing: PreprocessingConfig# Nested image preprocessing and augmentation settings
-    training: TrainingConfig          # Nested training hyperparameters and device runtime settings
-    model: ModelConfig                # Nested neural network architecture properties
-    loss: LossConfig                  # Nested loss function hyperparameter configuration
-    metrics: MetricsConfig            # Nested evaluation metrics settings
-    experiment: ExperimentConfig      # Nested experiment logging and seeding properties
-    dataloader: DataLoaderConfig      # Nested dataloader configuration
-
-
+    dataset: DatasetConfig
+    preprocessing: PreprocessingConfig
+    dataloader: DataLoaderConfig
+    training: TrainingConfig
+    model: ModelConfig
+    loss: LossConfig
+    metrics: MetricsConfig
+    experiment: ExperimentConfig

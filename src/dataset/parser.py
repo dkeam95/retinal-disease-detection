@@ -10,13 +10,11 @@ from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 from pathlib import Path            # Object-oriented filesystem path navigation
 
 # Domain-specific dataset exceptions for missing files, parsing errors, or empty datasets
-
 from dataset.exceptions import (
     AnnotationFileNotFoundError,
-    InvalidAnnotationError,
     EmptyDatasetError,
+    InvalidAnnotationError,
 )
-
 from dataset.types import AnnotationRecord  # Dataclass structure representing a single sample record
 
 
@@ -108,6 +106,12 @@ def load_annotations(
                 ) from error
 
             # Validate class label range
+            # DDR dataset:
+            # label 5 = poor-quality fundus image.
+            # These images are excluded from DR grading.
+            if label == 5:
+                continue
+            
             if label not in range(5):
                 raise InvalidAnnotationError(
                     f"Invalid class label "

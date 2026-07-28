@@ -8,7 +8,8 @@ version = "0.1.0"
 description = "Deep Learning system for retinal disease detection."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+# PEP 639 compliant license field
+license = { file = "LICENSE" }
 
 authors = [
     { name = "Dmitriy Kim" }
@@ -32,43 +33,52 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence"
 ]
 
+# Explicitly declare core production dependencies with safe version bounds
 dependencies = [
-    "PyYAML>=6.0",
-    "torch>=2.0.0",
-    "torchvision>=0.15.0",
-    "albumentations>=2.0.0"
+    "torch>=2.2.0,<3.0.0",
+    "torchvision>=0.17.0,<1.0.0",
+    "numpy>=1.26.0,<2.0.0",
+    "pandas>=2.2.0,<3.0.0",
+    "opencv-python-headless>=4.9.0,<5.0.0",
+    "pillow>=10.2.0,<12.0.0",
+    "albumentations>=1.4.0,<2.0.0",
+    "pyyaml>=6.0.1,<7.0.0",
+    "scikit-learn>=1.4.0,<2.0.0"
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.0",
-    "pytest-cov>=5.0",
-    "ruff>=0.12",
-    "mypy>=1.10"
+    "pytest>=8.0.0,<9.0.0",
+    "pytest-cov>=5.0.0,<7.0.0",
+    "ruff>=0.6.0,<1.0.0",
+    "mypy>=1.11.0,<2.0.0",
+    "types-PyYAML>=6.0.12"
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["."]
+# Enabled automatic coverage reporting for the source code directory
 addopts = [
     "-ra",
     "--strict-markers",
-    "--tb=short"
+    "--tb=short",
+    "--cov=src",
+    "--cov-report=term-missing"
 ]
 
 [tool.ruff]
 line-length = 88
-target-version = "py311"
 
 [tool.ruff.lint]
 select = [
-    "E",
-    "F",
-    "W",
-    "I",
-    "N",
-    "UP",
-    "B"
+    "E",   # pycodestyle errors
+    "F",   # Pyflakes
+    "W",   # pycodestyle warnings
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B"    # flake8-bugbear
 ]
 
 ignore = []
@@ -79,32 +89,36 @@ indent-style = "space"
 
 [tool.mypy]
 python_version = "3.11"
-
 strict = true
 
 warn_unused_configs = true
 warn_return_any = true
 warn_unused_ignores = true
-
 disallow_untyped_defs = true
 disallow_any_generics = true
-
 check_untyped_defs = true
-
 no_implicit_optional = true
-
 pretty = true
-
 show_error_codes = true
 
 exclude = [
     "^data/",
-    "^notebooks/"
+    "^notebooks/",
+    "^build/",
+    "^dist/"
 ]
 
+# Ignore missing type annotations for libraries without py.typed markers
 [[tool.mypy.overrides]]
 module = [
-    "albumentations",
-    "albumentations.*"
+    "albumentations.*",
+    "cv2.*",
+    "scipy.*",
+    "sklearn.*"
 ]
 ignore_missing_imports = true
+
+[tool.pyright]
+pythonVersion = "3.10"
+typeCheckingMode = "basic"
+extraPaths = ["."]

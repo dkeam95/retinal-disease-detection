@@ -1,33 +1,26 @@
-"""
-Configuration validator.
+"""Configuration validator.
 
 This module validates a fully constructed ProjectConfig object.
 """
 
-from __future__ import annotations  # Enables modern type hints (Python 3.7+)
+from __future__ import annotations
 
-from common.config.exceptions import InvalidConfigurationError  # Custom exception for failed config assertions
-from common.config.types import ProjectConfig  # Strongly typed root configuration object
+from .exceptions import InvalidConfigurationError
+from .types import ProjectConfig
 
 
 def validate_config(config: ProjectConfig) -> None:
+    """Validate project configuration across all domain layers.
+
+    Args:
+        config: Project configuration object to validate.
+
+    Raises:
+        InvalidConfigurationError: If any boundary condition or logic check fails.
     """
-    Validate project configuration.
-
-    Parameters
-    ----------
-    config : ProjectConfig
-        Project configuration to validate.
-
-    Raises
-    ------
-    InvalidConfigurationError
-        If the configuration is invalid.
-    """
-
-    # Run validation checks across all sub-configuration domains
     _validate_dataset(config)
     _validate_preprocessing(config)
+    _validate_dataloader(config)
     _validate_training(config)
     _validate_model(config)
     _validate_loss(config)
@@ -37,160 +30,164 @@ def validate_config(config: ProjectConfig) -> None:
 
 def _validate_dataset(config: ProjectConfig) -> None:
     """Validate dataset configuration."""
-
-    # Ensure dataset path actually exists on the filesystem
     if not config.dataset.path.exists():
         raise InvalidConfigurationError(
-            f"Dataset path does not exist: {config.dataset.path}"
+            param_name="dataset.path",
+            value=config.dataset.path,
+            reason=f"Dataset path does not exist on disk: {config.dataset.path}",
         )
 
-    # Class count must be a positive integer
     if config.dataset.num_classes <= 0:
         raise InvalidConfigurationError(
-            "Dataset num_classes must be greater than zero."
+            param_name="dataset.num_classes",
+            value=config.dataset.num_classes,
+            reason="Number of classes must be greater than zero.",
         )
 
 
 def _validate_preprocessing(config: ProjectConfig) -> None:
-    """Validate preprocessing configuration."""
+    """Validate preprocessing and augmentation settings."""
+    prep = config.preprocessing
 
-    preprocessing = config.preprocessing
-
-    # Image dimensions must be strictly positive
-    if preprocessing.image_size <= 0:
+    # Validate image dimensions tuple (height, width)
+    height, width = prep.image_size
+    if height <= 0 or width <= 0:
         raise InvalidConfigurationError(
-            "Image size must be greater than zero."
+            param_name="preprocessing.image_size",
+            value=prep.image_size,
+            reason="Both height and width in image_size must be greater than zero.",
         )
 
-    # RGB image normalization requires exactly 3 mean channels
-    if len(preprocessing.mean) != 3:
+    if len(prep.mean) != 3:
         raise InvalidConfigurationError(
-            "Normalization mean must contain exactly 3 values."
+            param_name="preprocessing.mean",
+            value=prep.mean,
+            reason="Normalization mean must contain exactly 3 RGB values.",
         )
 
-    # RGB image normalization requires exactly 3 std channels
-    if len(preprocessing.std) != 3:
+    if len(prep.std) != 3:
         raise InvalidConfigurationError(
-            "Normalization std must contain exactly 3 values."
+            param_name="preprocessing.std",
+            value=prep.std,
+            reason="Normalization std must contain exactly 3 RGB values.",
         )
 
-    # Group probability parameters to validate [0.0, 1.0] range in a loop
-    probability_fields = (
-        (
-            preprocessing.horizontal_flip_prob,
-            "horizontal_flip_prob",
-        ),
-        (
-            preprocessing.vertical_flip_prob,
-            "vertical_flip_prob",
-        ),
-        (
-            preprocessing.brightness_contrast_prob,
-            "brightness_contrast_prob",
-        ),
+    # Check probabilities range [0.0, 1.0]
+    probabilities = (
+        (prep.horizontal_flip_prob, "horizontal_flip_prob"),
+        (prep.vertical_flip_prob, "vertical_flip_prob"),
+        (prep.rotation_prob, "rotation_prob"),
+        (prep.brightness_contrast_prob, "brightness_contrast_prob"),
     )
 
-    # Validate that probability values are within valid bound [0, 1]
-    for probability, name in probability_fields:
-        if not 0.0 <= probability <= 1.0:
+    for prob, name in probabilities:
+        if not 0.0 <= prob <= 1.0:
             raise InvalidConfigurationError(
-                f"{name} must be between 0.0 and 1.0."
+                param_name=f"preprocessing.{name}",
+                value=prob,
+                reason="Probability value must be between 0.0 and 1.0.",
             )
 
-    # Rotation angle threshold cannot be negative
-    if preprocessing.rotation_limit < 0:
+    if prep.rotation_limit < 0:
         raise InvalidConfigurationError(
-            "Rotation limit cannot be negative."
+            param_name="preprocessing.rotation_limit",
+            value=prep.rotation_limit,
+            reason="Rotation limit cannot be negative.",
+        )
+
+
+def _validate_dataloader(config: ProjectConfig) -> None:
+    """Validate DataLoader configuration parameters."""
+    dl = config.dataloader
+
+    if dl.batch_size <= 0:
+        raise InvalidConfigurationError(
+            param_name="dataloader.batch_size",
+            value=dl.batch_size,
+            reason="Batch size must be greater than zero.",
+        )
+
+    if dl.num_workers < 0:
+        raise InvalidConfigurationError(
+            param_name="dataloader.num_workers",
+            value=dl.num_workers,
+            reason="num_workers cannot be negative.",
         )
 
 
 def _validate_training(config: ProjectConfig) -> None:
-    """Validate training configuration."""
-
+    """Validate general training environment configuration."""
     training = config.training
 
-    # Batch size must be positive
-    if training.batch_size <= 0:
-        raise InvalidConfigurationError(
-            "Batch size must be greater than zero."
-        )
-
-    # Epoch count must be positive
     if training.epochs <= 0:
         raise InvalidConfigurationError(
-            "Epochs must be greater than zero."
-        )
-
-    # DataLoader multiprocessing workers cannot be negative
-    if training.num_workers < 0:
-        raise InvalidConfigurationError(
-            "num_workers cannot be negative."
+            param_name="training.epochs",
+            value=training.epochs,
+            reason="Epoch count must be greater than zero.",
         )
 
 
 def _validate_model(config: ProjectConfig) -> None:
-    """Validate model configuration."""
-
+    """Validate model architecture parameters against dataset bounds."""
     model = config.model
     dataset = config.dataset
 
-    # Ensure model architecture string is non-empty after trimming whitespace
     if not model.architecture.strip():
         raise InvalidConfigurationError(
-            "Model architecture cannot be empty."
+            param_name="model.architecture",
+            value=model.architecture,
+            reason="Model architecture identifier cannot be empty.",
         )
 
-    # Model output layer units must match dataset target class count
     if model.num_classes != dataset.num_classes:
         raise InvalidConfigurationError(
-            "Model num_classes must match dataset num_classes."
+            param_name="model.num_classes",
+            value=model.num_classes,
+            reason=f"Model output classes ({model.num_classes}) must match dataset classes ({dataset.num_classes}).",
         )
 
 
 def _validate_loss(config: ProjectConfig) -> None:
-    """Validate loss configuration."""
-
-    # Set of supported loss implementation identifiers
+    """Validate loss function parameters and loss specific hyper-parameters."""
     supported_losses = {
         "cross_entropy",
         "weighted_cross_entropy",
         "focal",
-        "class_balanced_focal"
+        "class_balanced_focal",
     }
 
-    # Verify that requested loss function is supported
     if config.loss.name not in supported_losses:
         raise InvalidConfigurationError(
-            f"Unsupported loss function: {config.loss.name}"
+            param_name="loss.name",
+            value=config.loss.name,
+            reason=f"Unsupported loss function. Must be one of: {supported_losses}",
         )
 
-    # Gamma parameter for Focal Loss must be non-negative
     if config.loss.gamma < 0:
         raise InvalidConfigurationError(
-            "Loss gamma must be non-negative."
+            param_name="loss.gamma",
+            value=config.loss.gamma,
+            reason="Focal loss gamma parameter cannot be negative.",
         )
 
-    # Beta hyperparameter for effective number of samples must lie strictly in (0, 1)
-    if config.loss.beta <= 0 or config.loss.beta >= 1:
+    if not 0.0 < config.loss.beta < 1.0:
         raise InvalidConfigurationError(
-            "Loss beta must be in the interval (0, 1)."
+            param_name="loss.beta",
+            value=config.loss.beta,
+            reason="Class balanced loss beta must be strictly within (0.0, 1.0).",
         )
 
-    # Validate reduction method against supported PyTorch options
-    if config.loss.reduction not in {
-        "mean",
-        "sum",
-        "none"
-    }:
+    supported_reductions = {"mean", "sum", "none"}
+    if config.loss.reduction not in supported_reductions:
         raise InvalidConfigurationError(
-            "Loss reduction must be 'mean', 'sum', or 'none'."
+            param_name="loss.reduction",
+            value=config.loss.reduction,
+            reason=f"Loss reduction must be one of: {supported_reductions}",
         )
 
 
 def _validate_metrics(config: ProjectConfig) -> None:
-    """Validate metrics configuration."""
-
-    # Set of supported evaluation metrics
+    """Validate target evaluation metrics."""
     supported_metrics = {
         "qwk",
         "macro_f1",
@@ -198,35 +195,40 @@ def _validate_metrics(config: ProjectConfig) -> None:
         "precision",
         "recall",
         "balanced_accuracy",
-        "weighted_f1"
+        "weighted_f1",
     }
 
-    # Verify primary metric names against supported set
     for metric in config.metrics.primary:
         if metric not in supported_metrics:
             raise InvalidConfigurationError(
-                f"Unsupported primary metric: {metric}"
+                param_name="metrics.primary",
+                value=metric,
+                reason=f"Unsupported primary metric. Supported options: {supported_metrics}",
             )
 
-    # Verify secondary metric names against supported set
     for metric in config.metrics.secondary:
         if metric not in supported_metrics:
             raise InvalidConfigurationError(
-                f"Unsupported secondary metric: {metric}"
+                param_name="metrics.secondary",
+                value=metric,
+                reason=f"Unsupported secondary metric. Supported options: {supported_metrics}",
             )
 
 
 def _validate_experiment(config: ProjectConfig) -> None:
-    """Validate experiment configuration."""
+    """Validate experiment tracking metadata."""
+    exp = config.experiment
 
-    # Experiment name identifier must be non-empty
-    if not config.experiment.name:
+    if not exp.name.strip():
         raise InvalidConfigurationError(
-            "Experiment name must not be empty."
+            param_name="experiment.name",
+            value=exp.name,
+            reason="Experiment name cannot be empty.",
         )
 
-    # Random seed must be a non-negative integer
-    if config.experiment.seed < 0:
+    if exp.seed < 0:
         raise InvalidConfigurationError(
-            "Experiment seed must be non-negative."
+            param_name="experiment.seed",
+            value=exp.seed,
+            reason="Random seed must be a non-negative integer.",
         )

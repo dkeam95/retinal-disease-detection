@@ -3,7 +3,6 @@ PyTorch dataset implementation for retinal disease detection.
 
 This dataset is designed to load retinal images and their corresponding labels
 from disk and provide them to the PyTorch training pipeline.
-
 """
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
@@ -18,9 +17,9 @@ from numpy.typing import NDArray    # Type hint for NumPy array shapes and dtype
 from torch.utils.data import Dataset  # PyTorch base class for custom dataset loaders
 
 from common.config.types import DatasetConfig     # Dataclass holding dataset configuration properties
-from dataset.exceptions import ImageLoadingError  # Domain-specific exception raised when OpenCV fails to read an image
+from dataset.exceptions import ImageLoadingError  # Domain-specific exception raised when OpenCV fails
 from dataset.parser import load_annotations       # Utility function to parse annotation file into records
-from dataset.types import DataSample              # Typed object containing loaded sample data (image array, label, path)
+from dataset.types import DataSample              # Typed object containing loaded sample data
 
 
 class RetinalDataset(Dataset[DataSample]):
