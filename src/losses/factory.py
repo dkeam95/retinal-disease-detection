@@ -2,20 +2,23 @@
 Loss factory.
 """
 
-from __future__ import annotations              # Enables modern type hints (Python 3.7+)
+from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from torch import Tensor                        # Type annotation for PyTorch Tensors
-from torch import nn                            # PyTorch base module class
+from torch import (
+    Tensor,  # Type annotation for PyTorch Tensors
+    nn,  # PyTorch base module class
+)
 
-from common.config.types import LossConfig      # Configuration dataclass for loss parameters
-
-from losses.exceptions import (                  # Exception raised when an invalid loss name is provided
+from common.config.types import (
+    LossConfig,  # Configuration dataclass for loss parameters
+)
+from losses.exceptions import (  # Exception raised when an invalid loss name is provided
     UnknownLossError,
 )
-from losses.loss_names import (                  # Enum defining supported loss function identifiers
+from losses.loss_names import (  # Enum defining supported loss function identifiers
     LossName,
 )
-from losses.registry import (                  # Dictionary mapping loss names to builder functions
+from losses.registry import (  # Dictionary mapping loss names to builder functions
     LOSS_REGISTRY,
 )
 

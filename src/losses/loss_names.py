@@ -1,8 +1,8 @@
 """Supported loss function names."""
 
-from __future__ import annotations              # Enables modern type hints (Python 3.7+)
+from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from enum import StrEnum                        # String-based enumeration type
+from enum import StrEnum  # String-based enumeration type
 
 
 class LossName(StrEnum):

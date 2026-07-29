@@ -12,7 +12,9 @@ from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 import torch  # Core PyTorch library
 
 from common.config.types import LossConfig  # Dataclass/type defining loss parameters
-from losses.focal import build_focal_loss  # Factory function that instantiates Focal Loss
+from losses.focal import (
+    build_focal_loss,  # Factory function that instantiates Focal Loss
+)
 
 
 def test_gamma_zero_matches_cross_entropy() -> None:

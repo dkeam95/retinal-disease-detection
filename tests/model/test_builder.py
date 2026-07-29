@@ -7,8 +7,12 @@ neural network architectures according to the specified configuration parameters
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from common.config.types import ModelConfig  # Dataclass defining model architecture configuration parameters
-from model.builder import build_timm_model  # Function to instantiate model using timm library
+from common.config.types import (
+    ModelConfig,  # Dataclass defining model architecture configuration parameters
+)
+from model.builder import (
+    build_timm_model,  # Function to instantiate model using timm library
+)
 
 
 def test_build_timm_model() -> None:

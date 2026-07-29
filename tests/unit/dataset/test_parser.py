@@ -1,21 +1,22 @@
 """Unit tests for dataset annotation parser."""
 
 from pathlib import Path
+
 import pytest
 
-from src.dataset.exceptions import (
+from dataset.exceptions import (
     AnnotationFileNotFoundError,
     EmptyDatasetError,
     InvalidAnnotationError,
 )
-from src.dataset.parser import load_annotations
+from dataset.parser import load_annotations
 
 
 def test_load_annotations_success(tmp_path: Path) -> None:
     """Test successful parsing of a valid annotation file."""
     img_dir = tmp_path / "images"
     img_dir.mkdir()
-    
+
     # Создаем фиктивные изображения
     (img_dir / "img1.jpg").touch()
     (img_dir / "img2.jpg").touch()
@@ -45,7 +46,7 @@ def test_load_annotations_missing_image_directory(tmp_path: Path) -> None:
     """Test exception when image directory does not exist or is not a directory."""
     annot_file = tmp_path / "train.txt"
     annot_file.touch()
-    
+
     non_existent_dir = tmp_path / "no_dir"
     with pytest.raises(InvalidAnnotationError) as exc_info:
         load_annotations(annot_file, non_existent_dir)
@@ -63,7 +64,7 @@ def test_load_annotations_invalid_format(tmp_path: Path) -> None:
     """Test exception when a line has too few or too many columns."""
     img_dir = tmp_path / "images"
     img_dir.mkdir()
-    
+
     annot_file = tmp_path / "invalid_format.txt"
     annot_file.write_text("img1.jpg 0 extra_part\n", encoding="utf-8")
 
@@ -86,7 +87,7 @@ def test_load_annotations_invalid_label_value(tmp_path: Path) -> None:
 
     # Метка вне диапазона
     annot_file_out_of_range = tmp_path / "out_of_range.txt"
-    annot_file_out_of_range.write_text("img1.jpg 5\n", encoding="utf-8")
+    annot_file_out_of_range.write_text("img1.jpg 99\n", encoding="utf-8")
     with pytest.raises(InvalidAnnotationError):
         load_annotations(annot_file_out_of_range, img_dir)
 

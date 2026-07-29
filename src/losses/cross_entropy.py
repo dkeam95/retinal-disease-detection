@@ -2,12 +2,16 @@
 Standard Cross Entropy loss builder.
 """
 
-from __future__ import annotations              # Enables modern type hints (Python 3.7+)
+from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from torch import Tensor                        # Type annotation for PyTorch Tensors
-from torch import nn                            # PyTorch base module class
+from torch import (
+    Tensor,  # Type annotation for PyTorch Tensors
+    nn,  # PyTorch base module class
+)
 
-from common.config.types import LossConfig      # Configuration dataclass for loss parameters
+from common.config.types import (
+    LossConfig,  # Configuration dataclass for loss parameters
+)
 
 
 def build_cross_entropy(

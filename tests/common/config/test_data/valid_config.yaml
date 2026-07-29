@@ -25,10 +25,16 @@ preprocessing:
 
   brightness_contrast_prob: 0.2
 
-training:
+dataloader:
   batch_size: 32
-  epochs: 20
+  shuffle: true
   num_workers: 4
+  pin_memory: true
+  drop_last: false
+  persistent_workers: true
+
+training:
+  epochs: 20
   device: "cuda"
 
 model:

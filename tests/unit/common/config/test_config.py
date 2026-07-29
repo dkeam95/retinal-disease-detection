@@ -2,6 +2,7 @@
 
 from dataclasses import replace
 from pathlib import Path
+
 import pytest
 import yaml
 
@@ -20,6 +21,7 @@ def valid_config_dict(tmp_path: Path) -> dict:
     """Fixture providing a complete and valid configuration dictionary."""
     dataset_dir = tmp_path / "dataset"
     dataset_dir.mkdir(parents=True, exist_ok=True)
+    (dataset_dir / "train.csv").touch()
 
     return {
         "dataset": {
@@ -154,7 +156,7 @@ def test_image_size_scalar_conversion(tmp_path: Path, valid_config_dict: dict) -
 def test_validate_non_existent_dataset_path(valid_yaml_file: Path) -> None:
     """Test validation failure when dataset directory path doesn't exist."""
     config = ConfigLoader.load(valid_yaml_file)
-    
+
     # Создаем модифицированную копию замороженного объекта
     invalid_dataset = replace(config.dataset, path=Path("/non/existent/path/for/dataset"))
     invalid_config = replace(config, dataset=invalid_dataset)
@@ -168,7 +170,7 @@ def test_validate_non_existent_dataset_path(valid_yaml_file: Path) -> None:
 def test_validate_mismatched_num_classes(valid_yaml_file: Path) -> None:
     """Test validation failure when model num_classes doesn't match dataset num_classes."""
     config = ConfigLoader.load(valid_yaml_file)
-    
+
     invalid_model = replace(config.model, num_classes=10)
     invalid_config = replace(config, model=invalid_model)
 
@@ -181,7 +183,7 @@ def test_validate_mismatched_num_classes(valid_yaml_file: Path) -> None:
 def test_validate_invalid_probability_range(valid_yaml_file: Path) -> None:
     """Test validation failure for out-of-bound probabilities (> 1.0)."""
     config = ConfigLoader.load(valid_yaml_file)
-    
+
     invalid_prep = replace(config.preprocessing, horizontal_flip_prob=1.5)
     invalid_config = replace(config, preprocessing=invalid_prep)
 
@@ -194,7 +196,7 @@ def test_validate_invalid_probability_range(valid_yaml_file: Path) -> None:
 def test_validate_unsupported_loss_name(valid_yaml_file: Path) -> None:
     """Test validation failure when an unknown loss function is specified."""
     config = ConfigLoader.load(valid_yaml_file)
-    
+
     invalid_loss = replace(config.loss, name="unsupported_magic_loss")
     invalid_config = replace(config, loss=invalid_loss)
 
@@ -207,7 +209,7 @@ def test_validate_unsupported_loss_name(valid_yaml_file: Path) -> None:
 def test_validate_invalid_dataloader_batch_size(valid_yaml_file: Path) -> None:
     """Test validation failure for non-positive DataLoader batch_size."""
     config = ConfigLoader.load(valid_yaml_file)
-    
+
     invalid_dataloader = replace(config.dataloader, batch_size=0)
     invalid_config = replace(config, dataloader=invalid_dataloader)
 

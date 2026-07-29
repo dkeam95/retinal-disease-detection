@@ -12,7 +12,9 @@ import pytest  # Testing framework for assertion checks
 from torch import rand  # PyTorch function to generate random tensors
 
 from common.config.types import LossConfig  # Loss function configuration dataclass
-from losses.exceptions import UnknownLossError  # Exception raised for unsupported loss names
+from losses.exceptions import (
+    UnknownLossError,  # Exception raised for unsupported loss names
+)
 from losses.factory import build_loss  # Factory function for instantiating loss modules
 
 

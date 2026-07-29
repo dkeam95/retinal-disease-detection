@@ -17,14 +17,20 @@ from .exceptions import (
     InvalidConfigurationError,
 )
 from .types import (
+    CheckpointConfig,
     DataLoaderConfig,
     DatasetConfig,
+    EarlyStoppingConfig,
     ExperimentConfig,
+    LoggingConfig,
     LossConfig,
     MetricsConfig,
+    MixedPrecisionConfig,
     ModelConfig,
+    OptimizerConfig,
     PreprocessingConfig,
     ProjectConfig,
+    SchedulerConfig,
     TrainingConfig,
 )
 from .validator import validate_config
@@ -105,9 +111,26 @@ class ConfigLoader:
     def _to_project_config(data: dict[str, Any], file_path: Path) -> ProjectConfig:
         """Convert a raw dictionary into a strongly typed ProjectConfig object."""
         try:
-            # Parse preprocessing image size flexibly
             prep_data = data["preprocessing"]
-            image_size = ConfigLoader._parse_image_size(prep_data["image_size"])
+
+            # Parse image size flexibly from image_size or resize dict
+            if "image_size" in prep_data:
+                image_size = ConfigLoader._parse_image_size(prep_data["image_size"])
+            elif "resize" in prep_data and isinstance(prep_data["resize"], dict):
+                image_size = (
+                    int(prep_data["resize"]["height"]),
+                    int(prep_data["resize"]["width"]),
+                )
+            else:
+                image_size = (224, 224)
+
+            # Parse normalization parameters flexibly
+            if "normalize" in prep_data and isinstance(prep_data["normalize"], dict):
+                mean = tuple(prep_data["normalize"]["mean"])
+                std = tuple(prep_data["normalize"]["std"])
+            else:
+                mean = tuple(prep_data.get("mean", [0.485, 0.456, 0.406]))
+                std = tuple(prep_data.get("std", [0.229, 0.224, 0.225]))
 
             return ProjectConfig(
                 dataset=DatasetConfig(
@@ -118,14 +141,14 @@ class ConfigLoader:
                 ),
                 preprocessing=PreprocessingConfig(
                     image_size=image_size,
-                    mean=tuple(prep_data["mean"]),
-                    std=tuple(prep_data["std"]),
-                    horizontal_flip_prob=float(prep_data["horizontal_flip_prob"]),
-                    vertical_flip_prob=float(prep_data["vertical_flip_prob"]),
-                    rotation_limit=int(prep_data["rotation_limit"]),
-                    rotation_prob=float(prep_data["rotation_prob"]),
+                    mean=mean,
+                    std=std,
+                    horizontal_flip_prob=float(prep_data.get("horizontal_flip_prob", 0.5)),
+                    vertical_flip_prob=float(prep_data.get("vertical_flip_prob", 0.0)),
+                    rotation_limit=int(prep_data.get("rotation_limit", 15)),
+                    rotation_prob=float(prep_data.get("rotation_prob", 0.3)),
                     brightness_contrast_prob=float(
-                        prep_data["brightness_contrast_prob"]
+                        prep_data.get("brightness_contrast_prob", 0.2)
                     ),
                 ),
                 dataloader=DataLoaderConfig(
@@ -157,13 +180,42 @@ class ConfigLoader:
                     reduction=str(data["loss"].get("reduction", "mean")),
                 ),
                 metrics=MetricsConfig(
-                    primary=tuple(data["metrics"]["primary"]),
-                    secondary=tuple(data["metrics"]["secondary"]),
-                    per_class=bool(data["metrics"].get("per_class", True)),
+                    primary=tuple(data.get("metrics", {}).get("primary", ["accuracy", "qwk"])),
+                    secondary=tuple(data.get("metrics", {}).get("secondary", ["macro_f1"])),
+                    per_class=bool(data.get("metrics", {}).get("per_class", True)),
                 ),
                 experiment=ExperimentConfig(
                     name=str(data["experiment"]["name"]),
                     seed=int(data["experiment"]["seed"]),
+                ),
+                optimizer=OptimizerConfig(
+                    name=str(data.get("optimizer", {}).get("name", "adamw")),
+                    lr=float(
+                        data.get("optimizer", {}).get(
+                            "learning_rate", data.get("optimizer", {}).get("lr", 0.0003)
+                        )
+                    ),
+                    weight_decay=float(data.get("optimizer", {}).get("weight_decay", 0.0001)),
+                ),
+                scheduler=SchedulerConfig(
+                    name=str(data.get("scheduler", {}).get("name", "cosine")),
+                    eta_min=float(data.get("scheduler", {}).get("eta_min", 1.0e-6)),
+                ),
+                checkpoint=CheckpointConfig(
+                    directory=Path(data.get("checkpoint", {}).get("directory", "checkpoints")),
+                    monitor=str(data.get("checkpoint", {}).get("monitor", "val_loss")),
+                ),
+                early_stopping=EarlyStoppingConfig(
+                    enabled=bool(data.get("early_stopping", {}).get("enabled", True)),
+                    patience=int(data.get("early_stopping", {}).get("patience", 10)),
+                    min_delta=float(data.get("early_stopping", {}).get("min_delta", 0.001)),
+                ),
+                mixed_precision=MixedPrecisionConfig(
+                    enabled=bool(data.get("mixed_precision", {}).get("enabled", True)),
+                    dtype=str(data.get("mixed_precision", {}).get("dtype", "float16")),
+                ),
+                logging=LoggingConfig(
+                    log_every_n_steps=int(data.get("logging", {}).get("log_every_n_steps", 20)),
                 ),
             )
 

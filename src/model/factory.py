@@ -9,10 +9,18 @@ from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
 import torch.nn as nn  # PyTorch neural network module base classes
 
-from common.config.types import ModelConfig  # Strongly typed model configuration dataclass
-from model.exceptions import UnknownModelArchitectureError  # Domain-specific exception for invalid architectures
-from model.model_names import ModelArchitecture  # Enum defining supported model architectures
-from model.registry import MODEL_REGISTRY  # Central dispatch table mapping architectures to builder functions
+from common.config.types import (
+    ModelConfig,  # Strongly typed model configuration dataclass
+)
+from model.exceptions import (
+    UnknownModelArchitectureError,  # Domain-specific exception for invalid architectures
+)
+from model.model_names import (
+    ModelArchitecture,  # Enum defining supported model architectures
+)
+from model.registry import (
+    MODEL_REGISTRY,  # Central dispatch table mapping architectures to builder functions
+)
 
 
 def create_model(

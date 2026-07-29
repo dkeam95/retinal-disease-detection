@@ -7,11 +7,13 @@ dataset pipeline.
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from dataclasses import dataclass   # Decorator to automatically generate special methods for classes
-from pathlib import Path            # Object-oriented filesystem path navigation
+from dataclasses import (
+    dataclass,  # Decorator to automatically generate special methods for classes
+)
+from pathlib import Path  # Object-oriented filesystem path navigation
 
-import numpy as np                  # Fundamental package for array manipulation
-from numpy.typing import NDArray    # Type hint for NumPy array shapes and dtypes
+import numpy as np  # Fundamental package for array manipulation
+from numpy.typing import NDArray  # Type hint for NumPy array shapes and dtypes
 
 
 @dataclass(frozen=True, slots=True)

@@ -150,6 +150,77 @@ class ExperimentConfig:
     name: str
     seed: int
 
+@dataclass(frozen=True, slots=True)
+class LossConfig:
+    """Loss function configuration.
+
+    Attributes:
+        name: Loss function identifier (e.g., "ce", "focal", "cb_focal").
+        class_weights: Flag to enable loss weighting by inverse class frequencies.
+        gamma: Focusing parameter modulating easy vs hard examples in Focal Loss.
+        alpha: Optional balancing factor for class imbalance in Focal Loss.
+        beta: Hyperparameter for Class-Balanced loss calculation.
+        reduction: Batch loss reduction technique ("mean", "sum", or "none").
+    """
+
+    name: str
+    class_weights: bool = False
+    gamma: float = 2.0
+    alpha: float | None = None
+    beta: float = 0.9999
+    reduction: str = "mean"
+
+
+@dataclass(frozen=True, slots=True)
+class MetricsConfig:
+    """Evaluation metrics configuration.
+
+    Attributes:
+        primary: Tuple of main performance metrics for model checkpointing.
+        secondary: Tuple of auxiliary metrics to track during evaluation.
+        per_class: Flag to compute breakdown metrics for each individual class.
+    """
+
+    primary: tuple[str, ...]
+    secondary: tuple[str, ...]
+    per_class: bool = True
+
+@dataclass(frozen=True, slots=True)
+class OptimizerConfig:
+    name: str = "adamw"
+    lr: float = 0.0003
+    weight_decay: float = 0.0001
+
+
+@dataclass(frozen=True, slots=True)
+class SchedulerConfig:
+    name: str = "cosine"
+    eta_min: float = 1.0e-6
+
+
+@dataclass(frozen=True, slots=True)
+class CheckpointConfig:
+    directory: Path = Path("checkpoints")
+    monitor: str = "val_loss"
+
+
+@dataclass(frozen=True, slots=True)
+class EarlyStoppingConfig:
+    enabled: bool = True
+    patience: int = 10
+    min_delta: float = 0.001
+
+
+@dataclass(frozen=True, slots=True)
+class MixedPrecisionConfig:
+    enabled: bool = True
+    dtype: str = "float16"
+
+
+@dataclass(frozen=True, slots=True)
+class LoggingConfig:
+    log_every_n_steps: int = 20
+
 
 @dataclass(frozen=True, slots=True)
 class ProjectConfig:
@@ -164,6 +235,12 @@ class ProjectConfig:
         loss: Loss function hyperparameter configuration.
         metrics: Evaluation metrics settings.
         experiment: Experiment logging and seeding properties.
+        optimizer: Optimizer hyperparameter configuration.
+        scheduler: Learning rate scheduler configuration.
+        checkpoint: Checkpoint management configuration.
+        early_stopping: Early stopping runtime configuration.
+        mixed_precision: Automatic mixed precision settings.
+        logging: Logging configuration.
     """
 
     dataset: DatasetConfig
@@ -174,3 +251,9 @@ class ProjectConfig:
     loss: LossConfig
     metrics: MetricsConfig
     experiment: ExperimentConfig
+    optimizer: OptimizerConfig = OptimizerConfig()
+    scheduler: SchedulerConfig = SchedulerConfig()
+    checkpoint: CheckpointConfig = CheckpointConfig()
+    early_stopping: EarlyStoppingConfig = EarlyStoppingConfig()
+    mixed_precision: MixedPrecisionConfig = MixedPrecisionConfig()
+    logging: LoggingConfig = LoggingConfig()

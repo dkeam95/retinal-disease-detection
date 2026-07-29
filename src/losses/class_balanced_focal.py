@@ -6,16 +6,19 @@ class imbalance in the dataset.
 
 """
 
-from __future__ import annotations              # Enables modern type hints (Python 3.7+)
+from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-import torch                                    # PyTorch tensor library
-import torch.nn.functional as F                 # Functional interface for standard loss routines
-from torch import Tensor                        # Type annotation for PyTorch Tensors
-from torch import nn                            # PyTorch base module class
+import torch  # PyTorch tensor library
+import torch.nn.functional as F  # Functional interface for standard loss routines
+from torch import (
+    Tensor,  # Type annotation for PyTorch Tensors
+    nn,  # PyTorch base module class
+)
 
-from common.config.types import LossConfig      # Configuration dataclass for loss parameters
-
-from losses.exceptions import (                  # Exception raised when loss setup fails
+from common.config.types import (
+    LossConfig,  # Configuration dataclass for loss parameters
+)
+from losses.exceptions import (  # Exception raised when loss setup fails
     LossInitializationError,
 )
 
@@ -98,10 +101,11 @@ class ClassBalancedFocalLoss(nn.Module):
             Computed loss.
         """
 
+        weights = self._class_weights.to(logits.device)
         cross_entropy_loss = F.cross_entropy(   # Calculate unreduced weighted cross entropy
             logits,
             targets,
-            weight=self._class_weights,
+            weight=weights,
             reduction="none",
         )
 

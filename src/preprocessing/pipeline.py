@@ -3,23 +3,26 @@
 This module builds Albumentations preprocessing pipelines for
 training, validation, and testing."""
 
-from __future__ import annotations                   # Enables modern type hints (Python 3.7+)
+from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from typing import Any                               # Generic type annotation for dynamic transformation objects
+from typing import Any  # Generic type annotation for dynamic transformation objects
 
-import albumentations as A                           # High-performance image augmentation library
+import albumentations as A  # High-performance image augmentation library
 
-from common.config.types import PreprocessingConfig  # Raw dataclass holding preprocessing parameters
-
-from preprocessing.config import PreprocessingSettings  # Wrapper adapter providing property access to config
-from preprocessing.transforms import (                  # Modular transform factory functions
+from common.config.types import (
+    PreprocessingConfig,  # Raw dataclass holding preprocessing parameters
+)
+from preprocessing.config import (
+    PreprocessingSettings,  # Wrapper adapter providing property access to config
+)
+from preprocessing.transforms import (  # Modular transform factory functions
     brightness_contrast,
     horizontal_flip,
     normalize,
     resize,
     rotation,
     to_tensor,
-    vertical_flip
+    vertical_flip,
 )
 
 

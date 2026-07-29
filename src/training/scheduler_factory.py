@@ -6,16 +6,10 @@ This module provides a factory for constructing learning rate schedulers.
 from __future__ import annotations
 
 from torch.optim import Optimizer
-from torch.optim.lr_scheduler import (
-    CosineAnnealingLR,
-    LRScheduler,
-    OneCycleLR,
-    StepLR
-)
+from torch.optim.lr_scheduler import CosineAnnealingLR, LRScheduler, OneCycleLR, StepLR
 
 from training.exceptions import SchedulerFactoryError
 from training.utils import normalize_name, validate_component_name
-
 
 _SUPPORTED_SCHEDULERS: tuple[str, ...] = (
     "cosine",
@@ -79,7 +73,7 @@ class SchedulerFactory:
                 name=name,
                 supported=_SUPPORTED_SCHEDULERS
             )
-        
+
         except ValueError as error:
             raise SchedulerFactoryError(str(error)) from error
 
@@ -101,12 +95,12 @@ class SchedulerFactory:
         if name == "onecycle":
             if steps_per_epoch is None:
                 raise SchedulerFactoryError(
-                    f"steps_per_epoch is required for OneCycleLR."
+                    "steps_per_epoch is required for OneCycleLR."
                 )
 
             if max_learning_rate is None:
                 raise SchedulerFactoryError(
-                    f"max_learning_rate is required for OneCycleLR."
+                    "max_learning_rate is required for OneCycleLR."
                 )
 
             return OneCycleLR(
@@ -119,4 +113,3 @@ class SchedulerFactory:
         raise SchedulerFactoryError(
             f"Unknown scheduler name: {name}"
         )
-    

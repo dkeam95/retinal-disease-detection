@@ -7,7 +7,7 @@ and converting them into AnnotationRecord objects.
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from pathlib import Path            # Object-oriented filesystem path navigation
+from pathlib import Path  # Object-oriented filesystem path navigation
 
 # Domain-specific dataset exceptions for missing files, parsing errors, or empty datasets
 from dataset.exceptions import (
@@ -15,7 +15,9 @@ from dataset.exceptions import (
     EmptyDatasetError,
     InvalidAnnotationError,
 )
-from dataset.types import AnnotationRecord  # Dataclass structure representing a single sample record
+from dataset.types import (
+    AnnotationRecord,  # Dataclass structure representing a single sample record
+)
 
 
 def load_annotations(
@@ -111,7 +113,7 @@ def load_annotations(
             # These images are excluded from DR grading.
             if label == 5:
                 continue
-            
+
             if label not in range(5):
                 raise InvalidAnnotationError(
                     f"Invalid class label "

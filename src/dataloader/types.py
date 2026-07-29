@@ -13,7 +13,6 @@ from torch.utils.data import DataLoader  # PyTorch data loading utility class
 
 from dataset.types import DataSample  # Typed container for individual dataset samples
 
-
 # Type alias for PyTorch DataLoader returning batches of DataSample instances
 SampleDataLoader = DataLoader[DataSample]
 

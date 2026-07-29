@@ -5,7 +5,9 @@ This module is responsible for providing common model type definitions.
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from dataclasses import dataclass  # Decorator for creating lightweight container classes
+from dataclasses import (
+    dataclass,  # Decorator for creating lightweight container classes
+)
 
 from torch import Tensor  # PyTorch tensor object type annotation
 

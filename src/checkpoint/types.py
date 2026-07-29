@@ -5,13 +5,17 @@ This module defines immutable data structures (dataclasses) used to convey
 checkpoint metadata and complete serialized training state packages.
 """
 
-from __future__ import annotations  # Enables modern union types (|) and postponed annotation evaluation
+from __future__ import (
+    annotations,  # Enables modern union types (|) and postponed annotation evaluation
+)
 
 from dataclasses import dataclass  # Decorator for creating immutable data containers
 from pathlib import Path  # Object-oriented filesystem path handler
 from typing import Any  # Generic type hint for state dictionary values
 
-from trainer.state import TrainerState  # Class tracking training progress and epoch metrics
+from trainer.state import (
+    TrainerState,  # Class tracking training progress and epoch metrics
+)
 
 
 @dataclass(frozen=True, slots=True)

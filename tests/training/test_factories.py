@@ -7,7 +7,7 @@ from __future__ import annotations
 import pytest
 import torch
 import torch.nn as nn
-from torch.optim import Adam, AdamW, SGD
+from torch.optim import SGD, Adam, AdamW
 from torch.optim.lr_scheduler import (
     CosineAnnealingLR,
     OneCycleLR,
@@ -20,7 +20,6 @@ from training.exceptions import (
     OptimizerFactoryError,
     SchedulerFactoryError,
 )
-
 from training.loss_factory import LossFactory
 from training.model_factory import ModelFactory
 from training.optimizer_factory import OptimizerFactory

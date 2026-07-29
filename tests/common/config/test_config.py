@@ -12,13 +12,14 @@ from pathlib import Path  # Object-oriented filesystem path navigation
 
 import pytest  # Testing framework for capturing exceptions and asserting conditions
 
-from common.config import ConfigLoader  # Class/service responsible for loading and parsing YAML configs
-from common.config.exceptions import (
-    ConfigFileNotFoundError,        # Exception raised when the specified YAML file does not exist
-    ConfigurationParsingError,      # Exception raised when YAML syntax is invalid
-    InvalidConfigurationError,      # Exception raised when YAML schema or types are invalid
+from common.config import (
+    ConfigLoader,  # Class/service responsible for loading and parsing YAML configs
 )
-from common.config.types import ProjectConfig  # Root dataclass schema for overall project settings
+from common.config.exceptions import (
+    ConfigFileNotFoundError,  # Exception raised when the specified YAML file does not exist
+    ConfigurationParsingError,  # Exception raised when YAML syntax is invalid
+    InvalidConfigurationError,  # Exception raised when YAML schema or types are invalid
+)
 
 # Path to the directory containing mock YAML files for testing
 TEST_DATA_DIR = Path(__file__).parent / "test_data"
@@ -36,8 +37,8 @@ def test_load_valid_configuration() -> None:
     assert config.dataset.path == Path("data/raw")
     assert config.dataset.num_classes == 5
 
-    # Verify training hyperparameter settings
-    assert config.training.batch_size == 32
+    # Verify dataloader hyperparameter settings
+    assert config.dataloader.batch_size == 32
 
     # Verify neural network model selection
     assert config.model.architecture == "resnet50"

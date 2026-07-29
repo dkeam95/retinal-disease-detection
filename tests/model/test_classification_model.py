@@ -11,7 +11,9 @@ from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 import torch  # PyTorch tensor library
 from torch import nn  # Base module class for neural networks
 
-from model.classification_model import ClassificationModel  # Wrapper model combining backbone and classifier
+from model.classification_model import (
+    ClassificationModel,  # Wrapper model combining backbone and classifier
+)
 
 
 class DummyBackbone(nn.Module):

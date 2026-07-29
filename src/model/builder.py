@@ -9,10 +9,18 @@ from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
 from torch import nn  # PyTorch neural network module base classes
 
-from common.config.types import ModelConfig  # Strongly typed model configuration dataclass
-from model.backbone import build_backbone  # Factory function for feature extraction backbones
-from model.classification_model import ClassificationModel  # Wrapper assembling backbone and classifier
-from model.classifier import build_classifier  # Factory function for classification heads
+from common.config.types import (
+    ModelConfig,  # Strongly typed model configuration dataclass
+)
+from model.backbone import (
+    build_backbone,  # Factory function for feature extraction backbones
+)
+from model.classification_model import (
+    ClassificationModel,  # Wrapper assembling backbone and classifier
+)
+from model.classifier import (
+    build_classifier,  # Factory function for classification heads
+)
 
 
 def build_timm_model(model_name: str, config: ModelConfig) -> nn.Module:

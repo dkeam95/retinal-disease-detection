@@ -7,11 +7,13 @@ construction to mitigate dataset class imbalance via inverse frequency sampling.
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from collections import Counter     # Container for counting hashable objects
-import typing                       # Type hints support for casting Sized objects
+import typing  # Type hints support for casting Sized objects
+from collections import Counter  # Container for counting hashable objects
 
-import torch                                                 # PyTorch tensor library
-from torch.utils.data import Dataset, WeightedRandomSampler  # PyTorch dataset interface and sampler classes
+from torch.utils.data import (  # PyTorch dataset interface and sampler classes
+    Dataset,
+    WeightedRandomSampler,
+)
 
 from dataset.types import DataSample  # Typed container for individual dataset samples
 

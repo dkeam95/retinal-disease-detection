@@ -3,12 +3,16 @@
 This module contains reusable Albumentations transformations used 
 to build preprocessing pipelines."""
 
-from __future__ import annotations                   # Enables modern type hints (Python 3.7+)
+from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-import albumentations as A                           # High-performance image augmentation library
-from albumentations.pytorch import ToTensorV2        # Convert numpy images to PyTorch Tensors (HWC -> CHW)
+import albumentations as A  # High-performance image augmentation library
+from albumentations.pytorch import (
+    ToTensorV2,  # Convert numpy images to PyTorch Tensors (HWC -> CHW)
+)
 
-from preprocessing.config import PreprocessingSettings  # Wrapper adapter providing property access to config
+from preprocessing.config import (
+    PreprocessingSettings,  # Wrapper adapter providing property access to config
+)
 
 
 def resize(settings: PreprocessingSettings) -> A.Resize:
@@ -25,10 +29,11 @@ def resize(settings: PreprocessingSettings) -> A.Resize:
         Resize transformation.
     """
 
-    # Resize input image to fixed square dimensions defined in settings
+    h = settings.image_size[0] if isinstance(settings.image_size, (tuple, list)) else int(settings.image_size)
+    w = settings.image_size[1] if isinstance(settings.image_size, (tuple, list)) else int(settings.image_size)
     return A.Resize(
-        height=settings.image_size,
-        width=settings.image_size,
+        height=h,
+        width=w,
     )
 
 

@@ -10,8 +10,12 @@ from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
 import torch  # PyTorch tensor library
 
-from common.config.types import ModelConfig  # Dataclass defining model architecture configuration parameters
-from model.classifier import build_classifier  # Utility function to construct classifier head
+from common.config.types import (
+    ModelConfig,  # Dataclass defining model architecture configuration parameters
+)
+from model.classifier import (
+    build_classifier,  # Utility function to construct classifier head
+)
 
 
 def test_build_classifier() -> None:

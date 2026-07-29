@@ -4,9 +4,9 @@ This module computes standard classification accuracy, representing the ratio of
 correctly predicted instances to total samples across multi-class datasets.
 """
 
-from __future__ import annotations     # Enables modern type hints (Python 3.7+)
+from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from torch import Tensor               # Type annotation for PyTorch multi-dimensional arrays
+from torch import Tensor  # Type annotation for PyTorch multi-dimensional arrays
 
 from metrics._validation import validate_shapes  # Import shape validation helper
 

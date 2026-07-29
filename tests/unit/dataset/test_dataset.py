@@ -1,6 +1,7 @@
 """Unit tests for RetinalDataset implementation."""
 
 from pathlib import Path
+
 import cv2
 import numpy as np
 import pytest
@@ -17,14 +18,14 @@ def dummy_dataset_env(tmp_path: Path) -> DatasetConfig:
     img_dir.mkdir()
 
     # Создаем тестовую RGB картинку (10x10x3) и сохраняем через cv2
-    img1_path = img_dir / "test1.jpg"
+    img1_path = img_dir / "test1.png"
     dummy_img = np.zeros((10, 10, 3), dtype=np.uint8)
     dummy_img[:, :] = (255, 0, 0)  # Синий цвет в BGR
     cv2.imwrite(str(img1_path), dummy_img)
 
     # Создаем файл аннотаций
     annot_path = tmp_path / "train.txt"
-    annot_path.write_text("test1.jpg 2\n", encoding="utf-8")
+    annot_path.write_text("test1.png 2\n", encoding="utf-8")
 
     return DatasetConfig(
         path=tmp_path,

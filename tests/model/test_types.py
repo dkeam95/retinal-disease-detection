@@ -9,7 +9,9 @@ from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
 import torch  # PyTorch tensor library
 
-from model.types import ModelOutput  # Data structure/dataclass container for model outputs
+from model.types import (
+    ModelOutput,  # Data structure/dataclass container for model outputs
+)
 
 
 def test_model_output() -> None:

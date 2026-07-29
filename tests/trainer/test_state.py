@@ -8,8 +8,12 @@ and accurately stores historical epoch performance outputs.
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from trainer.state import TrainerState  # Dataclass tracking training run lifecycle and history
-from trainer.types import EpochOutput  # Container storing aggregated epoch metrics and statistics
+from trainer.state import (
+    TrainerState,  # Dataclass tracking training run lifecycle and history
+)
+from trainer.types import (
+    EpochOutput,  # Container storing aggregated epoch metrics and statistics
+)
 
 
 def test_initial_state() -> None:

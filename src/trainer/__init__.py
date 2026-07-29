@@ -15,7 +15,9 @@ from trainer.exceptions import (  # Custom exception hierarchy for trainer-relat
     TrainingStepError,
     ValidationStepError,
 )
-from trainer.state import TrainerState  # Dataclass tracking training run lifecycle and history
+from trainer.state import (
+    TrainerState,  # Dataclass tracking training run lifecycle and history
+)
 from trainer.step import (  # Individual training and validation step functions
     train_step,
     validation_step,

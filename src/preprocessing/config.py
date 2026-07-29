@@ -4,9 +4,11 @@ This module provides convenient access to preprocessing-related
 configuration parameters.
 """
 
-from __future__ import annotations                   # Enables modern type hints (Python 3.7+)
+from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from common.config.types import PreprocessingConfig  # Raw dataclass holding preprocessing parameters
+from common.config.types import (
+    PreprocessingConfig,  # Raw dataclass holding preprocessing parameters
+)
 
 
 class PreprocessingSettings:

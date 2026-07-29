@@ -4,7 +4,7 @@
 
 dataset:
   # Root directory of the dataset
-  path: data/ddr
+  path: data/raw
 
   # Annotation file
   annotation_file: train.txt
@@ -26,8 +26,8 @@ preprocessing:
     - to_tensor
 
   resize:
-    height: 512
-    width: 512
+    height: 224
+    width: 224
 
   normalize:
     mean: [0.485, 0.456, 0.406]
@@ -80,7 +80,7 @@ training:
   epochs: 100
 
   # auto | cpu | cuda
-  device: auto
+  device: cuda
 
   # Reproducibility
   deterministic: true
@@ -107,7 +107,7 @@ mixed_precision:
 # ==========================================================
 
 dataloader:
-  batch_size: 8
+  batch_size: 48
 
   num_workers: 4
 
@@ -132,7 +132,7 @@ checkpoint:
 
   save_every_epoch: true
 
-  monitor: val_loss
+  monitor: qwk
 
 # ==========================================================
 # Early Stopping Configuration
@@ -141,9 +141,9 @@ checkpoint:
 early_stopping:
   enabled: true
 
-  patience: 10
+  patience: 20
 
-  monitor: val_loss
+  monitor: qwk
 
   min_delta: 0.001
 
@@ -153,6 +153,18 @@ early_stopping:
 
 logging:
   log_every_n_steps: 20
+
+# ==========================================================
+# Metrics Configuration
+# ==========================================================
+
+metrics:
+  primary:
+    - accuracy
+    - qwk
+  secondary:
+    - macro_f1
+  per_class: true
 
 # ==========================================================
 # Experiment Configuration

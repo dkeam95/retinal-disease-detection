@@ -9,7 +9,10 @@ from __future__ import annotations  # Enables modern type hints (|)
 
 from pathlib import Path  # Object-oriented filesystem path utility
 
-from checkpoint.exceptions import CheckpointNotFoundError, InvalidCheckpointError  # Custom exceptions
+from checkpoint.exceptions import (  # Custom exceptions
+    CheckpointNotFoundError,
+    InvalidCheckpointError,
+)
 
 
 def build_checkpoint_filename(epoch: int, metric: float) -> str:
@@ -29,8 +32,8 @@ def build_checkpoint_filename(epoch: int, metric: float) -> str:
         Generated formatted checkpoint filename (e.g., 'epoch_0001_metric_0.9500.pt').
     """
 
-    # Format epoch with 4-digit zero-padding to support up to 9999 epochs seamlessly
-    return f"epoch_{epoch:04d}_metric_{metric:.4f}.pt"
+    # Format epoch with 3-digit zero-padding
+    return f"epoch_{epoch:03d}_metric_{metric:.4f}.pt"
 
 
 def validate_checkpoint(checkpoint_path: Path) -> None:

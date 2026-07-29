@@ -8,12 +8,16 @@ and model weight updates.
 
 from __future__ import annotations  # Enables modern type hints
 
-import torch                        # PyTorch core library
-from torch import Tensor, nn        # Base classes for tensors and neural network modules
-from torch.optim import Optimizer   # Base class for optimization algorithms
+import torch  # PyTorch core library
+from torch import Tensor, nn  # Base classes for tensors and neural network modules
+from torch.optim import Optimizer  # Base class for optimization algorithms
 
-from trainer.types import StepOutput   # Container storing loss value and batch size for one step
-from trainer.utils import detach_loss  # Utility function to convert loss tensor to a python float
+from trainer.types import (
+    StepOutput,  # Container storing loss value and batch size for one step
+)
+from trainer.utils import (
+    detach_loss,  # Utility function to convert loss tensor to a python float
+)
 
 
 def train_step(
@@ -22,45 +26,28 @@ def train_step(
     criterion: nn.Module,
     images: Tensor,
     targets: Tensor,
+    scaler: torch.amp.GradScaler | None = None,
+    mixed_precision: bool = False,
+    device_type: str = "cuda",
 ) -> StepOutput:
     """
-    Execute one full training step on a single batch of data.
-
-    Parameters
-    ----------
-    model : nn.Module
-        Neural network model instance.
-    optimizer : Optimizer
-        Optimization algorithm instance.
-    criterion : nn.Module
-        Loss function module.
-    images : Tensor
-        Input batch of images.
-    targets : Tensor
-        Ground truth labels for the batch.
-
-    Returns
-    -------
-    StepOutput
-        Output container holding the step loss value and batch size.
+    Execute one full training step on a single batch of data with optional AMP.
     """
 
-    # Reset gradients from the previous step to prevent accumulation
-    optimizer.zero_grad()
+    optimizer.zero_grad(set_to_none=True)
 
-    # Pass the input batch through the model to get predictions
-    logits = model(images)
+    with torch.amp.autocast(device_type=device_type, enabled=mixed_precision):
+        logits = model(images)
+        loss = criterion(logits, targets)
 
-    # Calculate the training loss value
-    loss = criterion(logits, targets)
+    if scaler is not None and mixed_precision:
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
+    else:
+        loss.backward()
+        optimizer.step()
 
-    # Compute gradients for model parameters using backpropagation
-    loss.backward()
-
-    # Update model parameters based on calculated gradients
-    optimizer.step()
-
-    # Extract the scalar loss value and return batch step details
     return StepOutput(
         loss=detach_loss(loss),
         batch_size=targets.size(0),

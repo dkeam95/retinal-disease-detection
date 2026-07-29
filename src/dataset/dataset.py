@@ -7,19 +7,24 @@ from disk and provide them to the PyTorch training pipeline.
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from pathlib import Path            # Object-oriented filesystem path navigation
-from typing import cast             # Type hint utility to inform static type checkers
+from pathlib import Path  # Object-oriented filesystem path navigation
+from typing import cast  # Type hint utility to inform static type checkers
 
-import cv2                          # OpenCV library for fast image I/O and color space conversions
-import numpy as np                  # Fundamental package for array manipulation
-from numpy.typing import NDArray    # Type hint for NumPy array shapes and dtypes
-
+import cv2  # OpenCV library for fast image I/O and color space conversions
+import numpy as np  # Fundamental package for array manipulation
+from numpy.typing import NDArray  # Type hint for NumPy array shapes and dtypes
 from torch.utils.data import Dataset  # PyTorch base class for custom dataset loaders
 
-from common.config.types import DatasetConfig     # Dataclass holding dataset configuration properties
-from dataset.exceptions import ImageLoadingError  # Domain-specific exception raised when OpenCV fails
-from dataset.parser import load_annotations       # Utility function to parse annotation file into records
-from dataset.types import DataSample              # Typed object containing loaded sample data
+from common.config.types import (
+    DatasetConfig,  # Dataclass holding dataset configuration properties
+)
+from dataset.exceptions import (
+    ImageLoadingError,  # Domain-specific exception raised when OpenCV fails
+)
+from dataset.parser import (
+    load_annotations,  # Utility function to parse annotation file into records
+)
+from dataset.types import DataSample  # Typed object containing loaded sample data
 
 
 class RetinalDataset(Dataset[DataSample]):
@@ -27,7 +32,11 @@ class RetinalDataset(Dataset[DataSample]):
     PyTorch dataset for retinal disease classification.
     """
 
-    def __init__(self, config: DatasetConfig) -> None:
+    def __init__(
+        self,
+        config: DatasetConfig,
+        annotation_file: str | Path | None = None,
+    ) -> None:
         """
         Initialize the dataset.
 
@@ -35,11 +44,19 @@ class RetinalDataset(Dataset[DataSample]):
         ----------
         config : DatasetConfig
             Dataset configuration.
+        annotation_file : str | Path | None, optional
+            Override annotation filename, by default None.
         """
+
+        target_annotation_file = (
+            Path(annotation_file)
+            if annotation_file is not None
+            else config.annotation_file
+        )
 
         # Parse and cache annotation records using absolute/relative resolved paths
         self._annotations = load_annotations(
-            annotation_file=config.path / config.annotation_file,
+            annotation_file=config.path / target_annotation_file,
             image_directory=config.path / config.image_directory,
         )
 

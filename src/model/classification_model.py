@@ -8,7 +8,9 @@ from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
 from torch import Tensor, nn  # PyTorch tensor types and neural network modules
 
-from model.types import ModelOutput  # Strongly typed container dataclass for model outputs
+from model.types import (
+    ModelOutput,  # Strongly typed container dataclass for model outputs
+)
 
 
 class ClassificationModel(nn.Module):

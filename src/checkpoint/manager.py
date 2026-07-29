@@ -8,7 +8,10 @@ restoring, and organizing model checkpoints throughout the training lifecycle.
 from __future__ import annotations  # Enables modern type hints (|)
 
 from pathlib import Path  # Object-oriented filesystem path management
-from typing import Any  # Dynamic typing for state dictionaries
+from typing import TYPE_CHECKING, Any  # Dynamic typing for state dictionaries
+
+if TYPE_CHECKING:
+    from trainer.state import TrainerState
 
 import torch  # PyTorch deep learning framework
 from torch import nn  # Neural network module base class
@@ -26,7 +29,6 @@ from checkpoint.utils import (
     find_latest_checkpoint,
     validate_checkpoint,
 )
-from trainer.state import TrainerState  # Training progress tracking data structure
 
 
 class CheckpointManager:
@@ -162,19 +164,17 @@ class CheckpointManager:
 
     def save(
         self,
-        checkpoint_path: Path,
         model: nn.Module,
         optimizer: Optimizer,
         scheduler: LRScheduler | None,
         trainer_state: TrainerState,
+        checkpoint_path: Path | None = None,
     ) -> Path:
         """
         Save model and trainer states to a specific checkpoint file path safely.
 
         Parameters
         ----------
-        checkpoint_path : Path
-            Destination file path.
         model : nn.Module
             Model instance to serialize.
         optimizer : Optimizer
@@ -183,6 +183,8 @@ class CheckpointManager:
             Optional learning rate scheduler instance to serialize.
         trainer_state : TrainerState
             Current trainer execution state.
+        checkpoint_path : Path | None, optional
+            Destination file path. If None, auto-generated based on state.
 
         Returns
         -------
@@ -194,6 +196,13 @@ class CheckpointManager:
         CheckpointSaveError
             If write permissions fail or serialization encounters an error.
         """
+
+        if checkpoint_path is None:
+            filename = build_checkpoint_filename(
+                epoch=trainer_state.current_epoch,
+                metric=trainer_state.best_metric,
+            )
+            checkpoint_path = self._checkpoint_directory / filename
 
         # Assemble state dictionary package
         checkpoint = self._build_checkpoint(

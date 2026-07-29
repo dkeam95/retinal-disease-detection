@@ -8,8 +8,12 @@ and that the returned backbone exposes the expected feature extraction interface
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-from common.config.types import ModelConfig  # Dataclass defining model architecture configuration parameters
-from model.backbone import build_backbone  # Function to instantiate feature extraction backbones
+from common.config.types import (
+    ModelConfig,  # Dataclass defining model architecture configuration parameters
+)
+from model.backbone import (
+    build_backbone,  # Function to instantiate feature extraction backbones
+)
 
 
 def test_build_backbone() -> None:

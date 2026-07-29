@@ -7,9 +7,9 @@ and maps requested metric identifiers to their respective computation functions.
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
-import pytest  # Testing framework for assertion checks
-
-from metrics.factory import build_metrics  # Factory function to build dictionary of metric functions
+from metrics.factory import (
+    build_metrics,  # Factory function to build dictionary of metric functions
+)
 from metrics.metric_names import MetricName  # Enum defining supported metric names
 
 

@@ -5,11 +5,14 @@ This module provides the TrainerState class, which stores the training status,
 including epoch counters, step numbers, best validation scores, and loss history.
 """
 
-from __future__ import annotations        # Enables modern type hints
+from __future__ import annotations  # Enables modern type hints
 
-from dataclasses import dataclass, field  # Utility for creating clean data container classes
+from dataclasses import (  # Utility for creating clean data container classes
+    dataclass,
+    field,
+)
 
-from trainer.types import EpochOutput     # Container for epoch loss and calculated metrics
+from trainer.types import EpochOutput  # Container for epoch loss and calculated metrics
 
 
 @dataclass(slots=True)

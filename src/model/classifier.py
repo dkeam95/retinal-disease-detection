@@ -7,7 +7,9 @@ from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
 from torch import nn  # PyTorch neural network module base classes
 
-from common.config.types import ModelConfig  # Strongly typed model configuration dataclass
+from common.config.types import (
+    ModelConfig,  # Strongly typed model configuration dataclass
+)
 
 
 def build_classifier(in_features: int, config: ModelConfig) -> nn.Module:

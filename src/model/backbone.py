@@ -9,8 +9,12 @@ from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 import timm  # PyTorch Image Models library for pre-trained vision architectures
 from torch import nn  # PyTorch neural network module base classes
 
-from common.config.types import ModelConfig  # Strongly typed model configuration dataclass
-from model.exceptions import ModelInitializationError  # Custom exception for model creation failures
+from common.config.types import (
+    ModelConfig,  # Strongly typed model configuration dataclass
+)
+from model.exceptions import (
+    ModelInitializationError,  # Custom exception for model creation failures
+)
 
 
 def build_backbone(model_name: str, config: ModelConfig) -> nn.Module:

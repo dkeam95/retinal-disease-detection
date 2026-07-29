@@ -9,11 +9,10 @@ from __future__ import annotations
 from collections.abc import Iterable
 
 from torch import nn
-from torch.optim import Adam, AdamW, Optimizer, SGD
+from torch.optim import SGD, Adam, AdamW, Optimizer
 
 from training.exceptions import OptimizerFactoryError
 from training.utils import normalize_name, validate_component_name
-
 
 _SUPPORTED_OPTIMIZERS: tuple[str, ...] = (
     "adam",
@@ -88,7 +87,7 @@ class OptimizerFactory:
                 lr=learning_rate,
                 weight_decay=weight_decay,
             )
-        
+
         if name == "sgd":
             return SGD(
                 parameters,
@@ -98,4 +97,3 @@ class OptimizerFactory:
             )
 
         raise OptimizerFactoryError(f"Unsupported optimizer: {name}")
-        

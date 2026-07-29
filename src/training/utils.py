@@ -6,7 +6,7 @@ This module provides helper functions shared across training factories.
 
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 
 def normalize_name(name: str) -> str:
