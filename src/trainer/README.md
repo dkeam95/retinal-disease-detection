@@ -2,150 +2,119 @@
 
 ## Purpose
 
-The `trainer` module implements the main training loop for the project.
+The `trainer` module implements the core training execution loop for the Retinal Disease Detection framework.
 
-It is responsible for:
+It orchestrates:
 
-- running training epochs;
-- running validation epochs;
-- computing evaluation metrics;
-- tracking training state;
-- saving and loading checkpoints;
-- returning final training summary statistics.
+- Iterating over training and validation epochs;
+- Forward/backward passes with Automatic Mixed Precision (AMP) support;
+- Computing evaluation metrics across validation steps;
+- Tracking mutable state (`TrainerState`);
+- Integrating stateful checkpoint saving and loading;
+- Returning final training summary statistics (`TrainingOutput`).
 
 ---
 
-## Architecture
+## Module Structure
 
 ```text
 trainer/
-│
-├── __init__.py
-├── types.py
-├── exceptions.py
-├── state.py
-├── utils.py
-├── step.py
-├── trainer.py
-└── README.md
-Core Types
-StepOutput
-
-Stores statistics for a single batch step.
-
-Fields:
-
-loss
-batch_size
-EpochOutput
-
-Stores aggregated statistics for a completed epoch.
-
-Fields:
-
-loss
-metrics
-TrainingOutput
-
-Stores the final training summary.
-
-Fields:
-
-best_epoch
-best_metric
-epochs_completed
-Exceptions
-
-The module defines trainer-specific exceptions:
-
-TrainerError
-InvalidTrainerStateError
-TrainingStepError
-ValidationStepError
-CheckpointError
-EarlyStoppingError
-State Management
-
-TrainerState stores mutable training progress, including:
-
-current epoch;
-global step;
-best metric;
-best epoch;
-loss history.
-Utility Functions
-
-The module provides helper functions for common training tasks:
-
-moving tensors to device;
-switching model mode;
-detaching loss tensors;
-calculating average loss.
-Step Functions
-train_step(...)
-
-Runs one optimization step:
-
-forward pass;
-loss computation;
-backward pass;
-optimizer update.
-validation_step(...)
-
-Runs one validation step:
-
-forward pass;
-loss computation;
-returns logits for metric computation.
-Main Trainer
-Trainer
-
-The main class orchestrating the full training process.
-
-Responsibilities:
-
-iterate over training batches;
-iterate over validation batches;
-compute metrics after validation;
-track best validation score;
-save and load checkpoints;
-expose current trainer state.
-Training Flow
-
-The training loop follows this sequence:
-
-set model to training mode;
-run training batches;
-set model to evaluation mode;
-run validation batches;
-compute metrics;
-update best state;
-step scheduler if available;
-return final training summary.
-Checkpointing
-
-The trainer supports:
-
-saving model state;
-saving optimizer state;
-saving scheduler state if present;
-restoring trainer state from disk.
-Testing
-
-Covered by unit tests:
-
-type definitions;
-exceptions;
-state transitions;
-utility functions;
-train step;
-validation step;
-trainer integration behavior.
-Design Principles
-Single Responsibility Principle
-Modular design
-Explicit state tracking
-Reusable step functions
-Clear separation between train and validation logic
-Checkpoint support
+├── __init__.py      # Public API exports
+├── trainer.py       # Main Trainer class
+├── step.py          # train_step & validation_step functions
+├── state.py         # TrainerState tracking class
+├── types.py         # StepOutput, EpochOutput, TrainingOutput dataclasses
+├── exceptions.py     # TrainerError hierarchy
+├── utils.py         # Helper utilities (moving tensors to device, loss accumulation)
+└── README.md        # Technical documentation
 ```
+
+---
+
+## Core Types
+
+### `StepOutput`
+Stores statistics for a single batch iteration step.
+- `loss`: `float`
+- `batch_size`: `int`
+
+### `EpochOutput`
+Stores aggregated performance metrics for a completed epoch.
+- `loss`: `float`
+- `metrics`: `dict[str, float]`
+
+### `TrainingOutput`
+Stores the final summary of the complete training run.
+- `best_epoch`: `int`
+- `best_metric`: `float`
+- `epochs_completed`: `int`
+
+---
+
+## Workflow Architecture
+
+```text
+               ┌────────────────────────────────┐
+               │         Trainer.train()        │
+               └───────────────┬────────────────┘
+                               │
+                For Epoch in 1..Total_Epochs
+                               │
+               ┌───────────────┴────────────────┐
+               ▼                                ▼
+       train_epoch()                    validate_epoch()
+               │                                │
+    For Batch in TrainLoader             For Batch in ValLoader
+               │                                │
+          train_step()                   validation_step()
+               │                                │
+    - Forward pass (AMP)             - Forward pass (eval)
+    - Backward pass (scaler)         - Compute loss
+    - Optimizer step                 - Collect predictions
+               │                                │
+               └───────────────┬────────────────┘
+                               │
+                               ▼
+                    compute_metrics(QWK, F1)
+                               │
+                               ▼
+                     CheckpointManager.save()
+```
+
+---
+
+## Step Functions
+
+### `train_step(...)`
+Runs one optimization step for a batch:
+1. Moves images and labels to the configured device (`cuda` or `cpu`);
+2. Executes forward pass within `torch.cuda.amp.autocast` if AMP is enabled;
+3. Calculates loss via the configured criterion;
+4. Performs backward pass with gradient scaling;
+5. Updates optimizer parameters and detaches loss.
+
+### `validation_step(...)`
+Runs evaluation on a single validation batch:
+1. Disables gradient tracking (`torch.no_grad()`);
+2. Executes forward pass;
+3. Calculates validation loss and returns batch predictions/logits.
+
+---
+
+## Exceptions
+
+The module defines dedicated, typed exceptions:
+
+- `TrainerError`: Base exception for trainer failures.
+- `InvalidTrainerStateError`: Raised on invalid state transitions.
+- `TrainingStepError`: Raised during training batch execution failures.
+- `ValidationStepError`: Raised during validation batch execution failures.
+
+---
+
+## Design Principles
+
+- **Single Responsibility Principle**: Isolates training execution from dataset construction and model building.
+- **Explicit State Tracking**: `TrainerState` immutably logs global steps, current epoch, and best metric scores.
+- **Automatic Mixed Precision**: Native support for float16/bfloat16 training via PyTorch AMP.
+- **Fail-Safe Checkpoints**: Seamless integration with `CheckpointManager` to guarantee state recoverability.

@@ -1,305 +1,82 @@
-# Training Module
+# Training Orchestration Module
 
 ## Overview
 
-The `training` module is responsible for constructing and configuring all
-core components required for neural network training.
+The `training` module is responsible for orchestrating component instantiation and execution for model training.
 
-The module follows the **Factory Pattern**, allowing every training component
-to be created from configuration files while keeping the training loop
-independent from implementation details.
-
-The goal of this module is to provide a clean, modular, and reproducible
-training pipeline.
+Following the **Factory Pattern**, this module builds neural network models, loss functions, optimizers, and learning rate schedulers from configuration files (`ProjectConfig`), keeping the training loop completely decoupled from concrete PyTorch class instantiations.
 
 ---
 
-# Module Structure
+## Module Structure
 
 ```text
 training/
-
-├── __init__.py
-├── exceptions.py
-├── types.py
-├── utils.py
-│
-├── loss_factory.py
-├── optimizer_factory.py
-├── scheduler_factory.py
-├── model_factory.py
-│
-└── README.md
+├── __init__.py           # Public API exports
+├── train.py              # Main CLI entry point for training
+├── loss_factory.py       # Loss function factory
+├── optimizer_factory.py  # Optimizer builder factory
+├── scheduler_factory.py  # Learning rate scheduler factory
+├── model_factory.py      # Neural network model factory
+├── types.py              # Training type definitions
+├── exceptions.py         # Factory exception hierarchy
+├── utils.py              # Training helper utilities
+└── README.md             # Technical documentation
 ```
 
 ---
 
-# Components
+## Component Factories
 
-## ModelFactory
+### 1. `ModelFactory`
+Builds neural network classification architectures via TIMM (PyTorch Image Models).
+- Supported backbones: `efficientnet_b0`, `resnet50`, `convnext_tiny`, `vit_base_patch16_224`.
+- Replaces classification head to match target class count ($C=5$ for DDR dataset).
 
-Responsible for constructing neural network architectures.
+### 2. `LossFactory`
+Instantiates configured loss functions:
+- Cross-Entropy Loss (`cross_entropy`)
+- Weighted Cross-Entropy (`weighted_cross_entropy`)
+- Focal Loss (`focal`)
+- Class-Balanced Focal Loss (`class_balanced_focal`)
 
-### Current supported models
+### 3. `OptimizerFactory`
+Constructs PyTorch optimizers:
+- AdamW (`adamw`)
+- Adam (`adam`)
+- SGD (`sgd`)
 
-- EfficientNet-B0
-
-### Responsibilities
-
-- Build neural network architecture
-- Load ImageNet pretrained weights
-- Replace classification head
-- Initialize classifier weights
-- Count total and trainable parameters
-
----
-
-## LossFactory
-
-Responsible for constructing loss functions.
-
-### Current supported losses
-
-- CrossEntropyLoss
-
-### Supported features
-
-- Class weighting
-- Label smoothing
-
-The factory returns a fully initialized PyTorch loss object.
+### 4. `SchedulerFactory`
+Constructs learning rate schedulers:
+- Cosine Annealing (`cosine`)
+- Step LR (`step`)
+- OneCycle LR (`onecycle`)
 
 ---
 
-## OptimizerFactory
-
-Responsible for constructing optimizers.
-
-### Current supported optimizers
-
-- Adam
-- AdamW
-- SGD
-
-The optimizer is created directly from configuration parameters.
-
----
-
-## SchedulerFactory
-
-Responsible for constructing learning rate schedulers.
-
-### Current supported schedulers
-
-- CosineAnnealingLR
-- StepLR
-- OneCycleLR
-
-Each scheduler is configured independently from the training loop.
-
----
-
-# Utilities
-
-The module also provides several helper utilities.
-
-## utils.py
-
-Contains helper functions for:
-
-- component name normalization
-- component validation
-- common training helpers
-
----
-
-## exceptions.py
-
-Contains custom exceptions for all training factories.
-
-Examples:
-
-- ModelFactoryError
-- LossFactoryError
-- OptimizerFactoryError
-- SchedulerFactoryError
-
----
-
-## types.py
-
-Contains common type aliases used throughout the training package.
-
----
-
-# Design Principles
-
-The module follows several software engineering principles.
-
-## Single Responsibility Principle (SRP)
-
-Each factory is responsible only for constructing one specific object.
-
-- ModelFactory → models
-- LossFactory → loss functions
-- OptimizerFactory → optimizers
-- SchedulerFactory → schedulers
-
-Factories never perform training.
-
----
-
-## Factory Pattern
-
-Object creation is centralized.
-
-Instead of directly creating PyTorch objects inside the training loop,
+## Usage Example
 
 ```python
-model = efficientnet_b0(...)
-optimizer = AdamW(...)
-scheduler = CosineAnnealingLR(...)
+from common.config import ConfigLoader
+from training.model_factory import ModelFactory
+from training.loss_factory import LossFactory
+from training.optimizer_factory import OptimizerFactory
+from training.scheduler_factory import SchedulerFactory
+
+# Load configuration
+config = ConfigLoader.load("configs/config.yaml")
+
+# Instantiate components via factories
+model = ModelFactory.build(config.model)
+criterion = LossFactory.build(config.loss)
+optimizer = OptimizerFactory.build(config.optimizer, parameters=model.parameters())
+scheduler = SchedulerFactory.build(config.scheduler, optimizer=optimizer)
 ```
 
-the training loop becomes
-
-```python
-model = ModelFactory.build(...)
-optimizer = OptimizerFactory.build(...)
-scheduler = SchedulerFactory.build(...)
-```
-
-This greatly simplifies future extensions.
-
 ---
 
-## Configuration-driven Design
+## Design Principles
 
-Every component is created from YAML configuration.
-
-Example:
-
-```yaml
-model:
-  architecture: efficientnet_b0
-  pretrained: true
-  num_classes: 5
-
-optimizer:
-  name: adamw
-  learning_rate: 0.0003
-  weight_decay: 0.0001
-
-scheduler:
-  name: cosine
-
-loss:
-  name: cross_entropy
-```
-
-The training pipeline never depends on hardcoded parameters.
-
----
-
-## Reproducibility
-
-The module is designed to guarantee reproducible experiments.
-
-Configuration files completely describe:
-
-- model architecture
-- optimizer
-- scheduler
-- loss function
-
-This makes experiments easy to reproduce.
-
----
-
-# Typical Usage
-
-```python
-model = ModelFactory.build(
-    architecture="efficientnet_b0",
-    pretrained=True,
-    num_classes=5,
-)
-
-criterion = LossFactory.build(
-    name="cross_entropy",
-)
-
-optimizer = OptimizerFactory.build(
-    name="adamw",
-    parameters=model.parameters(),
-    learning_rate=3e-4,
-    weight_decay=1e-4,
-)
-
-scheduler = SchedulerFactory.build(
-    name="cosine",
-    optimizer=optimizer,
-    epochs=100,
-)
-```
-
-The constructed objects are then passed to the `Trainer`.
-
----
-
-# Future Extensions
-
-The architecture is intentionally designed for future expansion.
-
-## Planned model architectures
-
-- EfficientNet-B3
-- ConvNeXt-Tiny
-- ResNet-50
-- Vision Transformer (ViT)
-
----
-
-## Planned loss functions
-
-- Focal Loss
-- Class Balanced Loss
-- Dice Loss
-
----
-
-## Planned optimizers
-
-- RMSProp
-- Lion
-
----
-
-## Planned schedulers
-
-- CosineAnnealingWarmRestarts
-- ReduceLROnPlateau
-- PolynomialLR
-
-No changes to the training loop will be required when new components are added.
-
-Only the corresponding Factory will be extended.
-
----
-
-# Summary
-
-The `training` module provides a modular and extensible interface for
-constructing all components required for neural network training.
-
-Its architecture emphasizes:
-
-- modularity
-- reproducibility
-- maintainability
-- configurability
-- separation of responsibilities
-
-This design allows the training pipeline to remain clean while supporting
-future model architectures, optimizers, schedulers, and loss functions with
-minimal code changes.
+- **Single Responsibility Principle**: Each factory constructs exactly one entity.
+- **Configuration Driven**: All component hyperparameter specifications reside in YAML files.
+- **Decoupled Architecture**: Swapping models, optimizers, or loss functions requires zero changes to training loop code.

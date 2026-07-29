@@ -1,28 +1,38 @@
-# Configuration System
+# Configuration Module (`common/config`)
 
 ## Purpose
 
-The Configuration System is responsible for loading, validating, and providing
-strongly typed project configuration objects.
+The `config` module provides strongly typed, immutable configuration loading for the Retinal Disease Detection system.
 
-The module serves as the single entry point for reading project configuration
-files and converting them into immutable Python objects.
+It parses YAML configuration files and maps their hierarchical key-value pairs into frozen Python dataclasses (`ProjectConfig`).
 
 ---
 
-## Responsibilities
+## Key Features
 
-- Load YAML configuration files.
-- Validate the root configuration structure.
-- Convert configuration dictionaries into typed dataclasses.
-- Raise meaningful custom exceptions.
+- **Immutable Dataclasses**: Configured via `@dataclass(frozen=True, slots=True)` to prevent unintentional runtime mutations.
+- **Fail-Fast Schema Validation**: Instantly detects missing required sections, invalid data types, or file loading errors.
+- **Unified Entrypoint**: `ConfigLoader.load(path)` serves as the single loader for the entire system.
 
-This module is **not responsible** for:
+---
 
-- training configuration validation;
-- model initialization;
-- dataset loading;
-- runtime parameter checking.
+## Hierarchical Configuration Tree
+
+```text
+ProjectConfig
+├── DatasetConfig
+├── PreprocessingConfig
+├── ModelConfig
+├── LossConfig
+├── OptimizerConfig
+├── SchedulerConfig
+├── TrainingConfig
+├── DataLoaderConfig
+├── CheckpointConfig
+├── EarlyStoppingConfig
+├── MetricsConfig
+└── ExperimentConfig
+```
 
 ---
 
@@ -30,99 +40,31 @@ This module is **not responsible** for:
 
 ```text
 config/
-
-├── __init__.py
-├── config.py
-├── exceptions.py
-├── types.py
-└── README.md
+├── __init__.py      # Public API exports
+├── config.py        # ConfigLoader implementation
+├── types.py         # ProjectConfig and child dataclass definitions
+├── exceptions.py     # ConfigFileNotFoundError, InvalidConfigurationError
+└── README.md        # Technical documentation
 ```
 
 ---
 
-## Public API
+## Public API Usage
 
 ```python
 from common.config import ConfigLoader
 
-config = ConfigLoader.load("configs/train.yaml")
+# Load configuration file
+config = ConfigLoader.load("configs/config.yaml")
+
+# Access strongly typed configuration attributes
+print(config.model.architecture)  # "efficientnet_b0"
+print(config.training.epochs)      # 100
 ```
-
-Returns:
-
-```python
-ProjectConfig
-```
-
----
-
-## Configuration Flow
-
-```text
-YAML file
-    │
-    ▼
-ConfigLoader.load()
-    │
-    ▼
-Read YAML
-    │
-    ▼
-Validate structure
-    │
-    ▼
-Convert to dataclasses
-    │
-    ▼
-ProjectConfig
-```
-
----
-
-## Main Classes
-
-### ConfigLoader
-
-Responsible for loading and validating configuration files.
-
-### ProjectConfig
-
-Root configuration object containing all project settings.
-
----
-
-## Exceptions
-
-The module may raise:
-
-- `ConfigFileNotFoundError`
-- `ConfigurationParsingError`
-- `InvalidConfigurationError`
-
----
-
-## Testing
-
-The module is covered by unit tests located in:
-
-```text
-tests/common/config/
-```
-
-Current coverage includes:
-
-- valid configuration loading;
-- missing configuration file;
-- malformed YAML;
-- invalid root object;
-- missing required sections.
 
 ---
 
 ## Design Principles
 
-- Single Responsibility Principle
-- Immutable configuration objects
-- Strong typing
-- Minimal public API
-- Explicit error handling
+- **Declarative Separation**: Configuration data is completely separated from executable Python code.
+- **Fail-Fast Error Handling**: Emits descriptive exceptions specifying the missing key or invalid field path.

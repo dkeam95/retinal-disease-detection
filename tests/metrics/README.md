@@ -1,91 +1,25 @@
-# Metrics Module
+# Test Suite: Metrics Module
 
 ## Purpose
 
-Provides evaluation metrics for diabetic retinopathy classification.
-
-The module operates directly on model logits and ground-truth labels.
+This test suite validates numerical accuracy, edge cases, and shape validation rules for all evaluation metrics in `src/metrics/`.
 
 ---
 
-## Implemented Metrics
+## Test Coverage Summary
 
-| Metric                   | Description                          | Medical relevance                          |
-| ------------------------ | ------------------------------------ | ------------------------------------------ |
-| Accuracy                 | Overall classification accuracy      | General quality                            |
-| Precision                | Positive prediction quality          | False positive control                     |
-| Recall                   | Sensitivity                          | False negative control                     |
-| F1 Score                 | Balance between Precision and Recall | General classifier evaluation              |
-| Quadratic Weighted Kappa | Ordinal agreement metric             | ⭐ Primary metric for diabetic retinopathy |
+- **`test_accuracy.py`**: Perfect predictions, 0% accuracy predictions, batch size mismatches.
+- **`test_precision_recall_f1.py`**: Multi-class macro and weighted averaging, zero division handling.
+- **`test_qwk.py`**: Perfect ordinal agreement (QWK = 1.0), random chance agreement (QWK $\approx$ 0.0), worst quadratic disagreement (QWK $< 0$).
+- **`test_confusion_matrix.py`**: $C \times C$ shape validation ($5 \times 5$), diagonal counts for ground truth matches.
+- **`test_validation.py`**: Input shape mismatch detection, non-2D logits detection, non-1D targets detection.
 
 ---
 
-## Input
+## Running Tests
 
-All metrics accept
+Execute pytest specifically for metric tests:
 
-```python
-logits: Tensor (N, C)
-
-targets: Tensor (N,)
+```bash
+pytest tests/metrics
 ```
-
----
-
-## Output
-
-Every metric returns
-
-```python
-float
-```
-
----
-
-## Validation
-
-Every metric validates
-
-- logits dimensions
-- targets dimensions
-- batch size consistency
-
----
-
-## Unit Tests
-
-Each metric contains
-
-- perfect prediction test
-- partial prediction test
-- invalid input tests
-- shape validation
-
-Quadratic Weighted Kappa additionally contains
-
-- deterministic evaluation
-
----
-
-## Why Quadratic Weighted Kappa?
-
-Unlike Accuracy, QWK considers the ordinal nature of diabetic retinopathy stages.
-
-For example
-
-```
-0 → 1
-```
-
-is penalized much less than
-
-```
-0 → 4
-```
-
-making it the standard evaluation metric used in:
-
-- APTOS
-- EyePACS
-- Messidor
-- most DR research papers

@@ -1,361 +1,208 @@
 # ADR-001 — Core Architecture Principles
 
-**Date:** 2026-07-17
+**Status:** Accepted  
+**Date:** 2026-07-17  
 
 ---
 
-# Context
+## Context
 
-Проект **Retinal Disease Detection System** является долгосрочным исследовательским
-ML Engineering проектом.
+The **Retinal Disease Detection System** is a long-term machine learning engineering project aimed at automated classification of retinal pathologies (specifically 5-stage Diabetic Retinopathy) from fundus photography.
 
-В процессе разработки ожидаются:
+Over the project lifecycle, the codebase is expected to handle:
 
-- большое количество независимых модулей;
-- сравнение нескольких архитектур нейронных сетей;
-- множество ML-экспериментов;
-- постоянное расширение функциональности;
-- повторное использование компонентов в будущих проектах.
+- A large number of independent modules;
+- Benchmarking across multiple neural network architectures;
+- Systematic ML experiments;
+- Continuous feature expansion;
+- Component reusability for downstream medical imaging projects.
 
-Опыт показывает, что большинство учебных ML-проектов со временем становятся
-сложно поддерживаемыми из-за:
+Experience shows that many academic and experimental ML projects suffer from technical debt over time due to:
 
-- монолитной структуры;
-- сильной связанности компонентов;
-- циклических импортов;
-- отсутствия четких границ ответственности;
-- отсутствия единых правил проектирования.
+- Monolithic structures;
+- Tight component coupling;
+- Circular imports;
+- Lack of clear domain boundaries;
+- Absence of standardized architectural guidelines.
 
-Поэтому перед началом реализации необходимо определить базовые архитектурные
-принципы проекта.
+To ensure long-term maintainability, scalability, and testability, fundamental architectural principles must be established prior to full system implementation.
 
 ---
 
-# Decision
+## Decision
 
-В проекте принимаются следующие архитектурные принципы.
+The project adopts the following core architectural principles:
 
-## 1. Pipeline First Architecture
+### 1. Pipeline-First Architecture
 
-Проект строится вокруг ML Pipeline, а не вокруг конкретной модели.
+The system is designed around an **ML Pipeline**, rather than around a specific model.
 
-Pipeline является главным элементом архитектуры.
+The Pipeline is the primary architectural backbone. Data flows through a strict, sequential pipeline:
 
-Общий поток обработки данных:
-
+```text
 Dataset
-
-↓
-
+  │
+  ▼
 Data Pipeline
-
-↓
-
+  │
+  ▼
 Image Preprocessing Pipeline
-
-↓
-
+  │
+  ▼
 Training Pipeline
-
-↓
-
+  │
+  ▼
 Experiment Pipeline
-
-↓
-
+  │
+  ▼
 Evaluation Pipeline
-
-↓
-
+  │
+  ▼
 Inference Pipeline
+```
 
-Архитектура не должна зависеть от конкретной нейронной сети.
-
-Замена модели не должна требовать изменения остальных компонентов системы.
-
----
-
-## 2. Three-Level Architecture
-
-Проект разделяется на три уровня.
-
-Level 1
-
-Domain
-
-Крупная область ответственности.
-
-Примеры:
-
-- training
-- preprocessing
-- evaluation
-- inference
-- models
-- common
+The system architecture must remain agnostic to specific neural network architectures. Swapping model backbones must not require modifications to data loading, preprocessing, or evaluation modules.
 
 ---
 
-Level 2
+### 2. Three-Level Architecture Hierarchy
 
-Module
+The codebase is organized into a three-level structural hierarchy:
 
-Каждый Domain состоит из независимых модулей.
+#### Level 1: Domain
+High-level area of responsibility. Examples:
+- `src/dataset/`
+- `src/preprocessing/`
+- `src/model/`
+- `src/trainer/`
+- `src/training/`
+- `src/losses/`
+- `src/metrics/`
+- `src/common/`
 
-Например:
+#### Level 2: Module
+Each domain contains decoupled functional modules (e.g., `src/trainer/` contains `step.py`, `state.py`, `trainer.py`).
 
-training/
+#### Level 3: Files & Standardized Layout
+Every module adheres to a unified internal file structure template:
 
-- trainer
-- checkpoint
-- callbacks
-- optimizer
-- scheduler
-- losses
-- metrics
-- experiment_manager
-
----
-
-Level 3
-
-Files
-
-Каждый модуль имеет одинаковую внутреннюю структуру.
-
-Минимальный шаблон:
-
+```text
 module/
-
-- **init**.py
-- module.py
-- types.py
-- README.md
-- tests/
-
-Дополнительные файлы добавляются только при необходимости.
-
----
-
-## 3. Single Responsibility Principle
-
-Каждый модуль отвечает только за одну законченную бизнес-функцию.
-
-Примеры:
-
-✔ Trainer
-
-✔ Checkpoint Manager
-
-✔ Dataset Splitter
-
-✔ Image Validator
-
-✘ "utils.py", содержащий десятки несвязанных функций.
+├── __init__.py      # Public API exports
+├── module.py        # Core implementation
+├── types.py         # Data structures and domain types
+├── exceptions.py    # Module-specific exceptions
+├── README.md        # Technical documentation
+└── tests/           # Dedicated test cases
+```
 
 ---
 
-## 4. Public API
+### 3. Single Responsibility Principle (SRP)
 
-Взаимодействие между модулями осуществляется исключительно через публичный API.
+Each module and component is responsible for exactly one well-defined domain task.
 
-Экспортируемые объекты определяются в:
-
-**init**.py
-
-Внутренние реализации считаются приватными.
-
-Запрещается импортировать внутренние файлы другого модуля напрямую.
-
-Правильно:
-
-from training.trainer import Trainer
-
-Неправильно:
-
-from training.trainer.trainer import Trainer
+- **Compliant**: `Trainer`, `CheckpointManager`, `DatasetParser`, `ImageValidator`.
+- **Non-Compliant**: A generic `utils.py` file containing dozens of unrelated helper functions.
 
 ---
 
-## 5. Dependency Direction
+### 4. Explicit Public API
 
-Зависимости допускаются только сверху вниз.
+Inter-module interaction occurs strictly through explicit public APIs declared in `__init__.py`.
 
-Pipeline:
+Internal implementation details are private. Direct imports of internal submodules from external packages are prohibited.
 
-Data
-
-↓
-
-Preprocessing
-
-↓
-
-Training
-
-↓
-
-Evaluation
-
-↓
-
-Inference
-
-Обратные зависимости запрещены.
-
-Например:
-
-Training может использовать Preprocessing.
-
-Preprocessing не должен зависеть от Training.
+- **Correct**: `from src.training.trainer import Trainer`
+- **Incorrect**: `from src.training.trainer.internal_impl import Trainer`
 
 ---
 
-## 6. Low Coupling
+### 5. Unidirectional Dependency Flow
 
-Каждый модуль должен быть максимально независим.
+Dependencies must flow strictly downward through the pipeline stages:
 
-Изменение одного модуля не должно приводить к изменениям остальных.
+```text
+Data ──► Preprocessing ──► Training ──► Evaluation ──► Inference
+```
 
----
-
-## 7. High Cohesion
-
-Все элементы внутри одного модуля должны относиться только к одной задаче.
-
-Если модуль начинает выполнять несколько различных задач,
-он должен быть разделен.
+Reverse dependencies are forbidden. For example, `Training` may depend on `Preprocessing`, but `Preprocessing` must never depend on `Training`.
 
 ---
 
-## 8. Experiment Driven Development
+### 6. Low Coupling
 
-Разработка моделей осуществляется через воспроизводимые эксперименты.
-
-Изменение нескольких факторов одновременно запрещается.
-
-Один эксперимент изменяет только одну независимую переменную.
-
-Примеры:
-
-✔ новая архитектура
-
-✔ новая функция потерь
-
-✔ новая стратегия балансировки
-
-✔ новое разрешение изображения
-
-После каждого эксперимента сохраняются:
-
-- конфигурация;
-- веса модели;
-- метрики;
-- графики обучения;
-- итоговый отчет.
+Modules must operate independently with minimal knowledge of other modules' internal states. Changes within one module must not cascade into changes across unrelated modules.
 
 ---
 
-## 9. Documentation First
+### 7. High Cohesion
 
-Перед реализацией нового компонента должна существовать документация.
-
-Каждый модуль сопровождается:
-
-- README.md
-- types.py
-- тестами
-- обновлением PROJECT_CONTEXT.md
-- обновлением DESIGN_DOC.md
-- обновлением CHANGELOG.md
-
-При изменении архитектуры создается новый ADR.
+All elements within a single module must serve a single functional objective. If a module begins addressing multiple disparate concerns, it must be refactored into separate modules.
 
 ---
 
-## 10. Architecture Evolution
+### 8. Experiment-Driven Development
 
-ADR является историей архитектурных решений.
+Model development proceeds through isolated, reproducible experiments.
 
-Существующие ADR не изменяются.
+Modifying multiple independent variables simultaneously in a single experiment is forbidden. Each experiment alters exactly one variable (e.g., a new architecture, a different loss function, or a distinct augmentation strategy).
 
-При изменении архитектурного решения создается новый ADR.
-
-Предыдущий ADR получает статус:
-
-Superseded
-
----
-
-# Consequences
-
-## Positive
-
-- масштабируемая архитектура;
-- высокая читаемость проекта;
-- простая навигация;
-- независимость модулей;
-- минимизация технического долга;
-- удобное тестирование;
-- повторное использование компонентов;
-- возможность переноса инфраструктуры в будущие проекты.
+Every experiment automatically logs and persists:
+- Configuration snapshot (`config.yaml`);
+- Model weights (checkpoints);
+- Evaluation metrics (QWK, F1, Loss curves);
+- Training execution logs.
 
 ---
 
-## Negative
+### 9. Documentation-First Approach
 
-- увеличение количества файлов;
-- более длительное первоначальное проектирование;
-- необходимость поддержки документации.
+Technical specifications and documentation must precede or accompany implementation.
 
-Эти недостатки считаются приемлемыми для долгосрочного инженерного проекта.
+Every module requires:
+- `README.md` documenting purpose, responsibilities, and API;
+- `types.py` defining data contracts;
+- Unit tests validating behavior;
+- Updates to `PROJECT_CONTEXT.md`, `DESIGN_DOC.md`, and `CHANGELOG.md`.
 
----
-
-# Alternatives Considered
-
-## Monolithic ML Project
-
-Отклонено.
-
-Причина:
-
-быстро становится трудно поддерживаемым.
+Structural architecture changes require a new Architecture Decision Record (ADR).
 
 ---
 
-## Layer-Based Architecture
+### 10. Architecture Evolution
 
-Отклонено.
-
-Причина:
-
-слабая модульность и высокая связанность компонентов.
+ADRs maintain a permanent, immutable record of architectural choices. Existing ADRs are never edited retroactively to change past decisions; instead, a new ADR is created superseding the previous decision.
 
 ---
 
-## Feature-Based Architecture
+## Consequences
 
-Рассматривалась.
+### Positive
 
-Не выбрана.
+- High maintainability and project clarity;
+- Seamless modular testability;
+- Decoupled components enabling rapid model experimentation;
+- Reusable pipeline modules for future computer vision projects.
 
-Причина:
+### Negative
 
-Pipeline Architecture лучше соответствует жизненному циклу ML-системы.
-
----
-
-# Related Documents
-
-- SPECIFICATION.md
-- DESIGN_DOC.md
-- PROJECT_CONTEXT.md
+- Higher initial overhead for project setup and boilerplate;
+- Strict discipline required to maintain documentation and design contracts.
 
 ---
 
-# Notes
+## Alternatives Considered
 
-Данный ADR определяет фундаментальные архитектурные принципы проекта.
+1. **Monolithic ML Layout**: Rejected due to high risk of tight coupling and unmaintainable technical debt.
+2. **Layer-Based Architecture**: Rejected due to poor domain isolation in machine learning workflows.
+3. **Feature-Based Architecture**: Considered, but Pipeline-First Architecture better aligns with the ML lifecycle.
 
-Все последующие архитектурные решения должны соответствовать настоящему документу либо оформляться отдельными ADR.
+---
+
+## Related Documents
+
+- [SPECIFICATION.md](../SPECIFICATION.md)
+- [DESIGN_DOC.md](../DESIGN_DOC.md)
+- [PROJECT_CONTEXT.md](../PROJECT_CONTEXT.md)
+- [ADR-002: YAML Configuration](ADR-002-use-YAML-as-primary-configuration-format.md)
