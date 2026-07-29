@@ -1,0 +1,68 @@
+dataset:
+  path: data/raw
+  annotation_file: train.txt
+  image_directory: train
+  num_classes: 5
+
+preprocessing:
+  pipeline: [resize, normalize, to_tensor]
+  resize: {height: 224, width: 224}
+  normalize:
+    mean: [0.485, 0.456, 0.406]
+    std: [0.229, 0.224, 0.225]
+
+model:
+  architecture: swin_t
+  pretrained: true
+  num_classes: 5
+
+loss:
+  name: cross_entropy
+  label_smoothing: 0.1
+
+optimizer:
+  name: adamw
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+
+scheduler:
+  name: cosine
+  eta_min: 1.0e-6
+
+training:
+  epochs: 15
+  device: cuda
+  deterministic: true
+
+mixed_precision:
+  enabled: true
+  dtype: float16
+
+dataloader:
+  batch_size: 32
+  num_workers: 2
+  shuffle: true
+  pin_memory: true
+  persistent_workers: false
+  drop_last: false
+
+checkpoint:
+  directory: experiments/exp_07_swin_t/checkpoints
+  monitor: qwk
+
+early_stopping:
+  enabled: true
+  patience: 7
+  monitor: qwk
+
+logging:
+  log_every_n_steps: 10
+
+metrics:
+  primary: [accuracy, qwk]
+  secondary: [macro_f1]
+  per_class: true
+
+experiment:
+  name: exp_07_swin_t
+  seed: 42
