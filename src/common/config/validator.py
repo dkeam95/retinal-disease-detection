@@ -196,6 +196,9 @@ def _validate_metrics(config: ProjectConfig) -> None:
         "recall",
         "balanced_accuracy",
         "weighted_f1",
+        "map",
+        "map_50",
+        "map_75",
     }
 
     for metric in config.metrics.primary:

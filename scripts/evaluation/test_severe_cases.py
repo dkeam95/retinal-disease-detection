@@ -10,6 +10,16 @@ import os
 os.environ["NO_ALBUMENTATIONS_UPDATE"] = "1"
 
 from pathlib import Path
+import sys
+
+# Ensure src/ is on sys.path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+SRC_DIR = PROJECT_ROOT / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import cv2
 import numpy as np
 import torch
@@ -142,7 +152,7 @@ def main() -> None:
 
         results_summary.append(
             {
-                "image_id": img_path.name,
+                "image_id": img_name,
                 "gt_label": gt_label,
                 "pred_label": res.grade_id,
                 "confidence": res.confidence,

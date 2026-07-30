@@ -126,7 +126,7 @@ def draw_spotlight(
     confidence: float = 0.0,
     threshold: float = 0.45,
     contour_thickness: int = 2,
-    show_bboxes: bool = True,
+    show_bboxes: bool = False,
     apply_clahe: bool = True,
 ) -> np.ndarray:
     """Draw precise contour spotlights on a CLAHE-enhanced fundus image.
@@ -291,6 +291,7 @@ def create_4panel(
         class_name=class_name,
         confidence=confidence,
         threshold=threshold,
+        show_bboxes=False,
     )
     # strip banner added by draw_spotlight (we add our own label)
     banner_h = 36

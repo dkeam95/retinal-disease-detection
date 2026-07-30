@@ -40,6 +40,19 @@ class LesionSegmenter:
         self.exudate_threshold_ratio = exudate_threshold_ratio
         self.hemorrhage_threshold_ratio = hemorrhage_threshold_ratio
 
+    def _get_retina_fov_mask(self, image_rgb: np.ndarray) -> np.ndarray:
+        """Generate a clean binary mask of the circular retinal Field of View (FOV)."""
+        gray = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2GRAY)
+        _, mask = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)
+
+        # Fill any internal holes
+        kernel_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11))
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_close)
+
+        # Erode border by 15px to eliminate edge boundary noise at the retina rim
+        kernel_erode = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
+        return cv2.erode(mask, kernel_erode)
+
     def detect_exudates(self, image_rgb: np.ndarray) -> list[dict[str, Any]]:
         """Detect Hard Exudates (EX - bright yellowish lipid deposits).
 
@@ -48,6 +61,9 @@ class LesionSegmenter:
         """
         if image_rgb.dtype != np.uint8:
             image_rgb = (np.clip(image_rgb, 0, 1) * 255).astype(np.uint8)
+
+        # Generate Retina FOV mask
+        fov_mask = self._get_retina_fov_mask(image_rgb)
 
         # Convert to LAB & HSV color spaces
         lab = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2LAB)
@@ -60,6 +76,7 @@ class LesionSegmenter:
         # Morphological Top-Hat to isolate bright structures smaller than optic disc
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
         top_hat = cv2.morphologyEx(enhanced_l, cv2.MORPH_TOPHAT, kernel)
+        top_hat = cv2.bitwise_and(top_hat, top_hat, mask=fov_mask)
 
         # Adaptive thresholding for bright spots
         thresh_val = (
@@ -68,6 +85,7 @@ class LesionSegmenter:
             else 180
         )
         _, binary_ex = cv2.threshold(top_hat, int(thresh_val), 255, cv2.THRESH_BINARY)
+        binary_ex = cv2.bitwise_and(binary_ex, binary_ex, mask=fov_mask)
 
         # Exclude optic disc region (largest bright blob)
         contours, _ = cv2.findContours(
@@ -104,6 +122,9 @@ class LesionSegmenter:
         if image_rgb.dtype != np.uint8:
             image_rgb = (np.clip(image_rgb, 0, 1) * 255).astype(np.uint8)
 
+        # Generate Retina FOV mask
+        fov_mask = self._get_retina_fov_mask(image_rgb)
+
         # Extract Green channel (maximum absorption / contrast for hemoglobin)
         g_channel = image_rgb[:, :, 1]
 
@@ -114,6 +135,7 @@ class LesionSegmenter:
         # Morphological Bottom-Hat (black top-hat) to isolate dark round structures
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11))
         bottom_hat = cv2.morphologyEx(enhanced_g, cv2.MORPH_BLACKHAT, kernel)
+        bottom_hat = cv2.bitwise_and(bottom_hat, bottom_hat, mask=fov_mask)
 
         # Threshold dark lesions
         thresh_val = (
@@ -127,6 +149,7 @@ class LesionSegmenter:
         _, binary_he = cv2.threshold(
             bottom_hat, int(thresh_val), 255, cv2.THRESH_BINARY
         )
+        binary_he = cv2.bitwise_and(binary_he, binary_he, mask=fov_mask)
 
         # Morphological closing to join split blood spots
         binary_he = cv2.morphologyEx(

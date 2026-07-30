@@ -226,6 +226,44 @@ class LoggingConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class DetectionDatasetConfig:
+    """Detection dataset configuration.
+
+    Attributes:
+        xml_dir: Directory containing PASCAL VOC XML annotations.
+        image_dir: Directory containing JPG images.
+        num_classes: Number of detection classes (including background).
+    """
+
+    xml_dir: Path
+    image_dir: Path
+    num_classes: int = 5  # 0: background, 1: ex, 2: he, 3: ma, 4: se
+
+
+@dataclass(frozen=True, slots=True)
+class DetectionModelConfig:
+    """Detection model configuration.
+
+    Attributes:
+        architecture: Object detector architecture (e.g., "fasterrcnn_resnet50_fpn").
+        pretrained: Flag to load COCO pre-trained weights.
+        num_classes: Number of detection classes.
+        score_thresh: Minimum score threshold for bounding box predictions.
+        nms_thresh: Non-Maximum Suppression IoU threshold.
+        min_size: Minimum image size for detector input.
+        max_size: Maximum image size for detector input.
+    """
+
+    architecture: str = "fasterrcnn_resnet50_fpn"
+    pretrained: bool = True
+    num_classes: int = 5
+    score_thresh: float = 0.25
+    nms_thresh: float = 0.45
+    min_size: int = 640
+    max_size: int = 640
+
+
+@dataclass(frozen=True, slots=True)
 class ProjectConfig:
     """Root project configuration aggregating all subsystem configs.
 
@@ -244,6 +282,8 @@ class ProjectConfig:
         early_stopping: Early stopping runtime configuration.
         mixed_precision: Automatic mixed precision settings.
         logging: Logging configuration.
+        detection_dataset: Optional detection dataset configuration.
+        detection_model: Optional detection model configuration.
     """
 
     dataset: DatasetConfig
@@ -260,3 +300,6 @@ class ProjectConfig:
     early_stopping: EarlyStoppingConfig = EarlyStoppingConfig()
     mixed_precision: MixedPrecisionConfig = MixedPrecisionConfig()
     logging: LoggingConfig = LoggingConfig()
+    detection_dataset: DetectionDatasetConfig | None = None
+    detection_model: DetectionModelConfig | None = None
+

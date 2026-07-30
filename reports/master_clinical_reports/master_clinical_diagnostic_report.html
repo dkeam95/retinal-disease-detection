@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Master Clinical Diagnostic & XAI / Detection Report</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f1117; color: #e2e8f0; padding: 30px; }
+        .container { max-width: 1250px; margin: 0 auto; }
+        h1 { color: #63b3ed; border-bottom: 2px solid #4a5568; padding-bottom: 10px; }
+        .summary-card { background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 20px; margin-bottom: 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 Master Executive Clinical Diagnostic & AI Analytics Report</h1>
+        
+        <div class="summary-card">
+            <h3 style="color: #90cdf4; margin-top: 0;">📋 System Overview & Model Specifications</h3>
+            <ul style="color: #cbd5e0; line-height: 1.8;">
+                <li><strong>Classification Backbone</strong>: ConvNeXt-Tiny (ImageNet Pre-trained) &mdash; Multi-class DR Severity Grading (Grades 0-4).</li>
+                <li><strong>Explainability Suite</strong>: 5 SOTA Algorithms (Grad-CAM, Grad-CAM++, Layer-CAM, Score-CAM, Integrated Gradients) with ROI Retina Masking.</li>
+                <li><strong>Lesion Marker</strong>: Algorithmic OpenCV Top-Hat/Bottom-Hat contrast detection for Hemorrhages (HE) and Exudates (EX).</li>
+                <li><strong>Lesion Object Detector</strong>: Two-Stage Faster R-CNN (ResNet50-FPN) trained at $1536 	imes 1536$ MAX resolution with $4	ext{px}$ Micro-Anchors.</li>
+                <li><strong>Detector Validation Metrics</strong>: <strong>Val mAP@50: 18.24%</strong> | <strong>Val mAP: 11.06%</strong> | <strong>Train Loss: 0.2389 (-51% error reduction)</strong>.</li>
+            </ul>
+        </div>
+
+        
+        <div style="background: #171923; border: 1px solid #2d3748; border-radius: 14px; padding: 25px; margin-bottom: 50px;">
+            <!-- Header Banner -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2d3748; padding-bottom: 15px; margin-bottom: 25px;">
+                <div>
+                    <h2 style="color: #63b3ed; margin: 0;">📁 Patient Record: 007-1789-100.jpg</h2>
+                    <span style="color: #a0aec0; font-size: 14px;">Classification Model: ConvNeXt-Tiny (ImageNet Pre-trained)</span>
+                </div>
+                <div style="text-align: right;">
+                    <span style="background: #2b6cb0; color: #fff; padding: 6px 16px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                        Grade 2 &mdash; Moderate NPDR (82.3%)
+                    </span>
+                </div>
+            </div>
+
+            <!-- SECTION 1: AI EXPLAINABILITY SUITE (5 ALGORITHMS) -->
+            <h3 style="color: #ed8936; border-left: 4px solid #ed8936; padding-left: 10px; margin-bottom: 20px;">
+                👁️ 1. AI Explainability Suite (5 SOTA Attribution Algorithms)
+            </h3>
+            <p style="color: #cbd5e0; margin-bottom: 20px;">
+                Individual 4-panel diagnostic cards showing feature activation and pixel attributions for each SOTA XAI algorithm:
+            </p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px;">
+                    <h4 style="color: #90cdf4; margin-top: 0;">A. Baseline Grad-CAM</h4>
+                    <img src="figures/007-1789-100_xai_gradcam.png" style="width: 100%; border-radius: 6px;" alt="Grad-CAM">
+                </div>
+                <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px;">
+                    <h4 style="color: #90cdf4; margin-top: 0;">B. Grad-CAM++ (Higher-Order Gradients)</h4>
+                    <img src="figures/007-1789-100_xai_gradcam++.png" style="width: 100%; border-radius: 6px;" alt="Grad-CAM++">
+                </div>
+                <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px;">
+                    <h4 style="color: #90cdf4; margin-top: 0;">C. Layer-CAM (Spatial Gradient Preservation)</h4>
+                    <img src="figures/007-1789-100_xai_layer_cam.png" style="width: 100%; border-radius: 6px;" alt="Layer-CAM">
+                </div>
+                <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px;">
+                    <h4 style="color: #90cdf4; margin-top: 0;">D. Score-CAM (Gradient-Free Perturbation)</h4>
+                    <img src="figures/007-1789-100_xai_score_cam.png" style="width: 100%; border-radius: 6px;" alt="Score-CAM">
+                </div>
+            </div>
+
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px; margin-bottom: 35px;">
+                <h4 style="color: #90cdf4; margin-top: 0;">E. Integrated Gradients (Pixel-Level Axiomatic Attribution)</h4>
+                <img src="figures/007-1789-100_xai_integrated_gradients.png" style="width: 100%; border-radius: 6px;" alt="Integrated Gradients">
+            </div>
+
+            <!-- SECTION 2: MEDICAL LESION MARKER & SEGMENTATION -->
+            <h3 style="color: #ecc94b; border-left: 4px solid #ecc94b; padding-left: 10px; margin-bottom: 20px;">
+                🩺 2. Algorithmic Medical Lesion Marker (LesionSegmenter)
+            </h3>
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 15px; margin-bottom: 35px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span style="color: #e2e8f0; font-weight: bold;">OpenCV Top-Hat / Bottom-Hat Heuristic Lesion Marker</span>
+                    <span style="background: #744210; color: #fefcbf; padding: 4px 12px; border-radius: 4px; font-weight: bold;">
+                        🔴 Hemorrhages (HE/MA): 588 | 🟡 Exudates (EX): 841
+                    </span>
+                </div>
+                <img src="figures/007-1789-100_lesion_marker.png" style="width: 100%; border-radius: 6px;" alt="Lesion Marker">
+            </div>
+
+            <!-- SECTION 3: FASTER R-CNN LESION DETECTION -->
+            <h3 style="color: #48bb78; border-left: 4px solid #48bb78; padding-left: 10px; margin-bottom: 20px;">
+                🔍 3. Faster R-CNN Lesion Bounding Box Detection (Round 3: 1536x1536 MAX)
+            </h3>
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <span style="color: #e2e8f0; font-weight: bold; font-size: 16px;">Detector Model: Faster R-CNN (ResNet50-FPN)</span>
+                        <span style="display: block; color: #a0aec0; font-size: 13px;">COCO Pre-trained | 1536x1536 Resolution | 4px Micro-Anchors | CLAHE LAB</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="background: #276749; color: #9ae6b4; padding: 6px 14px; border-radius: 6px; font-weight: bold; font-size: 15px;">
+                            Val mAP@50: 18.24% | Val mAP: 11.06%
+                        </span>
+                        <span style="display: block; color: #cbd5e0; font-weight: bold; margin-top: 4px;">
+                            Total Detected Lesions: 7 boxes
+                        </span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <span style="background: #2d3748; color: #faf089; padding: 4px 10px; border-radius: 4px; font-size: 13px;">🟡 Hard Exudate (EX): 4</span>
+                    <span style="background: #2d3748; color: #feb2b2; padding: 4px 10px; border-radius: 4px; font-size: 13px;">🔴 Hemorrhage (HE): 2</span>
+                    <span style="background: #2d3748; color: #fbb6ce; padding: 4px 10px; border-radius: 4px; font-size: 13px;">🟣 Microaneurysm (MA): 0</span>
+                    <span style="background: #2d3748; color: #e2e8f0; padding: 4px 10px; border-radius: 4px; font-size: 13px;">⚪ Soft Exudate (SE): 1</span>
+                </div>
+
+                <img src="figures/007-1789-100_faster_rcnn_detection.png" style="width: 100%; border-radius: 6px;" alt="Faster R-CNN Detection">
+            </div>
+        </div>
+        
+        <div style="background: #171923; border: 1px solid #2d3748; border-radius: 14px; padding: 25px; margin-bottom: 50px;">
+            <!-- Header Banner -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2d3748; padding-bottom: 15px; margin-bottom: 25px;">
+                <div>
+                    <h2 style="color: #63b3ed; margin: 0;">📁 Patient Record: 007-1853-100.jpg</h2>
+                    <span style="color: #a0aec0; font-size: 14px;">Classification Model: ConvNeXt-Tiny (ImageNet Pre-trained)</span>
+                </div>
+                <div style="text-align: right;">
+                    <span style="background: #2b6cb0; color: #fff; padding: 6px 16px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                        Grade 2 &mdash; Moderate NPDR (82.8%)
+                    </span>
+                </div>
+            </div>
+
+            <!-- SECTION 1: AI EXPLAINABILITY SUITE (5 ALGORITHMS) -->
+            <h3 style="color: #ed8936; border-left: 4px solid #ed8936; padding-left: 10px; margin-bottom: 20px;">
+                👁️ 1. AI Explainability Suite (5 SOTA Attribution Algorithms)
+            </h3>
+            <p style="color: #cbd5e0; margin-bottom: 20px;">
+                Individual 4-panel diagnostic cards showing feature activation and pixel attributions for each SOTA XAI algorithm:
+            </p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px;">
+                    <h4 style="color: #90cdf4; margin-top: 0;">A. Baseline Grad-CAM</h4>
+                    <img src="figures/007-1853-100_xai_gradcam.png" style="width: 100%; border-radius: 6px;" alt="Grad-CAM">
+                </div>
+                <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px;">
+                    <h4 style="color: #90cdf4; margin-top: 0;">B. Grad-CAM++ (Higher-Order Gradients)</h4>
+                    <img src="figures/007-1853-100_xai_gradcam++.png" style="width: 100%; border-radius: 6px;" alt="Grad-CAM++">
+                </div>
+                <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px;">
+                    <h4 style="color: #90cdf4; margin-top: 0;">C. Layer-CAM (Spatial Gradient Preservation)</h4>
+                    <img src="figures/007-1853-100_xai_layer_cam.png" style="width: 100%; border-radius: 6px;" alt="Layer-CAM">
+                </div>
+                <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px;">
+                    <h4 style="color: #90cdf4; margin-top: 0;">D. Score-CAM (Gradient-Free Perturbation)</h4>
+                    <img src="figures/007-1853-100_xai_score_cam.png" style="width: 100%; border-radius: 6px;" alt="Score-CAM">
+                </div>
+            </div>
+
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px; margin-bottom: 35px;">
+                <h4 style="color: #90cdf4; margin-top: 0;">E. Integrated Gradients (Pixel-Level Axiomatic Attribution)</h4>
+                <img src="figures/007-1853-100_xai_integrated_gradients.png" style="width: 100%; border-radius: 6px;" alt="Integrated Gradients">
+            </div>
+
+            <!-- SECTION 2: MEDICAL LESION MARKER & SEGMENTATION -->
+            <h3 style="color: #ecc94b; border-left: 4px solid #ecc94b; padding-left: 10px; margin-bottom: 20px;">
+                🩺 2. Algorithmic Medical Lesion Marker (LesionSegmenter)
+            </h3>
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 15px; margin-bottom: 35px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span style="color: #e2e8f0; font-weight: bold;">OpenCV Top-Hat / Bottom-Hat Heuristic Lesion Marker</span>
+                    <span style="background: #744210; color: #fefcbf; padding: 4px 12px; border-radius: 4px; font-weight: bold;">
+                        🔴 Hemorrhages (HE/MA): 22 | 🟡 Exudates (EX): 844
+                    </span>
+                </div>
+                <img src="figures/007-1853-100_lesion_marker.png" style="width: 100%; border-radius: 6px;" alt="Lesion Marker">
+            </div>
+
+            <!-- SECTION 3: FASTER R-CNN LESION DETECTION -->
+            <h3 style="color: #48bb78; border-left: 4px solid #48bb78; padding-left: 10px; margin-bottom: 20px;">
+                🔍 3. Faster R-CNN Lesion Bounding Box Detection (Round 3: 1536x1536 MAX)
+            </h3>
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <span style="color: #e2e8f0; font-weight: bold; font-size: 16px;">Detector Model: Faster R-CNN (ResNet50-FPN)</span>
+                        <span style="display: block; color: #a0aec0; font-size: 13px;">COCO Pre-trained | 1536x1536 Resolution | 4px Micro-Anchors | CLAHE LAB</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="background: #276749; color: #9ae6b4; padding: 6px 14px; border-radius: 6px; font-weight: bold; font-size: 15px;">
+                            Val mAP@50: 18.24% | Val mAP: 11.06%
+                        </span>
+                        <span style="display: block; color: #cbd5e0; font-weight: bold; margin-top: 4px;">
+                            Total Detected Lesions: 18 boxes
+                        </span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <span style="background: #2d3748; color: #faf089; padding: 4px 10px; border-radius: 4px; font-size: 13px;">🟡 Hard Exudate (EX): 5</span>
+                    <span style="background: #2d3748; color: #feb2b2; padding: 4px 10px; border-radius: 4px; font-size: 13px;">🔴 Hemorrhage (HE): 5</span>
+                    <span style="background: #2d3748; color: #fbb6ce; padding: 4px 10px; border-radius: 4px; font-size: 13px;">🟣 Microaneurysm (MA): 7</span>
+                    <span style="background: #2d3748; color: #e2e8f0; padding: 4px 10px; border-radius: 4px; font-size: 13px;">⚪ Soft Exudate (SE): 1</span>
+                </div>
+
+                <img src="figures/007-1853-100_faster_rcnn_detection.png" style="width: 100%; border-radius: 6px;" alt="Faster R-CNN Detection">
+            </div>
+        </div>
+        
+        <div style="background: #171923; border: 1px solid #2d3748; border-radius: 14px; padding: 25px; margin-bottom: 50px;">
+            <!-- Header Banner -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2d3748; padding-bottom: 15px; margin-bottom: 25px;">
+                <div>
+                    <h2 style="color: #63b3ed; margin: 0;">📁 Patient Record: 007-2403-100.jpg</h2>
+                    <span style="color: #a0aec0; font-size: 14px;">Classification Model: ConvNeXt-Tiny (ImageNet Pre-trained)</span>
+                </div>
+                <div style="text-align: right;">
+                    <span style="background: #2b6cb0; color: #fff; padding: 6px 16px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                        Grade 1 &mdash; Mild NPDR (48.6%)
+                    </span>
+                </div>
+            </div>
+
+            <!-- SECTION 1: AI EXPLAINABILITY SUITE (5 ALGORITHMS) -->
+            <h3 style="color: #ed8936; border-left: 4px solid #ed8936; padding-left: 10px; margin-bottom: 20px;">
+                👁️ 1. AI Explainability Suite (5 SOTA Attribution Algorithms)
+            </h3>
+            <p style="color: #cbd5e0; margin-bottom: 20px;">
+                Individual 4-panel diagnostic cards showing feature activation and pixel attributions for each SOTA XAI algorithm:
+            </p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px;">
+                    <h4 style="color: #90cdf4; margin-top: 0;">A. Baseline Grad-CAM</h4>
+                    <img src="figures/007-2403-100_xai_gradcam.png" style="width: 100%; border-radius: 6px;" alt="Grad-CAM">
+                </div>
+                <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px;">
+                    <h4 style="color: #90cdf4; margin-top: 0;">B. Grad-CAM++ (Higher-Order Gradients)</h4>
+                    <img src="figures/007-2403-100_xai_gradcam++.png" style="width: 100%; border-radius: 6px;" alt="Grad-CAM++">
+                </div>
+                <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px;">
+                    <h4 style="color: #90cdf4; margin-top: 0;">C. Layer-CAM (Spatial Gradient Preservation)</h4>
+                    <img src="figures/007-2403-100_xai_layer_cam.png" style="width: 100%; border-radius: 6px;" alt="Layer-CAM">
+                </div>
+                <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px;">
+                    <h4 style="color: #90cdf4; margin-top: 0;">D. Score-CAM (Gradient-Free Perturbation)</h4>
+                    <img src="figures/007-2403-100_xai_score_cam.png" style="width: 100%; border-radius: 6px;" alt="Score-CAM">
+                </div>
+            </div>
+
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px; margin-bottom: 35px;">
+                <h4 style="color: #90cdf4; margin-top: 0;">E. Integrated Gradients (Pixel-Level Axiomatic Attribution)</h4>
+                <img src="figures/007-2403-100_xai_integrated_gradients.png" style="width: 100%; border-radius: 6px;" alt="Integrated Gradients">
+            </div>
+
+            <!-- SECTION 2: MEDICAL LESION MARKER & SEGMENTATION -->
+            <h3 style="color: #ecc94b; border-left: 4px solid #ecc94b; padding-left: 10px; margin-bottom: 20px;">
+                🩺 2. Algorithmic Medical Lesion Marker (LesionSegmenter)
+            </h3>
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 15px; margin-bottom: 35px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span style="color: #e2e8f0; font-weight: bold;">OpenCV Top-Hat / Bottom-Hat Heuristic Lesion Marker</span>
+                    <span style="background: #744210; color: #fefcbf; padding: 4px 12px; border-radius: 4px; font-weight: bold;">
+                        🔴 Hemorrhages (HE/MA): 19 | 🟡 Exudates (EX): 418
+                    </span>
+                </div>
+                <img src="figures/007-2403-100_lesion_marker.png" style="width: 100%; border-radius: 6px;" alt="Lesion Marker">
+            </div>
+
+            <!-- SECTION 3: FASTER R-CNN LESION DETECTION -->
+            <h3 style="color: #48bb78; border-left: 4px solid #48bb78; padding-left: 10px; margin-bottom: 20px;">
+                🔍 3. Faster R-CNN Lesion Bounding Box Detection (Round 3: 1536x1536 MAX)
+            </h3>
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <span style="color: #e2e8f0; font-weight: bold; font-size: 16px;">Detector Model: Faster R-CNN (ResNet50-FPN)</span>
+                        <span style="display: block; color: #a0aec0; font-size: 13px;">COCO Pre-trained | 1536x1536 Resolution | 4px Micro-Anchors | CLAHE LAB</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="background: #276749; color: #9ae6b4; padding: 6px 14px; border-radius: 6px; font-weight: bold; font-size: 15px;">
+                            Val mAP@50: 18.24% | Val mAP: 11.06%
+                        </span>
+                        <span style="display: block; color: #cbd5e0; font-weight: bold; margin-top: 4px;">
+                            Total Detected Lesions: 2 boxes
+                        </span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <span style="background: #2d3748; color: #faf089; padding: 4px 10px; border-radius: 4px; font-size: 13px;">🟡 Hard Exudate (EX): 0</span>
+                    <span style="background: #2d3748; color: #feb2b2; padding: 4px 10px; border-radius: 4px; font-size: 13px;">🔴 Hemorrhage (HE): 1</span>
+                    <span style="background: #2d3748; color: #fbb6ce; padding: 4px 10px; border-radius: 4px; font-size: 13px;">🟣 Microaneurysm (MA): 0</span>
+                    <span style="background: #2d3748; color: #e2e8f0; padding: 4px 10px; border-radius: 4px; font-size: 13px;">⚪ Soft Exudate (SE): 1</span>
+                </div>
+
+                <img src="figures/007-2403-100_faster_rcnn_detection.png" style="width: 100%; border-radius: 6px;" alt="Faster R-CNN Detection">
+            </div>
+        </div>
+        
+        <div style="background: #171923; border: 1px solid #2d3748; border-radius: 14px; padding: 25px; margin-bottom: 50px;">
+            <!-- Header Banner -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2d3748; padding-bottom: 15px; margin-bottom: 25px;">
+                <div>
+                    <h2 style="color: #63b3ed; margin: 0;">📁 Patient Record: 007-2404-100.jpg</h2>
+                    <span style="color: #a0aec0; font-size: 14px;">Classification Model: ConvNeXt-Tiny (ImageNet Pre-trained)</span>
+                </div>
+                <div style="text-align: right;">
+                    <span style="background: #2b6cb0; color: #fff; padding: 6px 16px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                        Grade 1 &mdash; Mild NPDR (94.4%)
+                    </span>
+                </div>
+            </div>
+
+            <!-- SECTION 1: AI EXPLAINABILITY SUITE (5 ALGORITHMS) -->
+            <h3 style="color: #ed8936; border-left: 4px solid #ed8936; padding-left: 10px; margin-bottom: 20px;">
+                👁️ 1. AI Explainability Suite (5 SOTA Attribution Algorithms)
+            </h3>
+            <p style="color: #cbd5e0; margin-bottom: 20px;">
+                Individual 4-panel diagnostic cards showing feature activation and pixel attributions for each SOTA XAI algorithm:
+            </p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px;">
+                    <h4 style="color: #90cdf4; margin-top: 0;">A. Baseline Grad-CAM</h4>
+                    <img src="figures/007-2404-100_xai_gradcam.png" style="width: 100%; border-radius: 6px;" alt="Grad-CAM">
+                </div>
+                <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px;">
+                    <h4 style="color: #90cdf4; margin-top: 0;">B. Grad-CAM++ (Higher-Order Gradients)</h4>
+                    <img src="figures/007-2404-100_xai_gradcam++.png" style="width: 100%; border-radius: 6px;" alt="Grad-CAM++">
+                </div>
+                <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px;">
+                    <h4 style="color: #90cdf4; margin-top: 0;">C. Layer-CAM (Spatial Gradient Preservation)</h4>
+                    <img src="figures/007-2404-100_xai_layer_cam.png" style="width: 100%; border-radius: 6px;" alt="Layer-CAM">
+                </div>
+                <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px;">
+                    <h4 style="color: #90cdf4; margin-top: 0;">D. Score-CAM (Gradient-Free Perturbation)</h4>
+                    <img src="figures/007-2404-100_xai_score_cam.png" style="width: 100%; border-radius: 6px;" alt="Score-CAM">
+                </div>
+            </div>
+
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 12px; margin-bottom: 35px;">
+                <h4 style="color: #90cdf4; margin-top: 0;">E. Integrated Gradients (Pixel-Level Axiomatic Attribution)</h4>
+                <img src="figures/007-2404-100_xai_integrated_gradients.png" style="width: 100%; border-radius: 6px;" alt="Integrated Gradients">
+            </div>
+
+            <!-- SECTION 2: MEDICAL LESION MARKER & SEGMENTATION -->
+            <h3 style="color: #ecc94b; border-left: 4px solid #ecc94b; padding-left: 10px; margin-bottom: 20px;">
+                🩺 2. Algorithmic Medical Lesion Marker (LesionSegmenter)
+            </h3>
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 15px; margin-bottom: 35px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span style="color: #e2e8f0; font-weight: bold;">OpenCV Top-Hat / Bottom-Hat Heuristic Lesion Marker</span>
+                    <span style="background: #744210; color: #fefcbf; padding: 4px 12px; border-radius: 4px; font-weight: bold;">
+                        🔴 Hemorrhages (HE/MA): 20 | 🟡 Exudates (EX): 469
+                    </span>
+                </div>
+                <img src="figures/007-2404-100_lesion_marker.png" style="width: 100%; border-radius: 6px;" alt="Lesion Marker">
+            </div>
+
+            <!-- SECTION 3: FASTER R-CNN LESION DETECTION -->
+            <h3 style="color: #48bb78; border-left: 4px solid #48bb78; padding-left: 10px; margin-bottom: 20px;">
+                🔍 3. Faster R-CNN Lesion Bounding Box Detection (Round 3: 1536x1536 MAX)
+            </h3>
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 10px; padding: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <span style="color: #e2e8f0; font-weight: bold; font-size: 16px;">Detector Model: Faster R-CNN (ResNet50-FPN)</span>
+                        <span style="display: block; color: #a0aec0; font-size: 13px;">COCO Pre-trained | 1536x1536 Resolution | 4px Micro-Anchors | CLAHE LAB</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="background: #276749; color: #9ae6b4; padding: 6px 14px; border-radius: 6px; font-weight: bold; font-size: 15px;">
+                            Val mAP@50: 18.24% | Val mAP: 11.06%
+                        </span>
+                        <span style="display: block; color: #cbd5e0; font-weight: bold; margin-top: 4px;">
+                            Total Detected Lesions: 5 boxes
+                        </span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <span style="background: #2d3748; color: #faf089; padding: 4px 10px; border-radius: 4px; font-size: 13px;">🟡 Hard Exudate (EX): 4</span>
+                    <span style="background: #2d3748; color: #feb2b2; padding: 4px 10px; border-radius: 4px; font-size: 13px;">🔴 Hemorrhage (HE): 0</span>
+                    <span style="background: #2d3748; color: #fbb6ce; padding: 4px 10px; border-radius: 4px; font-size: 13px;">🟣 Microaneurysm (MA): 1</span>
+                    <span style="background: #2d3748; color: #e2e8f0; padding: 4px 10px; border-radius: 4px; font-size: 13px;">⚪ Soft Exudate (SE): 0</span>
+                </div>
+
+                <img src="figures/007-2404-100_faster_rcnn_detection.png" style="width: 100%; border-radius: 6px;" alt="Faster R-CNN Detection">
+            </div>
+        </div>
+        
+    </div>
+</body>
+</html>
