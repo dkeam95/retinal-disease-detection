@@ -14,6 +14,30 @@ Supported tasks on the **DDR (Diabetic Retinopathy)** dataset:
 3. **Algorithmic Lesion Marker**: Top-Hat / Bottom-Hat contrast extraction isolating Hemorrhages (HE) and Hard Exudates (EX).
 4. **Faster R-CNN Lesion Detection**: Two-stage object detector fine-tuned on PASCAL VOC XML annotations for 4 lesion types (`EX`, `HE`, `MA`, `SE`).
 
+### 📚 Research & Dataset References
+
+- **Dataset**: [Hugging Face — DDR Dataset (`addone5/DDR-dataset`)](https://huggingface.co/datasets/addone5/DDR-dataset)
+- **Publication**: [DDR: A dataset for diabetic retinopathy grading and lesion segmentation (ScienceDirect)](https://www.sciencedirect.com/science/article/pii/S2666389922001040)
+- **Paper DOI**: [https://doi.org/10.1016/j.ins.2019.06.011](https://doi.org/10.1016/j.ins.2019.06.011)
+
+### 📖 Citation (BibTeX)
+
+If you use this codebase or the DDR dataset benchmark in your research, please cite:
+
+```bibtex
+@article{LI2019,
+  title = "Diagnostic Assessment of Deep Learning Algorithms for Diabetic Retinopathy Screening",
+  author = "Tao Li and Yingqi Gao and Kai Wang and Song Guo and Hanruo Liu and Hong Kang",
+  journal = "Information Sciences",
+  volume = "501",
+  pages = "511 - 522",
+  year = "2019",
+  issn = "0020-0255",
+  doi = "https://doi.org/10.1016/j.ins.2019.06.011",
+  url = "http://www.sciencedirect.com/science/article/pii/S0020025519305377",
+}
+```
+
 ---
 
 ## 🎯 Key Features & Module Capabilities
