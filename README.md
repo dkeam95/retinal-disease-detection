@@ -116,12 +116,13 @@ retinal-disease-detection/
 │   └── trainer/          # DetectionTrainer & Classification Trainer engines
 ├── tests/                # Automated pytest unit & integration test suite (171 tests passed)
 ├── pyproject.toml        # Build configuration, linters (ruff, mypy), dependencies
+├── main.py               # Master CLI entrypoint for running full project & pipelines
 └── README.md             # Project documentation entry point
 ```
 
 ---
 
-## ⚡ Quick Start & Script Execution
+## ⚡ Quick Start & Master Script Execution
 
 ### 1. Installation & Environment Setup
 
@@ -136,6 +137,27 @@ python -m venv .venv
 
 # Install dependencies
 pip install -r requirements.txt
+```
+
+### 2. Master Entrypoint (`main.py`)
+
+Run the entire system using the unified `main.py` entrypoint:
+
+```bash
+# Run Master Clinical Diagnostic & AI Analytics Pipeline (Default)
+python main.py
+
+# Run 3-Round Faster R-CNN Detection Resolution Benchmark
+python main.py --mode benchmark-det
+
+# Run 5 SOTA XAI Algorithms Side-by-Side Benchmark
+python main.py --mode benchmark-xai
+
+# Run Live Ensemble Demo & Error Analysis
+python main.py --mode demo
+
+# Generate Executive PDF Report
+python main.py --mode pdf-report
 ```
 
 ### 2. Operational Execution Commands
