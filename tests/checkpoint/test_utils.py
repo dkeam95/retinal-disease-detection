@@ -43,9 +43,7 @@ def test_create_checkpoint_directory(
     Verify checkpoint directory creation.
     """
 
-    checkpoint_directory = (
-        tmp_path / "checkpoints"
-    )
+    checkpoint_directory = tmp_path / "checkpoints"
 
     create_checkpoint_directory(
         checkpoint_directory,
@@ -107,9 +105,7 @@ def test_find_latest_checkpoint(
     """
 
     (tmp_path / "epoch_001_metric_0.8000.pt").touch()
-    latest = (
-        tmp_path / "epoch_002_metric_0.9000.pt"
-    )
+    latest = tmp_path / "epoch_002_metric_0.9000.pt"
     latest.touch()
 
     result = find_latest_checkpoint(

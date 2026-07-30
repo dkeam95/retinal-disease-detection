@@ -50,7 +50,9 @@ class ModelEvaluator:
         self.device = torch.device(device)
         self.model = model.to(self.device)
         self.model.eval()
-        self.class_names = class_names if class_names is not None else DEFAULT_CLASS_NAMES
+        self.class_names = (
+            class_names if class_names is not None else DEFAULT_CLASS_NAMES
+        )
 
     @classmethod
     def from_checkpoint(
@@ -78,6 +80,7 @@ class ModelEvaluator:
             architecture=config.model.architecture,
             pretrained=False,
             num_classes=config.model.num_classes,
+            dropout_rate=config.model.dropout_rate,
         )
 
         checkpoint_data = torch.load(path, map_location=dev, weights_only=False)
@@ -125,7 +128,11 @@ class ModelEvaluator:
             logits = outputs.logits if hasattr(outputs, "logits") else outputs
 
             preds = torch.argmax(logits, dim=1).cpu().numpy()
-            targets_np = targets.cpu().numpy() if isinstance(targets, torch.Tensor) else np.array(targets)
+            targets_np = (
+                targets.cpu().numpy()
+                if isinstance(targets, torch.Tensor)
+                else np.array(targets)
+            )
 
             all_preds.extend(preds)
             all_targets.extend(targets_np)
@@ -136,12 +143,20 @@ class ModelEvaluator:
         # Calculate metrics using sklearn.metrics
         qwk = float(cohen_kappa_score(targets_arr, preds_arr, weights="quadratic"))
         acc = float(accuracy_score(targets_arr, preds_arr))
-        macro_f1 = float(f1_score(targets_arr, preds_arr, average="macro", zero_division=0))
-        weighted_f1 = float(f1_score(targets_arr, preds_arr, average="weighted", zero_division=0))
-        cm = confusion_matrix(targets_arr, preds_arr, labels=list(range(len(self.class_names))))
+        macro_f1 = float(
+            f1_score(targets_arr, preds_arr, average="macro", zero_division=0)
+        )
+        weighted_f1 = float(
+            f1_score(targets_arr, preds_arr, average="weighted", zero_division=0)
+        )
+        cm = confusion_matrix(
+            targets_arr, preds_arr, labels=list(range(len(self.class_names)))
+        )
 
         # Calculate per-class metrics
-        precisions = precision_score(targets_arr, preds_arr, average=None, zero_division=0)
+        precisions = precision_score(
+            targets_arr, preds_arr, average=None, zero_division=0
+        )
         recalls = recall_score(targets_arr, preds_arr, average=None, zero_division=0)
         f1s = f1_score(targets_arr, preds_arr, average=None, zero_division=0)
 

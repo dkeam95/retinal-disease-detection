@@ -91,6 +91,7 @@ def valid_yaml_file(tmp_path: Path, valid_config_dict: dict) -> Path:
 # 1. Tests for ConfigLoader & File Operations
 # =====================================================================
 
+
 def test_load_valid_config(valid_yaml_file: Path) -> None:
     """Test successful loading of a valid YAML configuration."""
     config = ConfigLoader.load(valid_yaml_file)
@@ -153,12 +154,15 @@ def test_image_size_scalar_conversion(tmp_path: Path, valid_config_dict: dict) -
 # 2. Tests for Validator Boundaries & Business Logic
 # =====================================================================
 
+
 def test_validate_non_existent_dataset_path(valid_yaml_file: Path) -> None:
     """Test validation failure when dataset directory path doesn't exist."""
     config = ConfigLoader.load(valid_yaml_file)
 
     # Создаем модифицированную копию замороженного объекта
-    invalid_dataset = replace(config.dataset, path=Path("/non/existent/path/for/dataset"))
+    invalid_dataset = replace(
+        config.dataset, path=Path("/non/existent/path/for/dataset")
+    )
     invalid_config = replace(config, dataset=invalid_dataset)
 
     with pytest.raises(InvalidConfigurationError) as exc_info:

@@ -47,6 +47,4 @@ def test_invalid_reduction() -> None:
         )
 
     # Print success indicator after assertion passes
-    print(
-        "\nLossInitializationError successfully raised."
-    )
+    print("\nLossInitializationError successfully raised.")

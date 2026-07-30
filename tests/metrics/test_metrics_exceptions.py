@@ -25,9 +25,7 @@ def test_unknown_metric_error() -> None:
     with pytest.raises(
         UnknownMetricError,
     ):
-        raise UnknownMetricError(
-            "Unknown metric."
-        )
+        raise UnknownMetricError("Unknown metric.")
 
 
 def test_metric_initialization_error() -> None:
@@ -39,9 +37,7 @@ def test_metric_initialization_error() -> None:
     with pytest.raises(
         MetricInitializationError,
     ):
-        raise MetricInitializationError(
-            "Initialization failed."
-        )
+        raise MetricInitializationError("Initialization failed.")
 
 
 def test_metric_error_inheritance() -> None:

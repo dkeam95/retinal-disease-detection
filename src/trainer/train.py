@@ -69,6 +69,7 @@ DEFAULT_CONFIG_PATH = PROJECT_ROOT / "configs" / "config.yaml"
 # Reproducibility
 # ==========================================================
 
+
 def set_seed(seed: int) -> None:
     """
     Configure deterministic random seeds across all packages.
@@ -90,6 +91,7 @@ def set_seed(seed: int) -> None:
 # Configuration loading
 # ==========================================================
 
+
 def load_config(config_path: Path) -> ProjectConfig:
     """
     Load and parse project configuration.
@@ -104,13 +106,18 @@ def load_config(config_path: Path) -> ProjectConfig:
     ProjectConfig
         Parsed project configuration object.
     """
-    resolved_path = config_path if config_path.is_absolute() else (PROJECT_ROOT / config_path).resolve()
+    resolved_path = (
+        config_path
+        if config_path.is_absolute()
+        else (PROJECT_ROOT / config_path).resolve()
+    )
     return ConfigLoader.load(resolved_path)
 
 
 # ==========================================================
 # Device selection
 # ==========================================================
+
 
 def resolve_device(requested_device: str) -> torch.device:
     """
@@ -143,6 +150,7 @@ def resolve_device(requested_device: str) -> torch.device:
 # ==========================================================
 # Dataset & DataLoader Builders
 # ==========================================================
+
 
 def build_datasets(
     config: ProjectConfig,
@@ -180,14 +188,20 @@ def build_datasets(
         test_file = train_file
 
     # Build dataclass overrides for split directories if they exist
-    valid_img_dir = "valid" if (dataset_root / "valid").is_dir() else config.dataset.image_directory
-    test_img_dir = "test" if (dataset_root / "test").is_dir() else config.dataset.image_directory
+    valid_img_dir = (
+        "valid" if (dataset_root / "valid").is_dir() else config.dataset.image_directory
+    )
+    test_img_dir = (
+        "test" if (dataset_root / "test").is_dir() else config.dataset.image_directory
+    )
 
     valid_config = replace(config.dataset, image_directory=valid_img_dir)
     test_config = replace(config.dataset, image_directory=test_img_dir)
 
     # Build typed dataset instances
-    train_dataset = RetinalDataset(config=config.dataset, annotation_file=train_file.name)
+    train_dataset = RetinalDataset(
+        config=config.dataset, annotation_file=train_file.name
+    )
     valid_dataset = RetinalDataset(config=valid_config, annotation_file=valid_file.name)
     test_dataset = RetinalDataset(config=test_config, annotation_file=test_file.name)
 
@@ -286,6 +300,7 @@ def build_metrics_dict(config: ProjectConfig) -> dict[str, Callable]:
 # Training Components Builder
 # ==========================================================
 
+
 def build_training_components(config: ProjectConfig):
     """
     Construct model, criterion, optimizer, and scheduler.
@@ -304,11 +319,13 @@ def build_training_components(config: ProjectConfig):
         architecture=config.model.architecture,
         pretrained=config.model.pretrained,
         num_classes=config.model.num_classes,
+        dropout_rate=getattr(config.model, "dropout_rate", 0.0),
     )
 
     class_weights = None
     if config.loss.name in ("class_balanced_focal", "weighted_cross_entropy"):
         from training.class_weights import compute_class_weights
+
         class_weights = compute_class_weights()
 
     criterion = LossFactory.build(
@@ -336,6 +353,7 @@ def build_training_components(config: ProjectConfig):
 # ==========================================================
 # Trainer Builder
 # ==========================================================
+
 
 def build_trainer(
     config: ProjectConfig,
@@ -394,7 +412,9 @@ def build_trainer(
         checkpoint_manager=checkpoint_manager,
         device=device,
         mixed_precision=getattr(config.mixed_precision, "enabled", True),
-        gradient_accumulation_steps=getattr(config.training, "gradient_accumulation_steps", 1),
+        gradient_accumulation_steps=getattr(
+            config.training, "gradient_accumulation_steps", 1
+        ),
         validation_frequency=getattr(config.training, "validation_frequency", 1),
         early_stopping_patience=getattr(config.early_stopping, "patience", 10),
         early_stopping_min_delta=getattr(config.early_stopping, "min_delta", 0.0),
@@ -407,6 +427,7 @@ def build_trainer(
 # ==========================================================
 # Main CLI Entry Point
 # ==========================================================
+
 
 def main() -> None:
     """
@@ -439,7 +460,9 @@ def main() -> None:
 
     # 2. Dataset & DataLoaders
     train_ds, val_ds, test_ds = build_datasets(config)
-    print(f"\nDataset Samples -> Train: {len(train_ds)} | Valid: {len(val_ds)} | Test: {len(test_ds)}")
+    print(
+        f"\nDataset Samples -> Train: {len(train_ds)} | Valid: {len(val_ds)} | Test: {len(test_ds)}"
+    )
 
     train_loader, val_loader, test_loader = build_dataloaders(
         config, train_ds, val_ds, test_ds
@@ -480,8 +503,14 @@ def main() -> None:
     # 7. Generate Visual Report
     print("\nGenerating Automated Visual Report...")
     from visualization.report_generator import HTMLReportGenerator
-    report_file = PROJECT_ROOT / "reports" / "metrics" / f"experiment_{config.experiment.name}_report.html"
-    
+
+    report_file = (
+        PROJECT_ROOT
+        / "reports"
+        / "metrics"
+        / f"experiment_{config.experiment.name}_report.html"
+    )
+
     config_summary = {
         "Architecture": config.model.architecture,
         "Optimizer": config.optimizer.name,

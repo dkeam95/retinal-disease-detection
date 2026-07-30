@@ -18,10 +18,7 @@ def test_model_architecture_is_string() -> None:
     """
 
     # Confirm EFFICIENTNET_B0 enum value equals string 'efficientnet_b0'
-    assert (
-        ModelArchitecture.EFFICIENTNET_B0
-        == "efficientnet_b0"
-    )
+    assert ModelArchitecture.EFFICIENTNET_B0 == "efficientnet_b0"
 
 
 def test_model_lookup() -> None:
@@ -30,12 +27,7 @@ def test_model_lookup() -> None:
     """
 
     # Convert string 'efficientnet_b0' into corresponding ModelArchitecture enum instance
-    architecture = ModelArchitecture(
-        "efficientnet_b0"
-    )
+    architecture = ModelArchitecture("efficientnet_b0")
 
     # Assert string lookup yields correct EFFICIENTNET_B0 enum member
-    assert (
-        architecture
-        is ModelArchitecture.EFFICIENTNET_B0
-    )
+    assert architecture is ModelArchitecture.EFFICIENTNET_B0

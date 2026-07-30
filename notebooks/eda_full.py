@@ -22,6 +22,7 @@ from collections import Counter
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")  # для headless рендеринга, сохраняем в файлы
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
@@ -89,7 +90,12 @@ print()
 print(">> [1/6] Class distribution across train / valid / test...")
 
 fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharey=True)
-fig.suptitle("Распределение степеней тяжести DR по сплитам", fontsize=15, fontweight="bold", y=1.02)
+fig.suptitle(
+    "Распределение степеней тяжести DR по сплитам",
+    fontsize=15,
+    fontweight="bold",
+    y=1.02,
+)
 
 for ax, split in zip(axes, SPLITS):
     labels = [rec[1] for rec in all_data[split]]
@@ -97,7 +103,9 @@ for ax, split in zip(axes, SPLITS):
     x_labels = [CLASS_NAMES[i] for i in range(5)]
     counts = [counter.get(i, 0) for i in range(5)]
 
-    bars = ax.bar(x_labels, counts, color=COLORS, edgecolor="black", linewidth=0.5, alpha=0.9)
+    bars = ax.bar(
+        x_labels, counts, color=COLORS, edgecolor="black", linewidth=0.5, alpha=0.9
+    )
 
     # Подписи с числами над столбцами
     for bar, count in zip(bars, counts):
@@ -140,7 +148,9 @@ for cls_id in range(5):
     ratios.append(ratio)
     x_labels.append(CLASS_NAMES[cls_id])
 
-bars = ax.barh(x_labels, ratios, color=COLORS, edgecolor="black", linewidth=0.5, alpha=0.9)
+bars = ax.barh(
+    x_labels, ratios, color=COLORS, edgecolor="black", linewidth=0.5, alpha=0.9
+)
 
 for bar, ratio, cls_id in zip(bars, ratios, range(5)):
     count = train_counter.get(cls_id, 0)
@@ -174,8 +184,20 @@ for filename, label in tqdm(all_data["train"], desc="   File sizes", ncols=80):
 
 fig, ax = plt.subplots(figsize=(12, 5))
 ax.hist(file_sizes_kb, bins=80, color="#3498db", edgecolor="white", alpha=0.85)
-ax.axvline(np.median(file_sizes_kb), color="#e74c3c", linestyle="--", linewidth=2, label=f"Медиана: {np.median(file_sizes_kb):.0f} KB")
-ax.axvline(np.mean(file_sizes_kb), color="#2ecc71", linestyle="--", linewidth=2, label=f"Среднее: {np.mean(file_sizes_kb):.0f} KB")
+ax.axvline(
+    np.median(file_sizes_kb),
+    color="#e74c3c",
+    linestyle="--",
+    linewidth=2,
+    label=f"Медиана: {np.median(file_sizes_kb):.0f} KB",
+)
+ax.axvline(
+    np.mean(file_sizes_kb),
+    color="#2ecc71",
+    linestyle="--",
+    linewidth=2,
+    label=f"Среднее: {np.mean(file_sizes_kb):.0f} KB",
+)
 ax.set_xlabel("Размер файла (KB)")
 ax.set_ylabel("Количество изображений")
 ax.set_title("Распределение размеров файлов (train)", fontsize=13, fontweight="bold")
@@ -214,7 +236,12 @@ if broken_count > 0:
     print(f"   [WARN] Broken files in sample: {broken_count}")
 
 fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-fig.suptitle("Разрешения изображений (сэмпл 500 из train)", fontsize=13, fontweight="bold", y=1.02)
+fig.suptitle(
+    "Разрешения изображений (сэмпл 500 из train)",
+    fontsize=13,
+    fontweight="bold",
+    y=1.02,
+)
 
 # Scatter width vs height
 axes[0].scatter(widths, heights, alpha=0.4, s=15, color="#8e44ad", edgecolors="none")
@@ -227,7 +254,14 @@ axes[0].grid(linestyle="--", alpha=0.4)
 unique_resolutions = Counter(zip(widths, heights))
 res_labels = [f"{w}x{h}" for (w, h), _ in unique_resolutions.most_common(10)]
 res_counts = [c for _, c in unique_resolutions.most_common(10)]
-axes[1].barh(res_labels, res_counts, color="#e67e22", edgecolor="black", linewidth=0.5, alpha=0.85)
+axes[1].barh(
+    res_labels,
+    res_counts,
+    color="#e67e22",
+    edgecolor="black",
+    linewidth=0.5,
+    alpha=0.85,
+)
 axes[1].set_xlabel("Количество (из 500)")
 axes[1].set_title("Топ-10 разрешений")
 axes[1].invert_yaxis()
@@ -266,7 +300,12 @@ for idx in tqdm(brightness_indices, desc="   Brightness", ncols=80):
         pass
 
 fig, axes = plt.subplots(1, 3, figsize=(16, 5), sharey=True)
-fig.suptitle("Распределение средней яркости по каналам (сэмпл 300)", fontsize=13, fontweight="bold", y=1.02)
+fig.suptitle(
+    "Распределение средней яркости по каналам (сэмпл 300)",
+    fontsize=13,
+    fontweight="bold",
+    y=1.02,
+)
 
 channel_data = [
     (r_means, "Red", "#e74c3c"),
@@ -277,7 +316,13 @@ channel_data = [
 for ax, (data, name, color) in zip(axes, channel_data):
     ax.hist(data, bins=40, color=color, edgecolor="white", alpha=0.8)
     mean_val = np.mean(data)
-    ax.axvline(mean_val, color="black", linestyle="--", linewidth=1.5, label=f"Mean: {mean_val:.1f}")
+    ax.axvline(
+        mean_val,
+        color="black",
+        linestyle="--",
+        linewidth=1.5,
+        label=f"Mean: {mean_val:.1f}",
+    )
     ax.set_xlabel(f"{name} channel (0-255)")
     ax.set_title(name)
     ax.legend()
@@ -299,7 +344,10 @@ fig.suptitle("Разбиение датасета: Train / Valid / Test", fontsi
 
 # Pie chart
 split_sizes = [len(all_data[s]) for s in SPLITS]
-split_labels_pie = [f"{s.upper()}\n{n} img\n({n/total*100:.1f}%)" for s, n in zip(SPLITS, split_sizes)]
+split_labels_pie = [
+    f"{s.upper()}\n{n} img\n({n / total * 100:.1f}%)"
+    for s, n in zip(SPLITS, split_sizes)
+]
 wedges, texts = axes[0].pie(
     split_sizes,
     labels=split_labels_pie,
@@ -362,7 +410,9 @@ for split in SPLITS:
 
 print(f"\n  Median file size (train): {np.median(file_sizes_kb):.0f} KB")
 print(f"  Mean file size (train): {np.mean(file_sizes_kb):.0f} KB")
-print(f"  Min/Max file size (train): {np.min(file_sizes_kb):.0f} / {np.max(file_sizes_kb):.0f} KB")
+print(
+    f"  Min/Max file size (train): {np.min(file_sizes_kb):.0f} / {np.max(file_sizes_kb):.0f} KB"
+)
 
 if widths:
     uw = sorted(set(widths))

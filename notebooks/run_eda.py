@@ -28,7 +28,7 @@ from dataset.dataset import RetinalDataset
 
 def run_retinal_eda(config: DatasetConfig) -> None:
     """Run full EDA pipeline on retinal dataset."""
-    
+
     print("=" * 60)
     print(" 1. ЗАГРУЗКА ДАТАСЕТА И АНАЛИЗ БАЛАНСА КЛАССОВ ")
     print("=" * 60)
@@ -64,14 +64,22 @@ def run_retinal_eda(config: DatasetConfig) -> None:
     counts = [class_counts[c] for c in sorted_labels]
 
     bars = plt.bar(x_labels, counts, color="#3498db", edgecolor="black", alpha=0.85)
-    plt.title("Распределение степеней тяжести ретинопатии", fontsize=12, fontweight="bold")
+    plt.title(
+        "Распределение степеней тяжести ретинопатии", fontsize=12, fontweight="bold"
+    )
     plt.ylabel("Количество снимков")
     plt.grid(axis="y", linestyle="--", alpha=0.5)
 
     # Добавляем подписи с количеством над столбцами
     for bar in bars:
         yval = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width() / 2, yval + (max(counts) * 0.01), f"{yval}", ha="center", va="bottom")
+        plt.text(
+            bar.get_x() + bar.get_width() / 2,
+            yval + (max(counts) * 0.01),
+            f"{yval}",
+            ha="center",
+            va="bottom",
+        )
 
     plt.tight_layout()
     plt.show()
@@ -90,7 +98,7 @@ def run_retinal_eda(config: DatasetConfig) -> None:
         img = sample.image  # NumPy array (H, W, C) в RGB
 
         shapes.append(img.shape)
-        
+
         # Переводим в [0.0, 1.0] для подсчета статистики нормализации
         img_float = img / 255.0
         means.append(img_float.mean(axis=(0, 1)))
@@ -109,7 +117,9 @@ def run_retinal_eda(config: DatasetConfig) -> None:
     print("\n" + "-" * 50)
     print(" РЕКОМЕНДУЕМЫЕ ПАРАМЕТРЫ НОРМАЛИЗАЦИИ ДЛЯ PYTORCH:")
     print("-" * 50)
-    print(f"  mean = [{global_mean[0]:.4f}, {global_mean[1]:.4f}, {global_mean[2]:.4f}]")
+    print(
+        f"  mean = [{global_mean[0]:.4f}, {global_mean[1]:.4f}, {global_mean[2]:.4f}]"
+    )
     print(f"  std  = [{global_std[0]:.4f}, {global_std[1]:.4f}, {global_std[2]:.4f}]")
     print("-" * 50)
 
@@ -146,9 +156,9 @@ def run_retinal_eda(config: DatasetConfig) -> None:
 if __name__ == "__main__":
     dataset_config = DatasetConfig(
         path=PROJECT_ROOT / "data" / "raw",
-        annotation_file="train.txt",   # Текстовый файл разметки
-        image_directory="train",       # Папка с картинками для обучающего датасета
+        annotation_file="train.txt",  # Текстовый файл разметки
+        image_directory="train",  # Папка с картинками для обучающего датасета
         num_classes=5,
     )
-    
+
     run_retinal_eda(dataset_config)

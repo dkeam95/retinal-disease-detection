@@ -50,18 +50,12 @@ def validate_component_name(
 
     normalized_name = normalize_name(name)
 
-    normalized_supported = {
-        normalize_name(component)
-        for component in supported
-    }
+    normalized_supported = {normalize_name(component) for component in supported}
 
     if normalized_name not in normalized_supported:
         available = ", ".join(sorted(normalized_supported))
 
-        raise ValueError(
-            f"Unsupported component '{name}'. "
-            f"Available: {available}"
-        )
+        raise ValueError(f"Unsupported component '{name}'. Available: {available}")
 
 
 def is_supported_component(
@@ -85,10 +79,6 @@ def is_supported_component(
         True if the component is supported.
     """
 
-    return (
-        normalize_name(name)
-        in {
-            normalize_name(component)
-            for component in supported
-        }
-    )
+    return normalize_name(name) in {
+        normalize_name(component) for component in supported
+    }

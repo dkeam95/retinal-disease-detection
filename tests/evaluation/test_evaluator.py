@@ -13,7 +13,9 @@ from training.model_factory import ModelFactory
 
 def test_model_evaluator(tmp_path):
     # Dummy model
-    model = ModelFactory.build(architecture="efficientnet_b0", pretrained=False, num_classes=5)
+    model = ModelFactory.build(
+        architecture="efficientnet_b0", pretrained=False, num_classes=5
+    )
 
     # Dummy dataset (10 samples of 3x224x224 and targets 0-4)
     images = torch.randn(10, 3, 224, 224)

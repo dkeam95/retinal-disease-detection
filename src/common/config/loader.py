@@ -143,7 +143,9 @@ class ConfigLoader:
                     image_size=image_size,
                     mean=mean,
                     std=std,
-                    horizontal_flip_prob=float(prep_data.get("horizontal_flip_prob", 0.5)),
+                    horizontal_flip_prob=float(
+                        prep_data.get("horizontal_flip_prob", 0.5)
+                    ),
                     vertical_flip_prob=float(prep_data.get("vertical_flip_prob", 0.0)),
                     rotation_limit=int(prep_data.get("rotation_limit", 15)),
                     rotation_prob=float(prep_data.get("rotation_prob", 0.3)),
@@ -170,6 +172,7 @@ class ConfigLoader:
                     architecture=str(data["model"]["architecture"]),
                     pretrained=bool(data["model"]["pretrained"]),
                     num_classes=int(data["model"]["num_classes"]),
+                    dropout_rate=float(data["model"].get("dropout_rate", 0.0)),
                 ),
                 loss=LossConfig(
                     name=str(data["loss"]["name"]),
@@ -180,8 +183,12 @@ class ConfigLoader:
                     reduction=str(data["loss"].get("reduction", "mean")),
                 ),
                 metrics=MetricsConfig(
-                    primary=tuple(data.get("metrics", {}).get("primary", ["accuracy", "qwk"])),
-                    secondary=tuple(data.get("metrics", {}).get("secondary", ["macro_f1"])),
+                    primary=tuple(
+                        data.get("metrics", {}).get("primary", ["accuracy", "qwk"])
+                    ),
+                    secondary=tuple(
+                        data.get("metrics", {}).get("secondary", ["macro_f1"])
+                    ),
                     per_class=bool(data.get("metrics", {}).get("per_class", True)),
                 ),
                 experiment=ExperimentConfig(
@@ -195,27 +202,35 @@ class ConfigLoader:
                             "learning_rate", data.get("optimizer", {}).get("lr", 0.0003)
                         )
                     ),
-                    weight_decay=float(data.get("optimizer", {}).get("weight_decay", 0.0001)),
+                    weight_decay=float(
+                        data.get("optimizer", {}).get("weight_decay", 0.0001)
+                    ),
                 ),
                 scheduler=SchedulerConfig(
                     name=str(data.get("scheduler", {}).get("name", "cosine")),
                     eta_min=float(data.get("scheduler", {}).get("eta_min", 1.0e-6)),
                 ),
                 checkpoint=CheckpointConfig(
-                    directory=Path(data.get("checkpoint", {}).get("directory", "checkpoints")),
+                    directory=Path(
+                        data.get("checkpoint", {}).get("directory", "checkpoints")
+                    ),
                     monitor=str(data.get("checkpoint", {}).get("monitor", "val_loss")),
                 ),
                 early_stopping=EarlyStoppingConfig(
                     enabled=bool(data.get("early_stopping", {}).get("enabled", True)),
                     patience=int(data.get("early_stopping", {}).get("patience", 10)),
-                    min_delta=float(data.get("early_stopping", {}).get("min_delta", 0.001)),
+                    min_delta=float(
+                        data.get("early_stopping", {}).get("min_delta", 0.001)
+                    ),
                 ),
                 mixed_precision=MixedPrecisionConfig(
                     enabled=bool(data.get("mixed_precision", {}).get("enabled", True)),
                     dtype=str(data.get("mixed_precision", {}).get("dtype", "float16")),
                 ),
                 logging=LoggingConfig(
-                    log_every_n_steps=int(data.get("logging", {}).get("log_every_n_steps", 20)),
+                    log_every_n_steps=int(
+                        data.get("logging", {}).get("log_every_n_steps", 20)
+                    ),
                 ),
             )
 

@@ -32,10 +32,7 @@ def test_build_single_metric() -> None:
     assert len(metrics) == 1
 
     # Assert ACCURACY key exists in the resulting dictionary
-    assert (
-        MetricName.ACCURACY
-        in metrics
-    )
+    assert MetricName.ACCURACY in metrics
 
 
 def test_build_multiple_metrics() -> None:
@@ -60,10 +57,7 @@ def test_build_multiple_metrics() -> None:
     assert len(metrics) == 4
 
     # Assert F1 key exists in the resulting dictionary
-    assert (
-        MetricName.F1
-        in metrics
-    )
+    assert MetricName.F1 in metrics
 
 
 def test_empty_metric_list() -> None:
@@ -72,9 +66,7 @@ def test_empty_metric_list() -> None:
     """
 
     # Pass empty list to metric factory
-    metrics = build_metrics(
-        []
-    )
+    metrics = build_metrics([])
 
     # Print empty result dictionary
     print(metrics)

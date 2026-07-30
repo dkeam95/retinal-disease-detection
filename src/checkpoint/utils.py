@@ -55,9 +55,7 @@ def validate_checkpoint(checkpoint_path: Path) -> None:
 
     # Verify that the path exists on disk
     if not checkpoint_path.exists():
-        raise CheckpointNotFoundError(
-            f"Checkpoint file not found: {checkpoint_path}"
-        )
+        raise CheckpointNotFoundError(f"Checkpoint file not found: {checkpoint_path}")
 
     # Ensure the path points to a file, not a directory or symlink target
     if not checkpoint_path.is_file():

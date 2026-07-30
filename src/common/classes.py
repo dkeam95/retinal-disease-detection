@@ -14,10 +14,12 @@ class DRClass(IntEnum):
     """Diabetic Retinopathy severity classes."""
 
     # Canonical medical stage mappings (0 to 4 ICDR scale)
-    NO_DR = 0             # Stage 0: Healthy retina without clinical signs
-    MILD_NPDR = 1         # Stage 1: Mild Nonproliferative Diabetic Retinopathy (microaneurysms only)
-    MODERATE_NPDR = 2     # Stage 2: Moderate Nonproliferative Diabetic Retinopathy
-    SEVERE_NPDR = 3       # Stage 3: Severe Nonproliferative Diabetic Retinopathy
+    NO_DR = 0  # Stage 0: Healthy retina without clinical signs
+    MILD_NPDR = (
+        1  # Stage 1: Mild Nonproliferative Diabetic Retinopathy (microaneurysms only)
+    )
+    MODERATE_NPDR = 2  # Stage 2: Moderate Nonproliferative Diabetic Retinopathy
+    SEVERE_NPDR = 3  # Stage 3: Severe Nonproliferative Diabetic Retinopathy
     PROLIFERATIVE_DR = 4  # Stage 4: Proliferative Diabetic Retinopathy (advanced stage)
 
 

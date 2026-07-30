@@ -18,25 +18,13 @@ def test_loss_names() -> None:
     """
 
     # Confirm CROSS_ENTROPY maps to 'cross_entropy' string
-    assert (
-        LossName.CROSS_ENTROPY
-        == "cross_entropy"
-    )
+    assert LossName.CROSS_ENTROPY == "cross_entropy"
 
     # Confirm WEIGHTED_CROSS_ENTROPY maps to 'weighted_cross_entropy' string
-    assert (
-        LossName.WEIGHTED_CROSS_ENTROPY
-        == "weighted_cross_entropy"
-    )
+    assert LossName.WEIGHTED_CROSS_ENTROPY == "weighted_cross_entropy"
 
     # Confirm FOCAL maps to 'focal' string
-    assert (
-        LossName.FOCAL
-        == "focal"
-    )
+    assert LossName.FOCAL == "focal"
 
     # Confirm CLASS_BALANCED_FOCAL maps to 'class_balanced_focal' string
-    assert (
-        LossName.CLASS_BALANCED_FOCAL
-        == "class_balanced_focal"
-    )
+    assert LossName.CLASS_BALANCED_FOCAL == "class_balanced_focal"

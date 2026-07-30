@@ -5,25 +5,32 @@ dataset:
   num_classes: 5
 
 preprocessing:
-  pipeline: [resize, normalize, to_tensor]
+  pipeline: [resize, horizontal_flip, vertical_flip, rotation, brightness_contrast, normalize, to_tensor]
   resize: {height: 224, width: 224}
+  horizontal_flip_prob: 0.5
+  vertical_flip_prob: 0.5
+  rotation_limit: 180
+  rotation_prob: 0.5
+  brightness_contrast_prob: 0.4
   normalize:
     mean: [0.485, 0.456, 0.406]
     std: [0.229, 0.224, 0.225]
 
 model:
-  architecture: swin_t
+  architecture: convnext_tiny
   pretrained: true
   num_classes: 5
+  dropout_rate: 0.3
 
 loss:
-  name: cross_entropy
-  label_smoothing: 0.1
+  name: class_balanced_focal
+  gamma: 2.0
+  beta: 0.9999
 
 optimizer:
   name: adamw
-  learning_rate: 0.0001
-  weight_decay: 0.0001
+  learning_rate: 0.00015
+  weight_decay: 0.001
 
 scheduler:
   name: cosine
@@ -39,7 +46,7 @@ mixed_precision:
   dtype: float16
 
 dataloader:
-  batch_size: 32
+  batch_size: 48
   num_workers: 2
   shuffle: true
   pin_memory: true
@@ -47,7 +54,7 @@ dataloader:
   drop_last: false
 
 checkpoint:
-  directory: experiments/exp_07_swin_t/checkpoints
+  directory: experiments/exp_05_convnext_tiny_v2/checkpoints
   monitor: qwk
 
 early_stopping:
@@ -64,5 +71,5 @@ metrics:
   per_class: true
 
 experiment:
-  name: exp_07_swin_t
+  name: exp_05_convnext_tiny_v2
   seed: 42

@@ -18,7 +18,9 @@ def test_retinal_predictor():
     config_path = PROJECT_ROOT / "configs" / "config.yaml"
     config = ConfigLoader.load(config_path)
 
-    model = ModelFactory.build(architecture="efficientnet_b0", pretrained=False, num_classes=5)
+    model = ModelFactory.build(
+        architecture="efficientnet_b0", pretrained=False, num_classes=5
+    )
     predictor = RetinalPredictor(model=model, config=config, device="cpu")
 
     # Create dummy RGB numpy image (512, 512, 3)

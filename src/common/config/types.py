@@ -100,6 +100,7 @@ class ModelConfig:
     architecture: str
     pretrained: bool
     num_classes: int
+    dropout_rate: float = 0.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -150,6 +151,7 @@ class ExperimentConfig:
     name: str
     seed: int
 
+
 @dataclass(frozen=True, slots=True)
 class LossConfig:
     """Loss function configuration.
@@ -184,6 +186,7 @@ class MetricsConfig:
     primary: tuple[str, ...]
     secondary: tuple[str, ...]
     per_class: bool = True
+
 
 @dataclass(frozen=True, slots=True)
 class OptimizerConfig:

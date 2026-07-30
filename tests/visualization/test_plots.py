@@ -27,13 +27,15 @@ def test_plot_learning_curves(tmp_path):
 
 
 def test_plot_confusion_matrix(tmp_path):
-    cm = np.array([
-        [50, 2, 0, 0, 0],
-        [3, 40, 5, 0, 0],
-        [0, 4, 30, 2, 0],
-        [0, 0, 3, 20, 1],
-        [0, 0, 0, 2, 10],
-    ])
+    cm = np.array(
+        [
+            [50, 2, 0, 0, 0],
+            [3, 40, 5, 0, 0],
+            [0, 4, 30, 2, 0],
+            [0, 0, 3, 20, 1],
+            [0, 0, 0, 2, 10],
+        ]
+    )
     save_file = tmp_path / "cm.png"
     fig = plot_confusion_matrix(cm, save_path=save_file, normalize=True)
     assert fig is not None

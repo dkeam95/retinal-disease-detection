@@ -60,10 +60,7 @@ def test_train_step_updates_parameters() -> None:
 
     images, targets = _build_batch()
 
-    before = [
-        parameter.detach().clone()
-        for parameter in model.parameters()
-    ]
+    before = [parameter.detach().clone() for parameter in model.parameters()]
 
     output = train_step(
         model=model,
@@ -77,10 +74,7 @@ def test_train_step_updates_parameters() -> None:
     assert output.batch_size == 2
     assert output.loss >= 0.0
 
-    after = [
-        parameter.detach().clone()
-        for parameter in model.parameters()
-    ]
+    after = [parameter.detach().clone() for parameter in model.parameters()]
 
     assert any(
         not torch.equal(before_tensor, after_tensor)
@@ -96,10 +90,7 @@ def test_validation_step_returns_logits_and_stats() -> None:
 
     images, targets = _build_batch()
 
-    before = [
-        parameter.detach().clone()
-        for parameter in model.parameters()
-    ]
+    before = [parameter.detach().clone() for parameter in model.parameters()]
 
     logits, output = validation_step(
         model=model,
@@ -117,10 +108,7 @@ def test_validation_step_returns_logits_and_stats() -> None:
         3,
     )
 
-    after = [
-        parameter.detach().clone()
-        for parameter in model.parameters()
-    ]
+    after = [parameter.detach().clone() for parameter in model.parameters()]
 
     assert all(
         torch.equal(before_tensor, after_tensor)

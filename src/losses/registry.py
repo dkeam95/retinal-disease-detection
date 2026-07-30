@@ -32,7 +32,7 @@ from losses.weighted_cross_entropy import (  # Import builder for weighted cross
     build_weighted_cross_entropy,
 )
 
-LossBuilder = Callable[                          # Type alias for loss factory builder functions
+LossBuilder = Callable[  # Type alias for loss factory builder functions
     [
         LossConfig,
         Tensor | None,
@@ -41,19 +41,12 @@ LossBuilder = Callable[                          # Type alias for loss factory b
 ]
 
 
-LOSS_REGISTRY: dict[                            # Global dictionary mapping LossName enum to builders
+LOSS_REGISTRY: dict[  # Global dictionary mapping LossName enum to builders
     LossName,
     LossBuilder,
 ] = {
-    LossName.CROSS_ENTROPY:
-        build_cross_entropy,                    # Register builder for standard cross-entropy
-
-    LossName.WEIGHTED_CROSS_ENTROPY:
-        build_weighted_cross_entropy,           # Register builder for weighted cross-entropy
-
-    LossName.FOCAL:
-        build_focal_loss,                       # Register builder for focal loss
-
-    LossName.CLASS_BALANCED_FOCAL:
-        build_class_balanced_focal_loss,        # Register builder for class-balanced focal loss
+    LossName.CROSS_ENTROPY: build_cross_entropy,  # Register builder for standard cross-entropy
+    LossName.WEIGHTED_CROSS_ENTROPY: build_weighted_cross_entropy,  # Register builder for weighted cross-entropy
+    LossName.FOCAL: build_focal_loss,  # Register builder for focal loss
+    LossName.CLASS_BALANCED_FOCAL: build_class_balanced_focal_loss,  # Register builder for class-balanced focal loss
 }

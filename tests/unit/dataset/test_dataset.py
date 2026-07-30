@@ -53,7 +53,9 @@ def test_retinal_dataset_getitem_success(dummy_dataset_env: DatasetConfig) -> No
     assert np.array_equal(sample.image[0, 0], np.array([0, 0, 255], dtype=np.uint8))
 
 
-def test_retinal_dataset_getitem_out_of_bounds(dummy_dataset_env: DatasetConfig) -> None:
+def test_retinal_dataset_getitem_out_of_bounds(
+    dummy_dataset_env: DatasetConfig,
+) -> None:
     """Test that IndexError is raised for out-of-range indices."""
     dataset = RetinalDataset(dummy_dataset_env)
 
@@ -64,7 +66,9 @@ def test_retinal_dataset_getitem_out_of_bounds(dummy_dataset_env: DatasetConfig)
         _ = dataset[-1]
 
 
-def test_load_image_missing_file(dummy_dataset_env: DatasetConfig, tmp_path: Path) -> None:
+def test_load_image_missing_file(
+    dummy_dataset_env: DatasetConfig, tmp_path: Path
+) -> None:
     """Test ImageLoadingError when the target image file does not exist on disk."""
     dataset = RetinalDataset(dummy_dataset_env)
     missing_file = tmp_path / "images" / "non_existent.jpg"
@@ -74,7 +78,9 @@ def test_load_image_missing_file(dummy_dataset_env: DatasetConfig, tmp_path: Pat
     assert "Image file does not exist" in str(exc_info.value)
 
 
-def test_load_image_corrupt_or_invalid_file(dummy_dataset_env: DatasetConfig, tmp_path: Path) -> None:
+def test_load_image_corrupt_or_invalid_file(
+    dummy_dataset_env: DatasetConfig, tmp_path: Path
+) -> None:
     """Test ImageLoadingError when cv2 fails to decode the image file."""
     dataset = RetinalDataset(dummy_dataset_env)
     corrupt_file = tmp_path / "images" / "corrupt.jpg"

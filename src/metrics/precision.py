@@ -41,15 +41,10 @@ def _validate_average(
 
     # Ensure the requested strategy is supported
     if average not in _SUPPORTED_AVERAGES:
-        supported = ", ".join(
-            sorted(_SUPPORTED_AVERAGES)
-        )
+        supported = ", ".join(sorted(_SUPPORTED_AVERAGES))
 
         raise MetricInitializationError(
-            f"Unsupported averaging strategy: "
-            f"{average}. "
-            f"Supported values: "
-            f"{supported}."
+            f"Unsupported averaging strategy: {average}. Supported values: {supported}."
         )
 
 

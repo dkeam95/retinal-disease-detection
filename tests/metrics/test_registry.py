@@ -46,10 +46,7 @@ def test_get_qwk_metric() -> None:
     print(f"\nMetric = {metric.__name__}")
 
     # Assert retrieved function name matches expected implementation
-    assert (
-        metric.__name__
-        == "compute_quadratic_weighted_kappa"
-    )
+    assert metric.__name__ == "compute_quadratic_weighted_kappa"
 
 
 def test_list_metrics() -> None:
@@ -91,6 +88,4 @@ def test_unknown_metric_name() -> None:
             "unknown_metric",
         )
 
-    print(
-        "\nUnknown metric correctly detected."
-    )
+    print("\nUnknown metric correctly detected.")

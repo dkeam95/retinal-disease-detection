@@ -37,26 +37,17 @@ def build_weighted_sampler(
 
     # Extract class labels from every dataset sample
     labels = [
-        dataset[index].label
-        for index in range(
-            len(typing.cast(typing.Sized, dataset))
-        )
+        dataset[index].label for index in range(len(typing.cast(typing.Sized, dataset)))
     ]
 
     # Count occurrences of every class label across the dataset
     class_counts = Counter(labels)
 
     # Compute inverse frequency weight for every class label
-    class_weights = {
-        label: 1.0 / count
-        for label, count in class_counts.items()
-    }
+    class_weights = {label: 1.0 / count for label, count in class_counts.items()}
 
     # Assign corresponding class weight to every individual sample
-    sample_weights = [
-        class_weights[label]
-        for label in labels
-    ]
+    sample_weights = [class_weights[label] for label in labels]
 
     # Build weighted random sampler using computed sample weights
     return WeightedRandomSampler(

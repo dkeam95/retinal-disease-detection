@@ -26,9 +26,7 @@ def test_unknown_loss_error() -> None:
     with pytest.raises(
         UnknownLossError,
     ):
-        raise UnknownLossError(
-            "Unknown loss."
-        )
+        raise UnknownLossError("Unknown loss.")
 
 
 def test_loss_initialization_error() -> None:
@@ -40,9 +38,7 @@ def test_loss_initialization_error() -> None:
     with pytest.raises(
         LossInitializationError,
     ):
-        raise LossInitializationError(
-            "Initialization failed."
-        )
+        raise LossInitializationError("Initialization failed.")
 
 
 def test_loss_error_inheritance() -> None:

@@ -72,12 +72,18 @@ def test_detach_loss() -> None:
 def test_calculate_average_loss() -> None:
     """Verify average loss is computed correctly."""
 
-    assert calculate_average_loss(
-        6.0,
-        3,
-    ) == 2.0
+    assert (
+        calculate_average_loss(
+            6.0,
+            3,
+        )
+        == 2.0
+    )
 
-    assert calculate_average_loss(
-        0.0,
-        0,
-    ) == 0.0
+    assert (
+        calculate_average_loss(
+            0.0,
+            0,
+        )
+        == 0.0
+    )

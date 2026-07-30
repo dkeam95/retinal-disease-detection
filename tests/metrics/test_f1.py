@@ -136,9 +136,7 @@ def test_invalid_average() -> None:
             average="binary",
         )
 
-    print(
-        "\nUnsupported averaging strategy correctly detected."
-    )
+    print("\nUnsupported averaging strategy correctly detected.")
 
 
 def test_shape_mismatch() -> None:
@@ -172,6 +170,4 @@ def test_shape_mismatch() -> None:
             targets,
         )
 
-    print(
-        "\nShape mismatch correctly detected."
-    )
+    print("\nShape mismatch correctly detected.")

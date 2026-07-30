@@ -142,10 +142,7 @@ def test_load_restores_model_weights(
 
     state = _build_state()
 
-    original_state = {
-        key: value.clone()
-        for key, value in model.state_dict().items()
-    }
+    original_state = {key: value.clone() for key, value in model.state_dict().items()}
 
     checkpoint_path = manager.save(
         model=model,

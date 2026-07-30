@@ -42,11 +42,7 @@ def _build_base_pipeline(settings: PreprocessingSettings) -> A.Compose:
     """
 
     # Construct deterministic base pipeline: Resize -> Normalize -> Convert to PyTorch Tensor
-    return A.Compose([
-        resize(settings),
-        normalize(settings),
-        to_tensor()
-    ])
+    return A.Compose([resize(settings), normalize(settings), to_tensor()])
 
 
 def build_train_pipeline(config: PreprocessingConfig) -> A.Compose:
@@ -68,9 +64,7 @@ def build_train_pipeline(config: PreprocessingConfig) -> A.Compose:
     settings = PreprocessingSettings(config)
 
     # Initial mandatory spatial transformation
-    transforms: list[Any] = [
-        resize(settings)
-    ]
+    transforms: list[Any] = [resize(settings)]
 
     # Probabilistic augmentations added dynamically based on configuration thresholds
 
@@ -87,10 +81,7 @@ def build_train_pipeline(config: PreprocessingConfig) -> A.Compose:
         transforms.append(brightness_contrast(settings))
 
     # Terminal normalization and PyTorch tensor conversion
-    transforms.extend([
-        normalize(settings),
-        to_tensor()
-    ])
+    transforms.extend([normalize(settings), to_tensor()])
 
     return A.Compose(transforms)
 

@@ -64,7 +64,9 @@ def collate_datasamples(
         if isinstance(img, np.ndarray):
             # Ensure spatial dimensions match target_size (height, width)
             if (img.shape[0], img.shape[1]) != target_size:
-                img = cv2.resize(img, (target_size[1], target_size[0]), interpolation=cv2.INTER_AREA)
+                img = cv2.resize(
+                    img, (target_size[1], target_size[0]), interpolation=cv2.INTER_AREA
+                )
 
             # Convert HWC uint8 (0..255) to CHW float tensor (0..1)
             tensor_img = torch.from_numpy(img).permute(2, 0, 1).float() / 255.0
@@ -73,7 +75,10 @@ def collate_datasamples(
         elif isinstance(img, torch.Tensor):
             if img.ndim == 3 and (img.shape[1], img.shape[2]) != target_size:
                 img = torch.nn.functional.interpolate(
-                    img.unsqueeze(0), size=target_size, mode="bilinear", align_corners=False
+                    img.unsqueeze(0),
+                    size=target_size,
+                    mode="bilinear",
+                    align_corners=False,
                 ).squeeze(0)
             tensor_img = img
         else:
@@ -107,11 +112,7 @@ def build_train_dataloader(
     DataLoader
         Configured PyTorch training dataloader.
     """
-    sampler = (
-        build_weighted_sampler(dataset)
-        if config.weight_class_balance
-        else None
-    )
+    sampler = build_weighted_sampler(dataset) if config.weight_class_balance else None
 
     shuffle = False if sampler is not None else config.shuffle
 

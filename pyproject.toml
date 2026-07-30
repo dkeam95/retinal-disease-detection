@@ -5,10 +5,9 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "retinal-disease-detection"
 version = "0.1.0"
-description = "Deep Learning system for retinal disease detection."
+description = "Production-grade Deep Learning pipeline & SOTA XAI suite for retinal disease classification."
 readme = "README.md"
 requires-python = ">=3.11"
-# PEP 639 compliant license field
 license = { file = "LICENSE" }
 
 authors = [
@@ -21,11 +20,13 @@ keywords = [
     "medical-imaging",
     "retina",
     "diabetic-retinopathy",
-    "pytorch"
+    "pytorch",
+    "explainable-ai",
+    "grad-cam"
 ]
 
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
@@ -33,17 +34,20 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence"
 ]
 
-# Explicitly declare core production dependencies with safe version bounds
 dependencies = [
     "torch>=2.2.0,<3.0.0",
     "torchvision>=0.17.0,<1.0.0",
+    "timm>=1.0.0,<2.0.0",
     "numpy>=1.26.0,<2.0.0",
     "pandas>=2.2.0,<3.0.0",
     "opencv-python-headless>=4.9.0,<5.0.0",
     "pillow>=10.2.0,<12.0.0",
     "albumentations>=1.4.0,<2.0.0",
     "pyyaml>=6.0.1,<7.0.0",
-    "scikit-learn>=1.4.0,<2.0.0"
+    "scikit-learn>=1.4.0,<2.0.0",
+    "matplotlib>=3.9.0,<4.0.0",
+    "seaborn>=0.13.0,<1.0.0",
+    "tqdm>=4.66.0,<5.0.0"
 ]
 
 [project.optional-dependencies]
@@ -55,10 +59,12 @@ dev = [
     "types-PyYAML>=6.0.12"
 ]
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src", "."]
-# Enabled automatic coverage reporting for the source code directory
 addopts = [
     "-ra",
     "--strict-markers",
@@ -108,17 +114,17 @@ exclude = [
     "^dist/"
 ]
 
-# Ignore missing type annotations for libraries without py.typed markers
 [[tool.mypy.overrides]]
 module = [
     "albumentations.*",
     "cv2.*",
     "scipy.*",
-    "sklearn.*"
+    "sklearn.*",
+    "timm.*"
 ]
 ignore_missing_imports = true
 
 [tool.pyright]
-pythonVersion = "3.10"
+pythonVersion = "3.11"
 typeCheckingMode = "basic"
 extraPaths = ["."]

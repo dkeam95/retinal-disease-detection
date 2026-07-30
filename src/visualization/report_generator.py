@@ -55,23 +55,35 @@ class HTMLReportGenerator:
         # 1. Render plots to base64 URIs
         curves_b64 = ""
         if history and len(history) > 0:
-            fig_curves = plot_learning_curves(history, title=f"Training & Validation History - {experiment_name}")
+            fig_curves = plot_learning_curves(
+                history, title=f"Training & Validation History - {experiment_name}"
+            )
             curves_b64 = figure_to_base64(fig_curves)
 
         cm_b64 = ""
         if confusion_matrix is not None:
-            fig_cm = plot_confusion_matrix(confusion_matrix, title="Test Set Confusion Matrix")
+            fig_cm = plot_confusion_matrix(
+                confusion_matrix, title="Test Set Confusion Matrix"
+            )
             cm_b64 = figure_to_base64(fig_cm)
 
         per_class_b64 = ""
         if per_class_metrics is not None:
-            fig_pc = plot_per_class_metrics(per_class_metrics, title="Per-Class Performance Metrics")
+            fig_pc = plot_per_class_metrics(
+                per_class_metrics, title="Per-Class Performance Metrics"
+            )
             per_class_b64 = figure_to_base64(fig_pc)
 
         # 2. Build HTML Content
-        qwk_val = metrics.get("qwk", metrics.get("val_qwk", metrics.get("test_qwk", "N/A")))
-        acc_val = metrics.get("accuracy", metrics.get("val_accuracy", metrics.get("test_accuracy", "N/A")))
-        f1_val = metrics.get("macro_f1", metrics.get("val_macro_f1", metrics.get("test_macro_f1", "N/A")))
+        qwk_val = metrics.get(
+            "qwk", metrics.get("val_qwk", metrics.get("test_qwk", "N/A"))
+        )
+        acc_val = metrics.get(
+            "accuracy", metrics.get("val_accuracy", metrics.get("test_accuracy", "N/A"))
+        )
+        f1_val = metrics.get(
+            "macro_f1", metrics.get("val_macro_f1", metrics.get("test_macro_f1", "N/A"))
+        )
 
         def format_metric(val: Any) -> str:
             return f"{float(val):.4f}" if isinstance(val, (float, int)) else str(val)
@@ -210,11 +222,11 @@ class HTMLReportGenerator:
 
         {config_html}
 
-        {f'<div class="section"><h2>📈 Learning & Performance Trajectory</h2><div class="img-box"><img src="{curves_b64}" alt="Learning Curves"></div></div>' if curves_b64 else ''}
+        {f'<div class="section"><h2>📈 Learning & Performance Trajectory</h2><div class="img-box"><img src="{curves_b64}" alt="Learning Curves"></div></div>' if curves_b64 else ""}
 
         <div class="grid-2">
-            {f'<div class="img-box"><h2>🔲 Confusion Matrix Heatmap</h2><img src="{cm_b64}" alt="Confusion Matrix"></div>' if cm_b64 else ''}
-            {f'<div class="img-box"><h2>📊 Per-Class Performance Bar Chart</h2><img src="{per_class_b64}" alt="Per Class Metrics"></div>' if per_class_b64 else ''}
+            {f'<div class="img-box"><h2>🔲 Confusion Matrix Heatmap</h2><img src="{cm_b64}" alt="Confusion Matrix"></div>' if cm_b64 else ""}
+            {f'<div class="img-box"><h2>📊 Per-Class Performance Bar Chart</h2><img src="{per_class_b64}" alt="Per Class Metrics"></div>' if per_class_b64 else ""}
         </div>
 
         {per_class_table_html}

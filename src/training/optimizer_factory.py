@@ -20,6 +20,7 @@ _SUPPORTED_OPTIMIZERS: tuple[str, ...] = (
     "sgd",
 )
 
+
 class OptimizerFactory:
     """Factory for creating optimizers."""
 
@@ -30,7 +31,7 @@ class OptimizerFactory:
         *,
         learning_rate: float,
         weight_decay: float = 0.0,
-        momentum: float = 0.9
+        momentum: float = 0.9,
     ) -> Optimizer:
         """
         Build an optimizer.
@@ -64,10 +65,7 @@ class OptimizerFactory:
         """
 
         try:
-            validate_component_name(
-                name=name,
-                supported=_SUPPORTED_OPTIMIZERS
-            )
+            validate_component_name(name=name, supported=_SUPPORTED_OPTIMIZERS)
 
         except ValueError as error:
             raise OptimizerFactoryError(str(error)) from error
@@ -75,11 +73,7 @@ class OptimizerFactory:
         name = normalize_name(name)
 
         if name == "adam":
-            return Adam(
-                parameters,
-                lr=learning_rate,
-                weight_decay=weight_decay
-            )
+            return Adam(parameters, lr=learning_rate, weight_decay=weight_decay)
 
         if name == "adamw":
             return AdamW(
@@ -93,7 +87,7 @@ class OptimizerFactory:
                 parameters,
                 lr=learning_rate,
                 weight_decay=weight_decay,
-                momentum=momentum
+                momentum=momentum,
             )
 
         raise OptimizerFactoryError(f"Unsupported optimizer: {name}")

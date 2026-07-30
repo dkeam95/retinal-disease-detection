@@ -29,5 +29,7 @@ def build_classifier(in_features: int, config: ModelConfig) -> nn.Module:
     # Assemble simple linear classification head with dropout regularization
     return nn.Sequential(
         nn.Dropout(p=0.2),  # Dropout layer with 20% probability for regularization
-        nn.Linear(in_features, config.num_classes),  # Linear projection from backbone embeddings to target classes
+        nn.Linear(
+            in_features, config.num_classes
+        ),  # Linear projection from backbone embeddings to target classes
     )

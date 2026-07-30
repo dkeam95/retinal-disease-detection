@@ -47,9 +47,7 @@ def build_metrics(
 
     # Look up and associate each metric name with its registered implementation
     for metric_name in metric_names:
-        metrics[
-            metric_name
-        ] = get_metric(
+        metrics[metric_name] = get_metric(
             metric_name,
         )
 

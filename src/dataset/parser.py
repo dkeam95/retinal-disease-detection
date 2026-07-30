@@ -61,9 +61,7 @@ def load_annotations(
 
     # Ensure image directory exists
     if not image_directory.exists():
-        raise InvalidAnnotationError(
-            f"Image directory not found: {image_directory}"
-        )
+        raise InvalidAnnotationError(f"Image directory not found: {image_directory}")
 
     # Ensure provided path is actually a directory
     if not image_directory.is_dir():
@@ -76,7 +74,6 @@ def load_annotations(
 
     # Safely open and read annotation file line-by-line using UTF-8 encoding
     with annotation_file.open("r", encoding="utf-8") as file:
-
         # Iterate over each line in the annotation file
         for line_number, line in enumerate(file, start=1):
             line = line.strip()
@@ -91,8 +88,7 @@ def load_annotations(
             # Check if the line contains exactly 2 components: the filename and the class label
             if len(parts) != 2:
                 raise InvalidAnnotationError(
-                    f"Invalid annotation format "
-                    f"at line {line_number}: {line}"
+                    f"Invalid annotation format at line {line_number}: {line}"
                 )
 
             filename, label_text = parts
@@ -103,8 +99,7 @@ def load_annotations(
 
             except ValueError as error:
                 raise InvalidAnnotationError(
-                    f"Invalid class label "
-                    f"at line {line_number}: {label_text}"
+                    f"Invalid class label at line {line_number}: {label_text}"
                 ) from error
 
             # Validate class label range
@@ -116,8 +111,7 @@ def load_annotations(
 
             if label not in range(5):
                 raise InvalidAnnotationError(
-                    f"Invalid class label "
-                    f"at line {line_number}: {label}"
+                    f"Invalid class label at line {line_number}: {label}"
                 )
 
             # Construct absolute/resolved target path for the image file
@@ -125,9 +119,7 @@ def load_annotations(
 
             # Ensure the referenced image file exists on the filesystem
             if not image_path.exists():
-                raise InvalidAnnotationError(
-                    f"Image not found: {image_path}"
-                )
+                raise InvalidAnnotationError(f"Image not found: {image_path}")
 
             # Record validated sample entry
             annotations.append(
@@ -139,8 +131,6 @@ def load_annotations(
 
     # Ensure dataset contains at least one valid sample entry
     if not annotations:
-        raise EmptyDatasetError(
-            "The annotation file contains no samples."
-        )
+        raise EmptyDatasetError("The annotation file contains no samples.")
 
     return annotations

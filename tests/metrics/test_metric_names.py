@@ -18,22 +18,13 @@ def test_metric_names_are_strings() -> None:
     """
 
     # Confirm ACCURACY enum value equals string 'accuracy'
-    assert (
-        MetricName.ACCURACY
-        == "accuracy"
-    )
+    assert MetricName.ACCURACY == "accuracy"
 
     # Confirm F1 enum value equals string 'f1'
-    assert (
-        MetricName.F1
-        == "f1"
-    )
+    assert MetricName.F1 == "f1"
 
     # Confirm CONFUSION_MATRIX enum value equals string 'confusion_matrix'
-    assert (
-        MetricName.CONFUSION_MATRIX
-        == "confusion_matrix"
-    )
+    assert MetricName.CONFUSION_MATRIX == "confusion_matrix"
 
 
 def test_metric_name_lookup() -> None:
@@ -42,12 +33,7 @@ def test_metric_name_lookup() -> None:
     """
 
     # Convert string 'precision' into corresponding MetricName enum instance
-    metric = MetricName(
-        "precision"
-    )
+    metric = MetricName("precision")
 
     # Assert string lookup yields correct PRECISION enum member
-    assert (
-        metric
-        is MetricName.PRECISION
-    )
+    assert metric is MetricName.PRECISION

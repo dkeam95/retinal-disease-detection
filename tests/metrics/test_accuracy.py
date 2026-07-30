@@ -172,6 +172,4 @@ def test_shape_mismatch() -> None:
             targets,
         )
 
-    print(
-        "\nShape mismatch correctly detected."
-    )
+    print("\nShape mismatch correctly detected.")
