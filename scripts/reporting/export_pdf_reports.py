@@ -24,6 +24,22 @@ from reportlab.platypus import (
 )
 
 
+def get_aspect_preserved_image(img_path: Path, max_w: float = 480.0, max_h: float = 280.0) -> RLImage:
+    """Helper function to load ReportLab Image while preserving exact original aspect ratio."""
+    with PILImage.open(img_path) as pil_img:
+        orig_w, orig_h = pil_img.size
+
+    aspect = orig_w / float(orig_h)
+    target_w = max_w
+    target_h = target_w / aspect
+
+    if target_h > max_h:
+        target_h = max_h
+        target_w = target_h * aspect
+
+    return RLImage(str(img_path), width=target_w, height=target_h)
+
+
 def create_detection_pdf(output_pdf_path: Path) -> None:
     """Generate Lesion Object Detection PDF Report."""
     output_pdf_path.parent.mkdir(parents=True, exist_ok=True)
@@ -194,7 +210,7 @@ def create_detection_pdf(output_pdf_path: Path) -> None:
 
     for p in sample_imgs:
         if p.exists():
-            img_p = RLImage(str(p), width=500, height=250)
+            img_p = get_aspect_preserved_image(p, max_w=480.0, max_h=260.0)
             story.append(img_p)
             story.append(Paragraph(f"<i>Figure: Real CUDA PyTorch Detection Predictions ({p.name})</i>", body_style))
             story.append(Spacer(1, 10))
@@ -373,8 +389,8 @@ def create_segmentation_pdf(output_pdf_path: Path) -> None:
 
     for c_img, bw_img in zip(color_imgs, bw_imgs, strict=False):
         if c_img.exists() and bw_img.exists():
-            img_c = RLImage(str(c_img), width=240, height=240)
-            img_bw = RLImage(str(bw_img), width=240, height=240)
+            img_c = get_aspect_preserved_image(c_img, max_w=240.0, max_h=240.0)
+            img_bw = get_aspect_preserved_image(bw_img, max_w=240.0, max_h=240.0)
 
             pair_table = Table([[img_c, img_bw]], colWidths=[250, 250])
             pair_table.setStyle(
