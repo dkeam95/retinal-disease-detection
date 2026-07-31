@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SOTA XAI Benchmark Comparison</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f1117; color: #e2e8f0; padding: 30px; }
+        .container { max-width: 1300px; margin: 0 auto; }
+        h1 { color: #63b3ed; border-bottom: 2px solid #4a5568; padding-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>👁️ Retinal Explainability Suite: Side-by-Side SOTA Benchmark</h1>
+        <p>Comprehensive comparison of 5 Explainable AI algorithms (Grad-CAM, Grad-CAM++, Layer-CAM, Score-CAM, Integrated Gradients) on Diabetic Retinopathy fundus images.</p>
+        
+        <div style="margin-bottom: 40px; background: #171923; border: 1px solid #2d3748; border-radius: 12px; padding: 20px;">
+            <h2 style="color: #ed8936; margin-top: 0;">Sample: 007-5999-300.jpg (GT Grade 3 vs Pred Grade 3)</h2>
+            <p style="color: #cbd5e0;">Predicted: <strong>Grade 3 (Severe NPDR)</strong> &nbsp;|&nbsp; Confidence: <strong>42.68%</strong></p>
+            
+            <h4 style="color: #90cdf4; margin-top: 20px;">1x6 Side-by-Side Quick Comparison:</h4>
+            <img src="comparison_strip_007-5999-300.png" style="width: 100%; border-radius: 8px; border: 1px solid #4a5568;" alt="Comparison Strip">
+            
+            <h4 style="color: #90cdf4; margin-top: 25px;">Detailed 4-Panel Reports for Each Algorithm:</h4>
+            
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 8px; overflow: hidden; margin-bottom: 15px;">
+                <div style="padding: 10px 15px; background: #2d3748; color: #63b3ed; font-weight: bold;">
+                    Baseline Grad-CAM <span style="font-weight: normal; color: #a0aec0; font-size: 12px;">— Coarse 7x7 regional activation</span>
+                </div>
+                <img src="007-5999-300_gradcam_4panel.png" style="width: 100%; display: block;" alt="Baseline Grad-CAM">
+            </div>
+            
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 8px; overflow: hidden; margin-bottom: 15px;">
+                <div style="padding: 10px 15px; background: #2d3748; color: #63b3ed; font-weight: bold;">
+                    Grad-CAM++ <span style="font-weight: normal; color: #a0aec0; font-size: 12px;">— Higher order gradients for multiple lesions</span>
+                </div>
+                <img src="007-5999-300_gradcam++_4panel.png" style="width: 100%; display: block;" alt="Grad-CAM++">
+            </div>
+            
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 8px; overflow: hidden; margin-bottom: 15px;">
+                <div style="padding: 10px 15px; background: #2d3748; color: #63b3ed; font-weight: bold;">
+                    Layer-CAM <span style="font-weight: normal; color: #a0aec0; font-size: 12px;">— Fine-grained spatial gradient preservation</span>
+                </div>
+                <img src="007-5999-300_layer_cam_4panel.png" style="width: 100%; display: block;" alt="Layer-CAM">
+            </div>
+            
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 8px; overflow: hidden; margin-bottom: 15px;">
+                <div style="padding: 10px 15px; background: #2d3748; color: #63b3ed; font-weight: bold;">
+                    Score-CAM <span style="font-weight: normal; color: #a0aec0; font-size: 12px;">— Gradient-free perturbation confidence scoring</span>
+                </div>
+                <img src="007-5999-300_score_cam_4panel.png" style="width: 100%; display: block;" alt="Score-CAM">
+            </div>
+            
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 8px; overflow: hidden; margin-bottom: 15px;">
+                <div style="padding: 10px 15px; background: #2d3748; color: #63b3ed; font-weight: bold;">
+                    Integrated Gradients <span style="font-weight: normal; color: #a0aec0; font-size: 12px;">— Pixel-level axiomatic attribution</span>
+                </div>
+                <img src="007-5999-300_integrated_gradients_4panel.png" style="width: 100%; display: block;" alt="Integrated Gradients">
+            </div>
+            
+        </div>
+        
+        <div style="margin-bottom: 40px; background: #171923; border: 1px solid #2d3748; border-radius: 12px; padding: 20px;">
+            <h2 style="color: #ed8936; margin-top: 0;">Sample: 007-6962-400.jpg (GT Grade 4 vs Pred Grade 4)</h2>
+            <p style="color: #cbd5e0;">Predicted: <strong>Grade 4 (Proliferative DR)</strong> &nbsp;|&nbsp; Confidence: <strong>95.89%</strong></p>
+            
+            <h4 style="color: #90cdf4; margin-top: 20px;">1x6 Side-by-Side Quick Comparison:</h4>
+            <img src="comparison_strip_007-6962-400.png" style="width: 100%; border-radius: 8px; border: 1px solid #4a5568;" alt="Comparison Strip">
+            
+            <h4 style="color: #90cdf4; margin-top: 25px;">Detailed 4-Panel Reports for Each Algorithm:</h4>
+            
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 8px; overflow: hidden; margin-bottom: 15px;">
+                <div style="padding: 10px 15px; background: #2d3748; color: #63b3ed; font-weight: bold;">
+                    Baseline Grad-CAM <span style="font-weight: normal; color: #a0aec0; font-size: 12px;">— Coarse 7x7 regional activation</span>
+                </div>
+                <img src="007-6962-400_gradcam_4panel.png" style="width: 100%; display: block;" alt="Baseline Grad-CAM">
+            </div>
+            
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 8px; overflow: hidden; margin-bottom: 15px;">
+                <div style="padding: 10px 15px; background: #2d3748; color: #63b3ed; font-weight: bold;">
+                    Grad-CAM++ <span style="font-weight: normal; color: #a0aec0; font-size: 12px;">— Higher order gradients for multiple lesions</span>
+                </div>
+                <img src="007-6962-400_gradcam++_4panel.png" style="width: 100%; display: block;" alt="Grad-CAM++">
+            </div>
+            
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 8px; overflow: hidden; margin-bottom: 15px;">
+                <div style="padding: 10px 15px; background: #2d3748; color: #63b3ed; font-weight: bold;">
+                    Layer-CAM <span style="font-weight: normal; color: #a0aec0; font-size: 12px;">— Fine-grained spatial gradient preservation</span>
+                </div>
+                <img src="007-6962-400_layer_cam_4panel.png" style="width: 100%; display: block;" alt="Layer-CAM">
+            </div>
+            
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 8px; overflow: hidden; margin-bottom: 15px;">
+                <div style="padding: 10px 15px; background: #2d3748; color: #63b3ed; font-weight: bold;">
+                    Score-CAM <span style="font-weight: normal; color: #a0aec0; font-size: 12px;">— Gradient-free perturbation confidence scoring</span>
+                </div>
+                <img src="007-6962-400_score_cam_4panel.png" style="width: 100%; display: block;" alt="Score-CAM">
+            </div>
+            
+            <div style="background: #1a202c; border: 1px solid #2d3748; border-radius: 8px; overflow: hidden; margin-bottom: 15px;">
+                <div style="padding: 10px 15px; background: #2d3748; color: #63b3ed; font-weight: bold;">
+                    Integrated Gradients <span style="font-weight: normal; color: #a0aec0; font-size: 12px;">— Pixel-level axiomatic attribution</span>
+                </div>
+                <img src="007-6962-400_integrated_gradients_4panel.png" style="width: 100%; display: block;" alt="Integrated Gradients">
+            </div>
+            
+        </div>
+        
+    </div>
+</body>
+</html>

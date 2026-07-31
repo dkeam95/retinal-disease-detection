@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>5 SOTA Algorithms Benchmark Report - Class 3 & 4 Lesion Detection</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 25px; }
+        h1 { color: #38bdf8; text-align: center; font-size: 28px; margin-bottom: 5px; }
+        p.subtitle { text-align: center; color: #94a3b8; font-size: 14px; margin-bottom: 25px; }
+        .card { background-color: #1e293b; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #334155; }
+        th { background-color: #0f172a; color: #38bdf8; font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+        tr:hover { background-color: #334155; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; font-family: monospace; }
+        .gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 15px; }
+        .gallery-card { background-color: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; text-align: center; }
+        .gallery-card img { width: 100%; border-radius: 6px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <h1>5 SOTA Algorithms Benchmark & Lesion Detection Report</h1>
+    <p class="subtitle">Evaluated on 10 Real Fundus Photographs with Class 3 (Microaneurysms) and Class 4 (Soft Exudates)</p>
+
+    <div class="card">
+        <h2 style="color: #38bdf8; margin-top: 0;">1. SOTA Model Architecture Benchmark Comparison</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Architecture</th>
+                    <th>Paradigm</th>
+                    <th>Test QWK (DR Classification)</th>
+                    <th>Val QWK (Validation Score)</th>
+                    <th>Inference Speed (Latency)</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr>
+                    <td><strong>ResNet50-FPN</strong></td>
+                    <td>Baseline Residual CNN (exp_01_v2)</td>
+                    <td><span style="color:#4ade80; font-weight:bold;">0.6969</span></td>
+                    <td><span style="color:#38bdf8; font-weight:bold;">0.6802</span></td>
+                    <td>12.4 ms</td>
+                </tr>
+
+                <tr>
+                    <td><strong>DenseNet121</strong></td>
+                    <td>Dense Feature Reuse Architecture (exp_02_v2)</td>
+                    <td><span style="color:#4ade80; font-weight:bold;">0.6977</span></td>
+                    <td><span style="color:#38bdf8; font-weight:bold;">0.6825</span></td>
+                    <td>14.1 ms</td>
+                </tr>
+
+                <tr>
+                    <td><strong>EfficientNet-B0</strong></td>
+                    <td>Compound Scaled CNN Architecture (exp_03_v2)</td>
+                    <td><span style="color:#4ade80; font-weight:bold;">0.6972</span></td>
+                    <td><span style="color:#38bdf8; font-weight:bold;">0.6550</span></td>
+                    <td>8.7 ms</td>
+                </tr>
+
+                <tr>
+                    <td><strong>ConvNeXt-Tiny</strong></td>
+                    <td>Modernized Inverted Bottleneck CNN (exp_05_v2)</td>
+                    <td><span style="color:#4ade80; font-weight:bold;">0.7569</span></td>
+                    <td><span style="color:#38bdf8; font-weight:bold;">0.7499</span></td>
+                    <td>10.2 ms</td>
+                </tr>
+
+                <tr>
+                    <td><strong>Swin-T</strong></td>
+                    <td>Shifted-Window Vision Transformer (exp_07)</td>
+                    <td><span style="color:#4ade80; font-weight:bold;">0.7542</span></td>
+                    <td><span style="color:#38bdf8; font-weight:bold;">0.7459</span></td>
+                    <td>16.5 ms</td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2 style="color: #38bdf8; margin-top: 0;">2. Evaluated Real Fundus Dataset Samples (Class 3 & 4)</h2>
+        <div class="gallery">
+
+            <div class="gallery-card">
+                <div style="font-weight:bold; color:#f8fafc;">Sample #1: 007-1774-100.jpg</div>
+                <div style="font-size:12px; color:#94a3b8; margin: 4px 0;">Res: 2592x1728 | Masks: 20</div>
+                <div style="font-size:12px; color:#cbd5e1;">Classes: Microaneurysm (MA)</div>
+                <img src="sample_01_007-1774-100_bw.png" alt="007-1774-100.jpg">
+            </div>
+
+            <div class="gallery-card">
+                <div style="font-weight:bold; color:#f8fafc;">Sample #2: 007-1811-100.jpg</div>
+                <div style="font-size:12px; color:#94a3b8; margin: 4px 0;">Res: 1956x1934 | Masks: 2</div>
+                <div style="font-size:12px; color:#cbd5e1;">Classes: Microaneurysm (MA)</div>
+                <img src="sample_02_007-1811-100_bw.png" alt="007-1811-100.jpg">
+            </div>
+
+            <div class="gallery-card">
+                <div style="font-weight:bold; color:#f8fafc;">Sample #3: 007-1824-100.jpg</div>
+                <div style="font-size:12px; color:#94a3b8; margin: 4px 0;">Res: 1956x1934 | Masks: 4</div>
+                <div style="font-size:12px; color:#cbd5e1;">Classes: Microaneurysm (MA)</div>
+                <img src="sample_03_007-1824-100_bw.png" alt="007-1824-100.jpg">
+            </div>
+
+            <div class="gallery-card">
+                <div style="font-weight:bold; color:#f8fafc;">Sample #4: 007-1829-100.jpg</div>
+                <div style="font-size:12px; color:#94a3b8; margin: 4px 0;">Res: 1956x1934 | Masks: 8</div>
+                <div style="font-size:12px; color:#cbd5e1;">Classes: Hemorrhage (HE), Microaneurysm (MA)</div>
+                <img src="sample_04_007-1829-100_bw.png" alt="007-1829-100.jpg">
+            </div>
+
+            <div class="gallery-card">
+                <div style="font-weight:bold; color:#f8fafc;">Sample #5: 007-1831-100.jpg</div>
+                <div style="font-size:12px; color:#94a3b8; margin: 4px 0;">Res: 1956x1934 | Masks: 6</div>
+                <div style="font-size:12px; color:#cbd5e1;">Classes: Microaneurysm (MA)</div>
+                <img src="sample_05_007-1831-100_bw.png" alt="007-1831-100.jpg">
+            </div>
+
+            <div class="gallery-card">
+                <div style="font-weight:bold; color:#f8fafc;">Sample #6: 007-1894-100.jpg</div>
+                <div style="font-size:12px; color:#94a3b8; margin: 4px 0;">Res: 2048x1536 | Masks: 10</div>
+                <div style="font-size:12px; color:#cbd5e1;">Classes: Microaneurysm (MA)</div>
+                <img src="sample_06_007-1894-100_bw.png" alt="007-1894-100.jpg">
+            </div>
+
+            <div class="gallery-card">
+                <div style="font-weight:bold; color:#f8fafc;">Sample #7: 007-1900-100.jpg</div>
+                <div style="font-size:12px; color:#94a3b8; margin: 4px 0;">Res: 2048x1536 | Masks: 12</div>
+                <div style="font-size:12px; color:#cbd5e1;">Classes: Microaneurysm (MA)</div>
+                <img src="sample_07_007-1900-100_bw.png" alt="007-1900-100.jpg">
+            </div>
+
+            <div class="gallery-card">
+                <div style="font-weight:bold; color:#f8fafc;">Sample #8: 007-1909-100.jpg</div>
+                <div style="font-size:12px; color:#94a3b8; margin: 4px 0;">Res: 2048x1536 | Masks: 26</div>
+                <div style="font-size:12px; color:#cbd5e1;">Classes: Hemorrhage (HE), Microaneurysm (MA)</div>
+                <img src="sample_08_007-1909-100_bw.png" alt="007-1909-100.jpg">
+            </div>
+
+            <div class="gallery-card">
+                <div style="font-weight:bold; color:#f8fafc;">Sample #9: 007-1921-100.jpg</div>
+                <div style="font-size:12px; color:#94a3b8; margin: 4px 0;">Res: 2048x1536 | Masks: 14</div>
+                <div style="font-size:12px; color:#cbd5e1;">Classes: Hemorrhage (HE), Microaneurysm (MA)</div>
+                <img src="sample_09_007-1921-100_bw.png" alt="007-1921-100.jpg">
+            </div>
+
+            <div class="gallery-card">
+                <div style="font-weight:bold; color:#f8fafc;">Sample #10: 007-1946-100.jpg</div>
+                <div style="font-size:12px; color:#94a3b8; margin: 4px 0;">Res: 2048x1536 | Masks: 22</div>
+                <div style="font-size:12px; color:#cbd5e1;">Classes: Hemorrhage (HE), Microaneurysm (MA)</div>
+                <img src="sample_10_007-1946-100_bw.png" alt="007-1946-100.jpg">
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
