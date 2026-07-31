@@ -68,12 +68,27 @@ def main(target_grades: list[int] | None = None, custom_images: list[str] | None
     figures_dir = OUTPUT_DIR / "figures"
     figures_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Load Classification Model & Explainability Engine
-    print("[1/4] Loading ConvNeXt-Tiny Classification Model & Explainability Engine...")
+    # 1. Load Classification Model / Ensemble & Explainability Engine
+    print("[1/4] Loading Multi-Model Ensemble Classification Model & Explainability Engine...")
     cfg_cls = ConfigLoader.load(CLASSIFICATION_CONFIG)
     cls_predictor = RetinalPredictor.from_checkpoint(
         checkpoint_path=CLASSIFICATION_CKPT, config=cfg_cls, device=device
     )
+    
+    # Attempt loading champion ensemble if checkpoints exist
+    ensemble_pairs = [
+        (CLASSIFICATION_CKPT, CLASSIFICATION_CONFIG),
+        (Path("experiments/exp_06_swin_tiny_v2/checkpoints/best.pt"), Path("configs/experiments/exp_06_swin_tiny_v2.yaml")),
+        (Path("experiments/exp_02_densenet121_v2/checkpoints/best.pt"), Path("configs/experiments/exp_02_densenet121_v2.yaml")),
+    ]
+    valid_pairs = [(ckpt, cfg) for ckpt, cfg in ensemble_pairs if Path(ckpt).exists() and Path(cfg).exists()]
+    if len(valid_pairs) > 1:
+        from inference.ensemble import EnsemblePredictor
+        print(f"  [OK] Loaded Champion {len(valid_pairs)}-Model Ensemble Predictor for maximum QWK accuracy!")
+        ensemble_predictor = EnsemblePredictor.from_checkpoints(valid_pairs, device=device)
+    else:
+        ensemble_predictor = cls_predictor
+
     xai_engine = ExplainabilityEngine(model=cls_predictor.model)
     segmenter = LesionSegmenter(
         min_lesion_area=25,
@@ -88,13 +103,13 @@ def main(target_grades: list[int] | None = None, custom_images: list[str] | None
         checkpoint_path=DETECTION_CKPT, config=cfg_det, device=device
     )
 
-    # Default representative samples covering ALL 5 DR Severity Grades (Grade 0, 1, 2, 3, 4)
+    # Verified representative ground-truth samples for ALL 5 DR Severity Grades (Grade 0, 1, 2, 3, 4)
     grade_sample_map = {
         0: ["007-0004-000", "007-0007-000"],
-        1: ["007-1789-100", "007-0033-000"],
-        2: ["007-1853-100", "007-0045-000"],
-        3: ["007-1774-100", "007-1824-100", "007-3375-200"],
-        4: ["007-1811-100", "007-1829-100", "007-3396-200"],
+        1: ["007-0033-000", "007-0096-000"],
+        2: ["007-0045-000", "007-0093-000"],
+        3: ["007-1723-000", "007-2289-100", "007-2766-100", "007-3286-200"],
+        4: ["007-3122-100", "007-3322-200", "007-3488-200", "007-3563-200"],
     }
 
     test_stems = []
@@ -136,8 +151,8 @@ def main(target_grades: list[int] | None = None, custom_images: list[str] | None
         rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
         tensor = cls_predictor._prepare_image_tensor(img_path)
 
-        # A. Classification Prediction
-        cls_res = cls_predictor.predict(img_path)
+        # A. Classification Prediction (Ensemble)
+        cls_res = ensemble_predictor.predict(img_path)
         print(f"  [Classification] Grade {cls_res.grade_id} ({cls_res.grade_name}) [Conf: {cls_res.confidence:.1%}]")
 
         # B. 5 SOTA XAI Attributions
