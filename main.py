@@ -62,6 +62,18 @@ Examples:
         default="configs/config.yaml",
         help="Path to YAML configuration file (used for train-detection)",
     )
+    parser.add_argument(
+        "--target-grades",
+        type=str,
+        default=None,
+        help="Comma-separated target DR grades to test, e.g. '3,4' or '0,1,2,3,4'",
+    )
+    parser.add_argument(
+        "--images",
+        type=str,
+        default=None,
+        help="Comma-separated image stems or filenames to test, e.g. '007-1774-100,007-3396-200'",
+    )
     args = parser.parse_args()
 
     mode = args.mode
@@ -79,7 +91,10 @@ Examples:
 
         from scripts.reporting.generate_master_clinical_reports import main as run_master
 
-        run_master()
+        t_grades = [int(g.strip()) for g in args.target_grades.split(",") if g.strip().isdigit()] if args.target_grades else None
+        c_images = [img.strip() for img in args.images.split(",") if img.strip()] if args.images else None
+
+        run_master(target_grades=t_grades, custom_images=c_images)
 
     elif mode == "demo":
         print("[INIT] Executing Live Pipeline Demo (Ensemble + Error Analysis + Spotlight)...\n")

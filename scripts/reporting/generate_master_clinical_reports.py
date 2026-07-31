@@ -45,7 +45,18 @@ TEST_XML_DIR = Path("data/raw/lesion_detection/test")
 OUTPUT_DIR = Path("reports/master_clinical_reports")
 
 
-def main() -> None:
+def main(target_grades: list[int] | None = None, custom_images: list[str] | None = None) -> None:
+    import argparse
+    parser = argparse.ArgumentParser(description="Master Clinical Diagnostic Report Generator")
+    parser.add_argument("--target-grades", type=str, default=None, help="Comma-separated target DR grades to test, e.g. '3,4' or '0,1,2,3,4'")
+    parser.add_argument("--images", type=str, default=None, help="Comma-separated image stems or filenames to test, e.g. '007-1774-100,007-3396-200'")
+    args, _ = parser.parse_known_args()
+
+    if args.target_grades and target_grades is None:
+        target_grades = [int(g.strip()) for g in args.target_grades.split(",") if g.strip().isdigit()]
+    if args.images and custom_images is None:
+        custom_images = [img.strip() for img in args.images.split(",") if img.strip()]
+
     print("=" * 80)
     print("MASTER CLINICAL DIAGNOSTIC & XAI / DETECTION REPORT GENERATOR")
     print("=" * 80)
@@ -77,16 +88,27 @@ def main() -> None:
         checkpoint_path=DETECTION_CKPT, config=cfg_det, device=device
     )
 
-    # Gather test image stems
-    test_stems = []
-    if TEST_XML_DIR.exists():
-        for xml_file in TEST_XML_DIR.glob("*.xml"):
-            test_stems.append(xml_file.stem)
-            if len(test_stems) >= 4:
-                break
+    # Default representative samples covering ALL 5 DR Severity Grades (Grade 0, 1, 2, 3, 4)
+    grade_sample_map = {
+        0: ["007-0004-000", "007-0007-000"],
+        1: ["007-1789-100", "007-0033-000"],
+        2: ["007-1853-100", "007-0045-000"],
+        3: ["007-1774-100", "007-1824-100", "007-3375-200"],
+        4: ["007-1811-100", "007-1829-100", "007-3396-200"],
+    }
 
-    if not test_stems:
-        test_stems = ["007-1789-100", "007-1853-100", "007-2403-100", "007-2404-100"]
+    test_stems = []
+    if custom_images:
+        for ci in custom_images:
+            stem = Path(ci).stem
+            test_stems.append(stem)
+    elif target_grades is not None and len(target_grades) > 0:
+        for tg in target_grades:
+            if tg in grade_sample_map:
+                test_stems.extend(grade_sample_map[tg])
+    else:
+        # Default: Include representative samples from ALL 5 Grades (0, 1, 2, 3, 4)
+        test_stems = ["007-1789-100", "007-1853-100", "007-1774-100", "007-1811-100", "007-3396-200"]
 
     master_reports = []
 
