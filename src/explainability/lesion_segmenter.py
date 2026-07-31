@@ -87,17 +87,21 @@ class LesionSegmenter:
         _, binary_ex = cv2.threshold(top_hat, int(thresh_val), 255, cv2.THRESH_BINARY)
         binary_ex = cv2.bitwise_and(binary_ex, binary_ex, mask=fov_mask)
 
-        # Exclude optic disc region (largest bright blob)
+        # Exclude optic disc region using explicit OpticDiscDetector
+        from preprocessing.optic_disc import OpticDiscDetector
+        od_detector = OpticDiscDetector(expansion_factor=1.25)
+        od_circle = od_detector.detect(image_rgb, fov_mask=fov_mask)
+        od_suppress_mask = od_detector.generate_suppression_mask(image_rgb.shape[:2], od_circle)
+
+        binary_ex = cv2.bitwise_and(binary_ex, od_suppress_mask)
+
         contours, _ = cv2.findContours(
             binary_ex, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
         exudates = []
 
         if contours:
-            # Sort contours by area
-            sorted_cnts = sorted(contours, key=cv2.contourArea, reverse=True)
-            # Skip the largest contour if it resembles the optic disc (> 3000 px)
-            for cnt in sorted_cnts:
+            for cnt in contours:
                 area = cv2.contourArea(cnt)
                 if self.min_lesion_area <= area <= self.max_lesion_area:
                     (x, y), radius = cv2.minEnclosingCircle(cnt)

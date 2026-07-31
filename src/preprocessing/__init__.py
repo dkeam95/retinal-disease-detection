@@ -15,6 +15,7 @@ from preprocessing.pipeline import (
 from preprocessing.fov import FOVResult, FundusFOVExtractor
 from preprocessing.mask_refinement import GuidedFilterMaskRefiner, refine_lesion_mask
 from preprocessing.roi import crop_fundus_roi, get_retina_binary_mask
+from preprocessing.optic_disc import OpticDiscDetector
 
 __all__ = [
     "build_train_pipeline",
@@ -26,6 +27,7 @@ __all__ = [
     "FOVResult",
     "GuidedFilterMaskRefiner",
     "refine_lesion_mask",
+    "OpticDiscDetector",
     "PreprocessingSettings",
     "PreprocessingError",
     "InvalidPreprocessingConfigError",

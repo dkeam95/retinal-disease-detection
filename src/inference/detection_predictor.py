@@ -183,13 +183,21 @@ class LesionDetectionPredictor:
             res_boxes, res_scores, res_labels, iou_thresh=0.20
         )
 
-        res_names = [LESION_ID_TO_NAME.get(lbl, f"Class {lbl}") for lbl in merged_labels]
+        # Suppress false-positive bright exudate boxes (EX=1, SE=4) inside the anatomical Optic Disc
+        from preprocessing.optic_disc import OpticDiscDetector
+        od_detector = OpticDiscDetector(expansion_factor=1.25)
+        od_circle = od_detector.detect(rgb)
+        merged_boxes, merged_scores, merged_labels = od_detector.filter_boxes(
+            merged_boxes, merged_scores, merged_labels, od_circle=od_circle, bright_class_ids={1, 4}
+        )
+
+        class_names = [LESION_ID_TO_NAME.get(int(l), f"class_{l}") for l in merged_labels]
 
         return DetectionResult(
-            boxes=merged_boxes,
-            scores=merged_scores,
-            labels=merged_labels,
-            class_names=res_names,
+            boxes=merged_boxes.tolist() if isinstance(merged_boxes, np.ndarray) else merged_boxes,
+            scores=merged_scores.tolist() if isinstance(merged_scores, np.ndarray) else merged_scores,
+            labels=merged_labels.tolist() if isinstance(merged_labels, np.ndarray) else merged_labels,
+            class_names=class_names,
         )
 
     @staticmethod
