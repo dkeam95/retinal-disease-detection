@@ -62,11 +62,21 @@ def overlay_heatmap(
 
     h_img, w_img = img_uint8.shape[:2]
     heatmap_resized = cv2.resize(heatmap, (w_img, h_img))
+
+    # Generate clean inner FOV mask to eliminate background bleeding & color tint shift
+    gray = cv2.cvtColor(img_uint8, cv2.COLOR_RGB2GRAY)
+    _, fov_mask = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
+    fov_mask = cv2.erode(fov_mask, kernel)
+
+    heatmap_resized[fov_mask == 0] = 0.0
     heatmap_uint8 = (np.clip(heatmap_resized, 0, 1) * 255).astype(np.uint8)
     colored_heatmap = cv2.applyColorMap(heatmap_uint8, colormap)
     colored_heatmap_rgb = cv2.cvtColor(colored_heatmap, cv2.COLOR_BGR2RGB)
+    colored_heatmap_rgb[fov_mask == 0] = 0
 
     blended = cv2.addWeighted(img_uint8, 1 - alpha, colored_heatmap_rgb, alpha, 0)
+    blended[fov_mask == 0] = img_uint8[fov_mask == 0]
     return blended
 
 
@@ -148,6 +158,14 @@ class GradCAM:
 
         h, w = input_tensor.shape[2], input_tensor.shape[3]
         heatmap_resized = cv2.resize(cam_np, (w, h))
+
+        # Generate clean inner FOV mask to eliminate camera background bleeding
+        gray = cv2.cvtColor(np.zeros((h, w, 3), dtype=np.uint8), cv2.COLOR_RGB2GRAY) if not hasattr(self, "_last_rgb") else cv2.cvtColor(self._last_rgb, cv2.COLOR_RGB2GRAY)
+        if hasattr(self, "_last_rgb") and self._last_rgb is not None:
+            _, fov_mask = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
+            fov_mask = cv2.erode(fov_mask, kernel)
+            heatmap_resized[fov_mask == 0] = 0.0
 
         return heatmap_resized
 

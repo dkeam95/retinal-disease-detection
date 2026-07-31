@@ -21,8 +21,8 @@ def build_lesion_detector(
     pretrained: bool = True,
     score_thresh: float = 0.25,
     nms_thresh: float = 0.45,
-    min_size: int = 640,
-    max_size: int = 640,
+    min_size: int = 1536,
+    max_size: int = 2048,
 ) -> FasterRCNN:
     """Build a Two-Stage Faster R-CNN (ResNet50-FPN) detector for lesion detection.
 
@@ -57,7 +57,7 @@ def build_lesion_detector(
         box_nms_thresh=nms_thresh,
     )
 
-    # Customize Anchor Generator sizes for fine retinal lesions (microaneurysms, hemorrhages, exudates)
+    # Customize Anchor Generator for 5 FPN feature levels (P2..P5 + pool)
     anchor_generator = AnchorGenerator(
         sizes=((4,), (8,), (16,), (32,), (64,)),
         aspect_ratios=((0.5, 1.0, 2.0),) * 5,

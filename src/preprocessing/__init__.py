@@ -12,6 +12,8 @@ from preprocessing.pipeline import (
     build_train_pipeline,
     build_validation_pipeline,
 )
+from preprocessing.fov import FOVResult, FundusFOVExtractor
+from preprocessing.mask_refinement import GuidedFilterMaskRefiner, refine_lesion_mask
 from preprocessing.roi import crop_fundus_roi, get_retina_binary_mask
 
 __all__ = [
@@ -20,6 +22,10 @@ __all__ = [
     "build_test_pipeline",
     "crop_fundus_roi",
     "get_retina_binary_mask",
+    "FundusFOVExtractor",
+    "FOVResult",
+    "GuidedFilterMaskRefiner",
+    "refine_lesion_mask",
     "PreprocessingSettings",
     "PreprocessingError",
     "InvalidPreprocessingConfigError",

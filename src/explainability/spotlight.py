@@ -157,9 +157,15 @@ def draw_spotlight(
     # Step 1: CLAHE background
     base = clahe_enhance(image_rgb) if apply_clahe else image_rgb.copy()
 
-    # Step 2: Resize heatmap to match image dimensions
+    # Step 2: Resize heatmap to match image dimensions & clip inside inner FOV
     h, w = base.shape[:2]
     hm_resized = cv2.resize(heatmap, (w, h))
+
+    gray_tmp = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2GRAY)
+    _, fov_tmp = cv2.threshold(gray_tmp, 15, 255, cv2.THRESH_BINARY)
+    kernel_tmp = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
+    fov_tmp = cv2.erode(fov_tmp, kernel_tmp)
+    hm_resized[fov_tmp == 0] = 0.0
 
     # Step 3: Find contours
     contours = heatmap_to_contours(hm_resized, threshold=threshold)

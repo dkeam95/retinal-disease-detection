@@ -48,7 +48,7 @@ class LesionDetectionPredictor:
         model: torch.nn.Module,
         device: torch.device,
         score_thresh: float = 0.25,
-        target_size: tuple[int, int] = (640, 640),
+        target_size: tuple[int, int] = (1536, 2048),
     ) -> None:
         """Initialize LesionDetectionPredictor.
 
@@ -126,7 +126,18 @@ class LesionDetectionPredictor:
         orig_h, orig_w = rgb.shape[:2]
         target_h, target_w = self.target_size
 
-        img_resized = cv2.resize(rgb, (target_w, target_h))
+        # Letterbox aspect-ratio preserving scaling
+        scale = min(float(target_w) / float(orig_w), float(target_h) / float(orig_h))
+        new_w = int(round(orig_w * scale))
+        new_h = int(round(orig_h * scale))
+        pad_x = (target_w - new_w) / 2.0
+        pad_y = (target_h - new_h) / 2.0
+
+        resized_patch = cv2.resize(rgb, (new_w, new_h))
+        img_resized = np.zeros((target_h, target_w, 3), dtype=np.uint8)
+        top_pad = int(round(pad_y))
+        left_pad = int(round(pad_x))
+        img_resized[top_pad : top_pad + new_h, left_pad : left_pad + new_w] = resized_patch
 
         img_tensor = (
             torch.from_numpy(img_resized).permute(2, 0, 1).float() / 255.0
@@ -143,22 +154,25 @@ class LesionDetectionPredictor:
         scores = outputs["scores"].cpu().numpy()
         labels = outputs["labels"].cpu().numpy()
 
-        scale_x = float(orig_w) / float(target_w)
-        scale_y = float(orig_h) / float(target_h)
-
         res_boxes: list[list[float]] = []
         res_scores: list[float] = []
         res_labels: list[int] = []
-        res_names: list[str] = []
 
         for box, score, label in zip(boxes, scores, labels, strict=False):
             if score < self.score_thresh:
                 continue
 
-            xmin = float(box[0] * scale_x)
-            ymin = float(box[1] * scale_y)
-            xmax = float(box[2] * scale_x)
-            ymax = float(box[3] * scale_y)
+            # Exact letterbox un-scaling to original coordinates without distortion or shift
+            xmin = float((box[0] - left_pad) / scale)
+            ymin = float((box[1] - top_pad) / scale)
+            xmax = float((box[2] - left_pad) / scale)
+            ymax = float((box[3] - top_pad) / scale)
+
+            # Clip within image boundaries
+            xmin = max(0.0, min(xmin, float(orig_w - 1)))
+            ymin = max(0.0, min(ymin, float(orig_h - 1)))
+            xmax = max(xmin + 1.0, min(xmax, float(orig_w)))
+            ymax = max(ymin + 1.0, min(ymax, float(orig_h)))
 
             res_boxes.append([xmin, ymin, xmax, ymax])
             res_scores.append(float(score))
