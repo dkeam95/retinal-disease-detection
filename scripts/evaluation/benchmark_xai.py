@@ -249,6 +249,14 @@ def main() -> None:
         f.write(html_content)
 
     print(f"  [OK] HTML Benchmark Report saved to: {html_path}")
+
+    # Render 5-Column SOTA XAI Comparison Grid Image matching Slide 4
+    try:
+        from scripts.visualization.render_xai_slide_table import generate_xai_slide_table
+        generate_xai_slide_table()
+    except Exception as e:
+        print(f"  [WARNING] Could not render 5-Column XAI Slide Table: {e}")
+
     print("\n" + "=" * 80)
     print("ALL 5 XAI ALGORITHMS EVALUATED & BENCHMARKED SUCCESSFULLY!")
     print("=" * 80)

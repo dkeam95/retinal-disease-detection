@@ -48,6 +48,7 @@ Examples:
             "master-report",
             "demo",
             "benchmark-xai",
+            "benchmark-seg",
             "benchmark-det",
             "train-detection",
             "pdf-report",
@@ -58,7 +59,7 @@ Examples:
     parser.add_argument(
         "--config",
         type=str,
-        default="configs/detection/exp_faster_rcnn_lesions_v3_1536.yaml",
+        default="configs/config.yaml",
         help="Path to YAML configuration file (used for train-detection)",
     )
     args = parser.parse_args()
@@ -67,6 +68,15 @@ Examples:
 
     if mode in ("master-report", "all"):
         print("[INIT] Executing Master Clinical Diagnostic & AI Analytics Pipeline...\n")
+        # Ensure Presentation Comparison Grid Tables are generated
+        try:
+            from scripts.visualization.render_segmentation_slide_table import generate_segmentation_slide_table
+            from scripts.visualization.render_xai_slide_table import generate_xai_slide_table
+            generate_segmentation_slide_table()
+            generate_xai_slide_table()
+        except Exception as e:
+            print(f"[WARNING] Could not auto-render presentation tables: {e}")
+
         from scripts.reporting.generate_master_clinical_reports import main as run_master
 
         run_master()
@@ -78,10 +88,16 @@ Examples:
         run_demo()
 
     elif mode == "benchmark-xai":
-        print("[INIT] Executing 5 SOTA XAI Algorithms Side-by-Side Benchmark...\n")
+        print("[INIT] Executing 5 SOTA XAI Algorithms Side-by-Side Benchmark & Grid Table...\n")
         from scripts.evaluation.benchmark_xai import main as run_xai
 
         run_xai()
+
+    elif mode == "benchmark-seg":
+        print("[INIT] Executing 5-Column Lesion Segmentation Pipeline Grid Renderer (Slide 3)...\n")
+        from scripts.visualization.render_segmentation_slide_table import generate_segmentation_slide_table
+
+        generate_segmentation_slide_table()
 
     elif mode == "benchmark-det":
         print("[INIT] Executing 3-Round Faster R-CNN Detection Resolution Benchmark...\n")
@@ -98,6 +114,9 @@ Examples:
 
     elif mode == "pdf-report":
         print("[INIT] Generating Publication-Grade PDF Executive Report...\n")
+        from scripts.reporting.export_pdf_reports import main as export_pdfs
+
+        export_pdfs()
         from scripts.reporting.generate_pdf_report import build_pdf_report
 
         build_pdf_report()
