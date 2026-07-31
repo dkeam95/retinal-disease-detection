@@ -168,7 +168,7 @@ python main.py --mode pdf-report
 
 - **Run Full Automated PyTest Suite (175 Tests)**:
   ```bash
-  .venv\Scripts\python.exe -m pytest tests/ --no-cov -v
+  pytest tests/ --no-cov -v
   ```
   * **What it does**: Executes 100% of all unit and integration tests across dataset parsing, loss functions, evaluation metrics, model backbones, FOV masking, and trainer checkpoints.
   * **Why use it**: Validates code integrity before making commits or deploying new models.
@@ -179,17 +179,17 @@ python main.py --mode pdf-report
 
 - **10 Real Fundus Images Lesion Mask Experiment (Class 3 & 4)**:
   ```bash
-  .venv\Scripts\python.exe experiments/run_10_images_experiment.py
+  python experiments/run_10_images_experiment.py
   ```
   * **What it does**: Evaluates the CUDA PyTorch model on 10 real fundus photographs containing Microaneurysms (`MA`) and Soft Exudates (`SE`).
   * **Output**: Generates color overlays (`sample_XX.png`) and **high-contrast B&W masks** (`sample_XX_bw.png`) in `reports/class_3_4_batch_10/`.
 
 - **5 SOTA Model Architectures Lesion Benchmark**:
   ```bash
-  .venv\Scripts\python.exe experiments/run_sota_benchmark_10_images.py
+  python experiments/run_sota_benchmark_10_images.py
   ```
   * **What it does**: Compares 5 SOTA vision models (`ConvNeXt-Tiny`, `Swin-T`, `DenseNet121`, `EfficientNet-B0`, `ResNet-50`) on real test images.
-  * **Output**: Generates [`sota_benchmark_report.html`](file:///D:/python_projects/retinal-disease-detection/reports/figures/detection_comparison/sota_benchmark_report.html) and B&W high-contrast masks.
+  * **Output**: Generates `reports/figures/detection_comparison/sota_benchmark_report.html` and B&W high-contrast masks.
 
 ---
 
@@ -197,30 +197,30 @@ python main.py --mode pdf-report
 
 - **5 SOTA XAI Algorithms Benchmark**:
   ```bash
-  .venv\Scripts\python.exe scripts/evaluation/benchmark_xai.py
+  python scripts/evaluation/benchmark_xai.py
   ```
   * **What it does**: Computes feature attribution maps for `Grad-CAM`, `Grad-CAM++`, `Layer-CAM`, `Score-CAM`, and `Integrated Gradients` with strict 0% background bleeding.
-  * **Output**: Generates [`xai_benchmark_report.html`](file:///D:/python_projects/retinal-disease-detection/reports/figures/xai_benchmark/xai_benchmark_report.html).
+  * **Output**: Generates `reports/figures/xai_benchmark/xai_benchmark_report.html`.
 
 - **Master Clinical Diagnostic HTML Suite**:
   ```bash
-  .venv\Scripts\python.exe scripts/reporting/generate_master_clinical_reports.py
+  python scripts/reporting/generate_master_clinical_reports.py
   ```
-  * **What it does**: Generates multi-panel clinical diagnostic cards combining DR stage predictions, 5 XAI heatmaps, lesion markers, and Faster R-CNN bounding boxes.
+  * **What it does**: Generates multi-panel clinical diagnostic cards combining DR stage predictions, 5 XAI heatmaps, lesion markers, and Faster R-CNN bounding boxes in `reports/master_clinical_reports/`.
 
 ---
 
-### 📄 D. Publication-Quality Russian PDF Report Compiler
+### 📄 D. Publication-Quality English PDF Report Compiler
 
-- **Compile All Russian PDF Reports**:
+- **Compile All English PDF Reports**:
   ```bash
-  .venv\Scripts\python.exe scripts/reporting/export_pdf_reports.py
+  python scripts/reporting/export_pdf_reports.py
   ```
-  * **What it does**: Compiles 4 PDF reports with full Russian UTF-8 support (Arial Cyrillic fonts) and 100% aspect-ratio preserved graphics:
-    1. [`reports/master_multi_task_clinical_report.pdf`](file:///D:/python_projects/retinal-disease-detection/reports/master_multi_task_clinical_report.pdf) (Master 3-Task Multi-Task Report)
-    2. [`reports/lesion_detection_report.pdf`](file:///D:/python_projects/retinal-disease-detection/reports/lesion_detection_report.pdf) (Lesion Object Detection Report)
-    3. [`reports/lesion_segmentation_report.pdf`](file:///D:/python_projects/retinal-disease-detection/reports/lesion_segmentation_report.pdf) (Lesion Mask Segmentation Report)
-    4. [`reports/codebase_architecture_guide.pdf`](file:///D:/python_projects/retinal-disease-detection/reports/codebase_architecture_guide.pdf) (Module Map & Data Flow Guide)
+  * **What it does**: Compiles 4 publication-quality PDF reports in `reports/` with 100% aspect-ratio preserved graphics:
+    1. `reports/master_multi_task_clinical_report.pdf` (Master 3-Task Multi-Task Report)
+    2. `reports/lesion_detection_report.pdf` (Lesion Object Detection Report)
+    3. `reports/lesion_segmentation_report.pdf` (Lesion Mask Segmentation Report)
+    4. `reports/codebase_architecture_guide.pdf` (Module Map & Data Flow Guide)
 
 ---
 
@@ -228,28 +228,30 @@ python main.py --mode pdf-report
 
 - **Train ConvNeXt-Tiny Classifier**:
   ```bash
-  .venv\Scripts\python.exe scripts/training/train_model.py --config configs/exp_05_convnext_tiny.yaml
+  python scripts/training/train_model.py --config configs/exp_05_convnext_tiny.yaml
   ```
 
 - **Fine-Tune Faster R-CNN Lesion Detector at 1536px**:
   ```bash
-  .venv\Scripts\python.exe scripts/training/train_detector.py --config configs/exp_faster_rcnn_lesions_v3_1536.yaml
+  python scripts/training/train_detector.py --config configs/exp_faster_rcnn_lesions_v3_1536.yaml
   ```
 
 - **Evaluate Model Checkpoint on Test Set**:
   ```bash
-  .venv\Scripts\python.exe scripts/evaluation/evaluate_model.py --checkpoint experiments/exp_05_convnext_tiny_v2/checkpoints/best.pt
+  python scripts/evaluation/evaluate_model.py --checkpoint experiments/exp_05_convnext_tiny_v2/checkpoints/best.pt
   ```
 
 ---
 
 ## 🏥 Clinical Diagnostic Reports Generated
 
-- **Master Multi-Task PDF Report (Russian)**: [`reports/master_multi_task_clinical_report.pdf`](file:///D:/python_projects/retinal-disease-detection/reports/master_multi_task_clinical_report.pdf)
-- **Lesion Detection PDF Report**: [`reports/lesion_detection_report.pdf`](file:///D:/python_projects/retinal-disease-detection/reports/lesion_detection_report.pdf)
-- **Lesion Segmentation PDF Report**: [`reports/lesion_segmentation_report.pdf`](file:///D:/python_projects/retinal-disease-detection/reports/lesion_segmentation_report.pdf)
-- **Codebase Architecture Guide PDF**: [`reports/codebase_architecture_guide.pdf`](file:///D:/python_projects/retinal-disease-detection/reports/codebase_architecture_guide.pdf)
-- **Master Clinical Diagnostic HTML Report**: [`reports/master_clinical_reports/master_clinical_diagnostic_report.html`](file:///D:/python_projects/retinal-disease-detection/reports/master_clinical_reports/master_clinical_diagnostic_report.html)
+All generated reports are placed inside the relative `reports/` directory of the project:
+
+- **Master Multi-Task PDF Report**: `reports/master_multi_task_clinical_report.pdf`
+- **Lesion Detection PDF Report**: `reports/lesion_detection_report.pdf`
+- **Lesion Segmentation PDF Report**: `reports/lesion_segmentation_report.pdf`
+- **Codebase Architecture Guide PDF**: `reports/codebase_architecture_guide.pdf`
+- **Master Clinical Diagnostic HTML Report**: `reports/master_clinical_reports/master_clinical_diagnostic_report.html`
 
 ---
 
@@ -257,5 +259,5 @@ python main.py --mode pdf-report
 
 - **Core Frameworks**: Python 3.11, PyTorch 2.7, Torchvision 0.22, OpenCV 4.11
 - **Architectures**: `timm` (ConvNeXt, Swin Transformer, DenseNet, ResNet, EfficientNet), Faster R-CNN (ResNet50-FPN)
-- **Reporting & Visualization**: ReportLab PDF (Arial Cyrillic UTF-8), Matplotlib, OpenCV CLAHE LAB
+- **Reporting & Visualization**: ReportLab PDF, Matplotlib, OpenCV CLAHE LAB
 - **Code Quality**: `pytest` (175/175 tests passed), `ruff` (linter), `mypy` (static type checker)
