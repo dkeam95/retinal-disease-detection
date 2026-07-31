@@ -43,7 +43,7 @@ If you use this codebase or the DDR dataset benchmark in your research, please c
 ## 🎯 Key Features & Module Capabilities
 
 - **Pipeline-First Architecture**: Decoupled modules (`common`, `dataset`, `dataloader`, `detection`, `model`, `losses`, `metrics`, `trainer`, `evaluation`, `inference`, `explainability`).
-- **Multi-Model Weighted Ensemble**: Combines predictions from top-tier vision architectures (`ConvNeXt-Tiny v2` + `Swin-T v2` + `DenseNet-121 v2`) via weighted probability averaging (**Test QWK = 0.7569**).
+- **Multi-Model Weighted Ensemble**: Combines predictions from top-tier vision architectures (`ConvNeXt-Tiny v2` + `Swin-T v2` + `DenseNet-121 v2`) via weighted probability averaging (**Test QWK = 0.7685**, Single Model ConvNeXt **Test QWK = 0.7569**).
 - **SOTA 5-Algorithm Explainability Suite (`src/explainability`)**:
   1. **Baseline Grad-CAM**: Standard coarse spatial activation mapping.
   2. **Grad-CAM++**: Higher-order (2nd/3rd derivative) gradient weighting for multiple scattered lesion detection.
@@ -51,7 +51,7 @@ If you use this codebase or the DDR dataset benchmark in your research, please c
   4. **Score-CAM**: Gradient-free perturbation confidence scoring that completely eliminates gradient noise.
   5. **Integrated Gradients**: Axiomatic path-integral feature attribution for pixel-level micro-lesion pinpointing.
 - **Two-Stage Faster R-CNN Lesion Object Detector (`src/detection`)**:
-  - ResNet50-FPN backbone with COCO pre-trained weights.
+  - ResNet50-FPN backbone with COCO pre-trained weights (**Test mAP@50 = 28.45%**, **Test mAP(0.50:0.95) = 18.24%**).
   - Customized $4\text{px}$ micro-anchors (`sizes: ((4,), (8,), (16,), (32,), (64,))`) tailored for tiny microaneurysms ($4-15\text{px}$).
   - Fine-tuned at $1536 \times 1536$ MAX resolution with CLAHE LAB-space contrast enhancement.
   - Automated IoU-based Bounding Box Merger (`_merge_overlapping_boxes`) consolidating overlapping duplicates into single precise bounding boxes.
