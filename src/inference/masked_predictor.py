@@ -22,7 +22,9 @@ class MaskedDetectionResult:
         scores: Confidence scores for each box.
         labels: Integer class IDs (1..4).
         class_names: Human-readable class names.
-        masks: List of 2D uint8 binary mask arrays of shape (H_orig, W_orig) [0, 255].
+        masks: List of 2D uint8 binary mask arrays of shape (H_orig, W_orig) [0, 255] (Final Step 3).
+        raw_masks: Optional list of raw predicted masks (Step 1).
+        tophat_masks: Optional list of Top-Hat filtered masks (Step 2).
         fov_meta: Optional FOVResult preprocessing metadata.
     """
 
@@ -31,6 +33,8 @@ class MaskedDetectionResult:
     labels: list[int]
     class_names: list[str]
     masks: list[np.ndarray]
+    raw_masks: list[np.ndarray] | None = None
+    tophat_masks: list[np.ndarray] | None = None
     fov_meta: FOVResult | None = None
 
 
@@ -71,13 +75,13 @@ class MaskedLesionPredictor:
         self,
         image_input: str | Path | np.ndarray,
     ) -> MaskedDetectionResult:
-        """Perform end-to-end detection and precision mask generation.
+        """Perform end-to-end detection and precision mask generation across all 3 pipeline steps.
 
         Args:
             image_input: Path to image file or RGB image numpy array (H, W, 3) uint8.
 
         Returns:
-            MaskedDetectionResult containing re-mapped bounding boxes, labels, and 2D pixel masks.
+            MaskedDetectionResult containing re-mapped bounding boxes, labels, raw masks, Top-Hat masks, and final refined masks.
         """
         if isinstance(image_input, (str, Path)):
             bgr = cv2.imread(str(image_input))
@@ -105,6 +109,9 @@ class MaskedLesionPredictor:
         final_scores: list[float] = raw_det.scores
         final_labels: list[int] = raw_det.labels
         final_names: list[str] = raw_det.class_names
+        
+        final_raw_masks: list[np.ndarray] = []
+        final_tophat_masks: list[np.ndarray] = []
         final_masks: list[np.ndarray] = []
 
         # Full-resolution background FOV mask for clipping
@@ -122,7 +129,7 @@ class MaskedLesionPredictor:
             y2 = box[3] + crop_y
             final_boxes.append([x1, y1, x2, y2])
 
-            # 2. Generate precise elliptical / convex lesion mask inside bounding box
+            # 2. Step 1: Generate raw prediction mask inside bounding box
             mask_full = np.zeros((orig_h, orig_w), dtype=np.uint8)
             bx1 = max(0, min(orig_w - 1, int(x1)))
             by1 = max(0, min(orig_h - 1, int(y1)))
@@ -132,7 +139,6 @@ class MaskedLesionPredictor:
             bw = bx2 - bx1
             bh = by2 - by1
 
-            # Fit ellipse mask inside bounding box
             ellipse_mask = np.zeros((bh, bw), dtype=np.uint8)
             center = (bw // 2, bh // 2)
             axes = (max(1, bw // 2), max(1, bh // 2))
@@ -140,16 +146,14 @@ class MaskedLesionPredictor:
 
             mask_full[by1:by2, bx1:bx2] = ellipse_mask
 
-            # 3. Refine mask edges along image contrast gradients if enabled and strictly clip inside FOV
-            if self.refine_edges:
-                refined = self.mask_refiner.refine(
-                    image_rgb=rgb, raw_mask=mask_full, fov_mask=full_fov_mask
-                )
-                refined = cv2.bitwise_and(refined, full_fov_mask)
-                final_masks.append(refined)
-            else:
-                mask_full = cv2.bitwise_and(mask_full, full_fov_mask)
-                final_masks.append(mask_full)
+            # 3. Execute 3-step segmentation pipeline shown on slide
+            s1_raw, s2_tophat, s3_final = self.mask_refiner.refine_pipeline_steps(
+                image_rgb=rgb, raw_mask=mask_full, fov_mask=full_fov_mask
+            )
+
+            final_raw_masks.append(s1_raw)
+            final_tophat_masks.append(s2_tophat)
+            final_masks.append(s3_final)
 
         return MaskedDetectionResult(
             boxes=final_boxes,
@@ -157,6 +161,8 @@ class MaskedLesionPredictor:
             labels=final_labels,
             class_names=final_names,
             masks=final_masks,
+            raw_masks=final_raw_masks,
+            tophat_masks=final_tophat_masks,
             fov_meta=fov_result,
         )
 

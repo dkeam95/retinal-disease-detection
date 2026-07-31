@@ -93,6 +93,53 @@ class GuidedFilterMaskRefiner:
 
         return refined_binary
 
+    def apply_top_hat(self, raw_mask: np.ndarray, kernel_size: int = 15) -> np.ndarray:
+        """Apply Morphological Top-Hat Filter (Step 2 in slide pipeline).
+
+        Args:
+            raw_mask: Input binary mask uint8 [0, 255].
+            kernel_size: Structuring element diameter.
+
+        Returns:
+            Top-Hat filtered mask uint8 [0, 255].
+        """
+        if raw_mask.dtype != np.uint8:
+            mask_u8 = (raw_mask * 255).astype(np.uint8)
+        else:
+            mask_u8 = raw_mask.copy()
+
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size))
+        top_hat = cv2.morphologyEx(mask_u8, cv2.MORPH_TOPHAT, kernel)
+        # Combine Top-Hat result to enhance bright small lesion blobs
+        enhanced = cv2.add(mask_u8, top_hat)
+        return enhanced
+
+    def refine_pipeline_steps(
+        self,
+        image_rgb: np.ndarray,
+        raw_mask: np.ndarray,
+        fov_mask: np.ndarray | None = None,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Execute all 3 steps of the segmentation pipeline shown on the slide.
+
+        Step 1: Raw Mask (MaskedLesionPredictor)
+        Step 2: Top-Hat Morphological Filter (enhancing small lesions & suppressing uneven background)
+        Step 3: Guided Edge Refinement (final vessel & boundary sharpening)
+
+        Returns:
+            Tuple of (step1_raw_mask, step2_tophat_mask, step3_final_mask).
+        """
+        step1_raw = raw_mask.copy()
+        if fov_mask is not None:
+            step1_raw = cv2.bitwise_and(step1_raw, (fov_mask > 0).astype(np.uint8) * 255)
+
+        step2_tophat = self.apply_top_hat(step1_raw, kernel_size=15)
+        if fov_mask is not None:
+            step2_tophat = cv2.bitwise_and(step2_tophat, (fov_mask > 0).astype(np.uint8) * 255)
+
+        step3_final = self.refine(image_rgb=image_rgb, raw_mask=step2_tophat, fov_mask=fov_mask)
+        return step1_raw, step2_tophat, step3_final
+
 
 def refine_lesion_mask(
     image_rgb: np.ndarray,

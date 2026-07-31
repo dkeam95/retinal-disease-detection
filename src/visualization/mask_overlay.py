@@ -155,3 +155,148 @@ class LesionMaskVisualizer:
         else:
             orig_u8 = image_rgb
         return np.hstack([orig_u8, overlay_rgb])
+
+    def render_slide3_comparison_grid(
+        self,
+        class_samples: dict[str, dict[str, Any]],
+        cell_size: tuple[int, int] = (240, 240),
+    ) -> np.ndarray:
+        """Render exact 5-Column Segmentation Pipeline Comparison Grid matching Slide 3.
+
+        Columns:
+          1. Исходное изображение (Original Image)
+          2. Предсказанная маска (сырая) (Raw Mask - Step 1)
+          3. После Top-Hat фильтра (Top-Hat Mask - Step 2)
+          4. После уточнения границ (финальная маска) (Final Refined Mask - Step 3)
+          5. Наложение на изображение (Color Mask Overlay)
+
+        Rows:
+          1. Микроаневризмы (MA) - Green
+          2. Кровоизлияния (HE) - Red
+          3. Твёрдые экссудаты (EX) - Yellow
+          4. Мягкие экссудаты (SE) - Blue
+
+        Args:
+          class_samples: Dict mapping class_code ('MA', 'HE', 'EX', 'SE') -> dict containing:
+             - 'image_rgb': np.ndarray
+             - 'raw_mask': np.ndarray
+             - 'tophat_mask': np.ndarray
+             - 'final_mask': np.ndarray
+             - 'overlay_rgb': np.ndarray
+          cell_size: (width, height) of individual grid cell tiles.
+
+        Returns:
+          Annotated RGB numpy array (H_total, W_total, 3).
+        """
+        cell_w, cell_h = cell_size
+        header_h = 60
+        row_label_w = 160
+        num_cols = 5
+        
+        row_keys = ["MA", "HE", "EX", "SE"]
+        row_labels_ru = {
+            "MA": "Микроаневризмы\n(MA)",
+            "HE": "Кровоизлияния\n(HE)",
+            "EX": "Твёрдые\nэкссудаты (EX)",
+            "SE": "Мягкие\nэкссудаты (SE)",
+        }
+        class_color_bgr = {
+            "MA": (0, 220, 0),     # Green
+            "HE": (0, 0, 230),     # Red
+            "EX": (0, 220, 255),   # Yellow
+            "SE": (255, 120, 0),   # Cyan/Blue
+        }
+
+        col_headers_ru = [
+            "Исходное\nизображение",
+            "Предсказанная маска\n(сырая)",
+            "После Top-Hat\nфильтра",
+            "После уточнения границ\n(финальная маска)",
+            "Наложение\nна изображение",
+        ]
+
+        total_w = row_label_w + num_cols * cell_w
+        total_h = header_h + len(row_keys) * cell_h
+
+        # Canvas with sleek dark navy background (#0f172a / BGR: 42, 23, 15)
+        canvas = np.zeros((total_h, total_w, 3), dtype=np.uint8)
+        canvas[:, :] = (42, 23, 15)
+
+        # Draw Header Row
+        for col_idx, text in enumerate(col_headers_ru):
+            x1 = row_label_w + col_idx * cell_w
+            x2 = x1 + cell_w
+            cv2.rectangle(canvas, (x1, 0), (x2, header_h), (60, 35, 20), -1)
+            cv2.rectangle(canvas, (x1, 0), (x2, header_h), (100, 70, 40), 1)
+
+            lines = text.split("\n")
+            if len(lines) == 1:
+                cv2.putText(canvas, lines[0], (x1 + 10, header_h // 2 + 5), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 1, cv2.LINE_AA)
+            else:
+                cv2.putText(canvas, lines[0], (x1 + 10, 24), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (240, 240, 240), 1, cv2.LINE_AA)
+                cv2.putText(canvas, lines[1], (x1 + 10, 44), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (200, 200, 200), 1, cv2.LINE_AA)
+
+        # Draw Rows
+        for row_idx, r_key in enumerate(row_keys):
+            y1 = header_h + row_idx * cell_h
+            y2 = y1 + cell_h
+
+            # Draw Row Label Cell
+            cv2.rectangle(canvas, (0, y1), (row_label_w, y2), (45, 25, 18), -1)
+            cv2.rectangle(canvas, (0, y1), (row_label_w, y2), (100, 70, 40), 1)
+
+            lbl_lines = row_labels_ru[r_key].split("\n")
+            lbl_color = class_color_bgr[r_key]
+            cv2.putText(canvas, lbl_lines[0], (10, y1 + cell_h // 2 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.48, lbl_color, 1, cv2.LINE_AA)
+            if len(lbl_lines) > 1:
+                cv2.putText(canvas, lbl_lines[1], (10, y1 + cell_h // 2 + 18), cv2.FONT_HERSHEY_SIMPLEX, 0.45, lbl_color, 1, cv2.LINE_AA)
+
+            sample_data = class_samples.get(r_key, {})
+            img_rgb = sample_data.get("image_rgb")
+            raw_mask = sample_data.get("raw_mask")
+            tophat_mask = sample_data.get("tophat_mask")
+            final_mask = sample_data.get("final_mask")
+            overlay_rgb = sample_data.get("overlay_rgb")
+
+            cell_images = []
+            # Col 1: Original Image
+            if img_rgb is not None:
+                cell_images.append(cv2.cvtColor(cv2.resize(img_rgb, (cell_w, cell_h)), cv2.COLOR_RGB2BGR))
+            else:
+                cell_images.append(np.zeros((cell_h, cell_w, 3), dtype=np.uint8))
+
+            # Col 2: Raw Mask
+            if raw_mask is not None:
+                m2 = cv2.resize(raw_mask, (cell_w, cell_h))
+                cell_images.append(cv2.cvtColor(m2, cv2.COLOR_GRAY2BGR))
+            else:
+                cell_images.append(np.zeros((cell_h, cell_w, 3), dtype=np.uint8))
+
+            # Col 3: Top-Hat Mask
+            if tophat_mask is not None:
+                m3 = cv2.resize(tophat_mask, (cell_w, cell_h))
+                cell_images.append(cv2.cvtColor(m3, cv2.COLOR_GRAY2BGR))
+            else:
+                cell_images.append(np.zeros((cell_h, cell_w, 3), dtype=np.uint8))
+
+            # Col 4: Final Refined Mask
+            if final_mask is not None:
+                m4 = cv2.resize(final_mask, (cell_w, cell_h))
+                cell_images.append(cv2.cvtColor(m4, cv2.COLOR_GRAY2BGR))
+            else:
+                cell_images.append(np.zeros((cell_h, cell_w, 3), dtype=np.uint8))
+
+            # Col 5: Color Overlay
+            if overlay_rgb is not None:
+                cell_images.append(cv2.cvtColor(cv2.resize(overlay_rgb, (cell_w, cell_h)), cv2.COLOR_RGB2BGR))
+            else:
+                cell_images.append(np.zeros((cell_h, cell_w, 3), dtype=np.uint8))
+
+            # Paste 5 tiles into row
+            for c_i, tile_bgr in enumerate(cell_images):
+                cx1 = row_label_w + c_i * cell_w
+                cx2 = cx1 + cell_w
+                canvas[y1:y2, cx1:cx2] = tile_bgr
+                cv2.rectangle(canvas, (cx1, y1), (cx2, y2), (80, 50, 30), 1)
+
+        return cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB)
