@@ -48,19 +48,30 @@ def generate_segmentation_slide_table(
     # Class ID mapping: EX=1, HE=2, MA=3, SE=4
     label_to_code = {1: "EX", 2: "HE", 3: "MA", 4: "SE"}
     
-    # Pick 4 test fundus images that contain distinct lesion types
-    data_dir = Path("data/raw/DDR-dataset/lesion_segmentation/test/image")
-    if not data_dir.exists():
-        data_dir = Path("data")
+    # Target Class 3 & Class 4 fundus images containing microaneurysms, hemorrhages, hard/soft exudates
+    class3_4_files = [
+        "007-3396-200.jpg",
+        "007-3448-200.jpg",
+        "007-1829-100.jpg",
+        "007-2214-100.jpg",
+        "007-1774-100.jpg",
+        "007-1811-100.jpg",
+    ]
 
-    img_files = sorted(list(data_dir.rglob("*.jpg")))[:15]
+    data_dir = Path("data/raw/DDR-dataset/lesion_segmentation/test/image")
+    img_files = []
+    for fname in class3_4_files:
+        found_matches = list(Path("data").rglob(fname))
+        if found_matches:
+            img_files.append(found_matches[0])
+
     if not img_files:
-        raise FileNotFoundError("No fundus test images found in data directory.")
+        img_files = sorted(list(Path("data").rglob("*.jpg")))[:15]
 
     class_samples: dict[str, dict] = {}
     visualizer = LesionMaskVisualizer(alpha=0.45)
 
-    print(f"Processing {len(img_files)} fundus images for 4 lesion classes (MA, HE, EX, SE)...")
+    print(f"Processing {len(img_files)} Class 3 & 4 fundus images for 4 lesion classes (MA, HE, EX, SE)...")
 
     for img_p in img_files:
         if len(class_samples) == 4:
