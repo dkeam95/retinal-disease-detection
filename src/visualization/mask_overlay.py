@@ -300,3 +300,146 @@ class LesionMaskVisualizer:
                 cv2.rectangle(canvas, (cx1, y1), (cx2, y2), (80, 50, 30), 1)
 
         return cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB)
+
+    def render_xai_slide4_comparison_grid(
+        self,
+        xai_results: dict[str, dict[str, Any]],
+        cell_size: tuple[int, int] = (240, 240),
+    ) -> np.ndarray:
+        """Render exact 5-Column SOTA XAI Visual Explanations Grid matching Slide 4.
+
+        Columns (5 SOTA Algorithms):
+          1. Grad-CAM
+          2. Grad-CAM++
+          3. Layer-CAM
+          4. Score-CAM
+          5. Integrated Gradients
+
+        Rows (4 Processing Layers):
+          1. Original Image (Original RGB fundus)
+          2. Heatmap (JET activation heatmap)
+          3. Image Overlay (Heatmap blended on fundus image)
+          4. Highlighted Lesions (Lesion bounding boxes + mask overlays)
+
+        Bottom Legend:
+          - Microaneurysms (MA) [Green]
+          - Hemorrhages (HE) [Red]
+          - Hard Exudates (EX) [Yellow]
+          - Soft Exudates / CW (SE) [Cyan/Blue]
+
+        Args:
+          xai_results: Dict mapping algo_key ('gradcam', 'gradcam++', 'layer_cam', 'score_cam', 'integrated_gradients') -> dict containing:
+             - 'original_rgb': np.ndarray
+             - 'heatmap_rgb': np.ndarray
+             - 'overlay_rgb': np.ndarray
+             - 'lesions_rgb': np.ndarray
+          cell_size: (width, height) of individual tile cells.
+
+        Returns:
+          Annotated RGB numpy array (H_total, W_total, 3).
+        """
+        cell_w, cell_h = cell_size
+        header_h = 60
+        row_label_w = 160
+        footer_h = 50
+        num_cols = 5
+
+        col_keys = ["gradcam", "gradcam++", "layer_cam", "score_cam", "integrated_gradients"]
+        col_headers_en = [
+            "Grad-CAM",
+            "Grad-CAM++",
+            "Layer-CAM",
+            "Score-CAM",
+            "Integrated\nGradients",
+        ]
+
+        row_keys = ["original", "heatmap", "overlay", "lesions"]
+        row_labels_en = {
+            "original": "Original\nImage",
+            "heatmap": "Heatmap\n(Activation)",
+            "overlay": "Image\nOverlay",
+            "lesions": "Highlighted\nLesions",
+        }
+
+        total_w = row_label_w + num_cols * cell_w
+        total_h = header_h + len(row_keys) * cell_h + footer_h
+
+        # Canvas with sleek dark navy background (#0f172a / BGR: 42, 23, 15)
+        canvas = np.zeros((total_h, total_w, 3), dtype=np.uint8)
+        canvas[:, :] = (42, 23, 15)
+
+        # Draw Header Row (5 Columns)
+        for col_idx, (algo_k, text) in enumerate(zip(col_keys, col_headers_en, strict=False)):
+            x1 = row_label_w + col_idx * cell_w
+            x2 = x1 + cell_w
+            cv2.rectangle(canvas, (x1, 0), (x2, header_h), (60, 35, 20), -1)
+            cv2.rectangle(canvas, (x1, 0), (x2, header_h), (100, 70, 40), 1)
+
+            lines = text.split("\n")
+            if len(lines) == 1:
+                cv2.putText(canvas, lines[0], (x1 + cell_w // 2 - 40, header_h // 2 + 6), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 220, 100), 2, cv2.LINE_AA)
+            else:
+                cv2.putText(canvas, lines[0], (x1 + cell_w // 2 - 45, 24), cv2.FONT_HERSHEY_SIMPLEX, 0.50, (255, 220, 100), 2, cv2.LINE_AA)
+                cv2.putText(canvas, lines[1], (x1 + cell_w // 2 - 40, 46), cv2.FONT_HERSHEY_SIMPLEX, 0.50, (255, 220, 100), 2, cv2.LINE_AA)
+
+        # Draw 4 Rows
+        for row_idx, r_key in enumerate(row_keys):
+            y1 = header_h + row_idx * cell_h
+            y2 = y1 + cell_h
+
+            # Row Label Cell
+            cv2.rectangle(canvas, (0, y1), (row_label_w, y2), (45, 25, 18), -1)
+            cv2.rectangle(canvas, (0, y1), (row_label_w, y2), (100, 70, 40), 1)
+
+            lbl_lines = row_labels_en[r_key].split("\n")
+            cv2.putText(canvas, lbl_lines[0], (10, y1 + cell_h // 2 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.50, (240, 240, 240), 1, cv2.LINE_AA)
+            if len(lbl_lines) > 1:
+                cv2.putText(canvas, lbl_lines[1], (10, y1 + cell_h // 2 + 18), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (180, 180, 180), 1, cv2.LINE_AA)
+
+            # Paste 5 Tiles for this Row
+            for col_idx, algo_k in enumerate(col_keys):
+                cx1 = row_label_w + col_idx * cell_w
+                cx2 = cx1 + cell_w
+
+                data = xai_results.get(algo_k, {})
+                if r_key == "original":
+                    img_rgb = data.get("original_rgb")
+                elif r_key == "heatmap":
+                    img_rgb = data.get("heatmap_rgb")
+                elif r_key == "overlay":
+                    img_rgb = data.get("overlay_rgb")
+                elif r_key == "lesions":
+                    img_rgb = data.get("lesions_rgb")
+                else:
+                    img_rgb = None
+
+                if img_rgb is not None:
+                    tile_bgr = cv2.cvtColor(cv2.resize(img_rgb, (cell_w, cell_h)), cv2.COLOR_RGB2BGR)
+                else:
+                    tile_bgr = np.zeros((cell_h, cell_w, 3), dtype=np.uint8)
+
+                canvas[y1:y2, cx1:cx2] = tile_bgr
+                cv2.rectangle(canvas, (cx1, y1), (cx2, y2), (80, 50, 30), 1)
+
+        # Draw Bottom Legend Banner
+        fy1 = header_h + len(row_keys) * cell_h
+        fy2 = total_h
+        cv2.rectangle(canvas, (0, fy1), (total_w, fy2), (30, 18, 12), -1)
+        cv2.rectangle(canvas, (0, fy1), (total_w, fy2), (100, 70, 40), 1)
+
+        legend_items = [
+            ("Microaneurysms (MA)", (0, 255, 0)),        # Green
+            ("Hemorrhages (HE)", (0, 0, 255)),          # Red
+            ("Hard Exudates (EX)", (0, 240, 255)),       # Yellow
+            ("Soft Exudates / CW (SE)", (255, 160, 0)),  # Cyan/Blue
+        ]
+
+        leg_x = row_label_w + 20
+        leg_y = fy1 + 30
+        for label_text, color_bgr in legend_items:
+            cv2.rectangle(canvas, (leg_x, leg_y - 12), (leg_x + 16, leg_y + 4), color_bgr, -1)
+            cv2.rectangle(canvas, (leg_x, leg_y - 12), (leg_x + 16, leg_y + 4), (255, 255, 255), 1)
+            cv2.putText(canvas, label_text, (leg_x + 24, leg_y), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (240, 240, 240), 1, cv2.LINE_AA)
+            leg_x += 240
+
+        return cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB)
