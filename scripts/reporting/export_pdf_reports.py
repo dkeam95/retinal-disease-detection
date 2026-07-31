@@ -457,12 +457,86 @@ def create_segmentation_pdf_ru(output_pdf_path: Path) -> None:
     print(f"Успешно создан PDF по сегментации: {output_pdf_path}")
 
 
+def create_architecture_pdf_ru(output_pdf_path: Path) -> None:
+    """Генерация PDF-руководства по архитектуре и модулям проекта на русском языке."""
+    output_pdf_path.parent.mkdir(parents=True, exist_ok=True)
+    doc = SimpleDocTemplate(
+        str(output_pdf_path),
+        pagesize=letter,
+        leftMargin=36,
+        rightMargin=36,
+        topMargin=36,
+        bottomMargin=36,
+    )
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle("T1RuA", parent=styles["Heading1"], fontName=FONT_BOLD, fontSize=18, leading=22, textColor=colors.HexColor("#0f172a"), spaceAfter=6)
+    subtitle_style = ParagraphStyle("T2RuA", parent=styles["Normal"], fontName=FONT_NORMAL, fontSize=10, leading=14, textColor=colors.HexColor("#475569"), spaceAfter=12)
+    h2_style = ParagraphStyle("H2RuA", parent=styles["Heading2"], fontName=FONT_BOLD, fontSize=13, leading=16, textColor=colors.HexColor("#0284c7"), spaceBefore=10, spaceAfter=6)
+    body_style = ParagraphStyle("B1RuA", parent=styles["BodyText"], fontName=FONT_NORMAL, fontSize=9.5, leading=13.5, textColor=colors.HexColor("#1e293b"), spaceAfter=6)
+
+    story = []
+    story.append(Paragraph("🏗️ Архитектура Проекта и Карта Модулей — PDF Руководство", title_style))
+    story.append(Paragraph("Подробный разбор 12 модулей исходного кода src/, их связей и передачи данных", subtitle_style))
+    story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor("#0284c7"), spaceAfter=10))
+
+    story.append(Paragraph("1. Логика передачи данных между модулями (Data Flow)", h2_style))
+    flow_text = (
+        "<b>1. Загрузка данных</b>: <code>src/dataset</code> считывает аннотации DDR.<br/>"
+        "<b>2. Балансировка</b>: <code>src/dataloader</code> аугментирует картинки через Albumentations.<br/>"
+        "<b>3. Обучение и метрики</b>: <code>src/model</code> + <code>src/losses</code> + <code>src/metrics</code> под управлением <code>src/trainer</code>.<br/>"
+        "<b>4. Детекция и Сегментация</b>: <code>src/detection</code> (Faster R-CNN) передает рамки в <code>src/preprocessing</code> (FOV Изоляция) и <code>src/inference/masked_predictor</code> (Ч/Б маски).<br/>"
+        "<b>5. Объяснимый ИИ</b>: <code>src/explainability</code> строит карты внимания 5 алгоритмов XAI на признаках <code>ConvNeXt-Tiny</code>."
+    )
+    story.append(Paragraph(flow_text, body_style))
+    story.append(Spacer(1, 8))
+
+    story.append(Paragraph("2. Полная спецификация 12 модулей исходного кода src/", h2_style))
+
+    mod_table_data = [
+        [Paragraph("<b>Модуль src/</b>", body_style), Paragraph("<b>Основная задача модуля</b>", body_style), Paragraph("<b>Ключевые классы и файлы</b>", body_style)],
+        [Paragraph("<code>src/common</code>", body_style), Paragraph("Конфигурации YAML, Enum стадий DRClass, исключения.", body_style), Paragraph("<code>config.py</code>, <code>classes.py</code>", body_style)],
+        [Paragraph("<code>src/dataset</code>", body_style), Paragraph("Чтение текстов и PASCAL VOC XML файлов аннотаций.", body_style), Paragraph("<code>RetinalDataset</code>, <code>parser.py</code>", body_style)],
+        [Paragraph("<code>src/dataloader</code>", body_style), Paragraph("Сборка батчей PyTorch DataLoader и Albumentations.", body_style), Paragraph("<code>dataloader.py</code>, <code>augmentations.py</code>", body_style)],
+        [Paragraph("<code>src/model</code>", body_style), Paragraph("Архитектуры ConvNeXt, Swin-T, DenseNet и реестр.", body_style), Paragraph("<code>ModelRegistry</code>, <code>classification_model.py</code>", body_style)],
+        [Paragraph("<code>src/losses</code>", body_style), Paragraph("Функции потерь CB-Focal Loss и Weighted Cross-Entropy.", body_style), Paragraph("<code>class_balanced_focal.py</code>, <code>factory.py</code>", body_style)],
+        [Paragraph("<code>src/metrics</code>", body_style), Paragraph("Расчет стандарта QWK, F1-score, Accuracy и матрицы.", body_style), Paragraph("<code>quadratic_weighted_kappa.py</code>", body_style)],
+        [Paragraph("<code>src/trainer</code>", body_style), Paragraph("Циклы эпох, EarlyStopping и запись чекпоинтов.", body_style), Paragraph("<code>Trainer</code>, <code>checkpoint_manager.py</code>", body_style)],
+        [Paragraph("<code>src/detection</code>", body_style), Paragraph("Faster R-CNN ResNet50-FPN, микро-анкоры и mAP@50.", body_style), Paragraph("<code>build_lesion_detector</code>, <code>metrics.py</code>", body_style)],
+        [Paragraph("<code>src/preprocessing</code>", body_style), Paragraph("Выделение круга FOV (98%) и Guided Edge Filter.", body_style), Paragraph("<code>FundusFOVExtractor</code>, <code>mask_refinement.py</code>", body_style)],
+        [Paragraph("<code>src/inference</code>", body_style), Paragraph("Ансамблирование QWK=0.7685 и сегментатор масок.", body_style), Paragraph("<code>EnsemblePredictor</code>, <code>MaskedLesionPredictor</code>", body_style)],
+        [Paragraph("<code>src/explainability</code>", body_style), Paragraph("5 алгоритмов XAI (Grad-CAM, Layer-CAM, Score-CAM...).", body_style), Paragraph("<code>GradCAM</code>, <code>SpotlightVisualizer</code>", body_style)],
+        [Paragraph("<code>src/visualization</code>", body_style), Paragraph("Отрисовка графиков обучения и генератор HTML.", body_style), Paragraph("<code>plots.py</code>, <code>html_report.py</code>", body_style)],
+    ]
+
+    t_mod = Table(mod_table_data, colWidths=[110, 260, 170])
+    t_mod.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f1f5f9")),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 4),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+    ]))
+    story.append(t_mod)
+
+    doc.build(story)
+    print(f"Успешно создан PDF по архитектуре: {output_pdf_path}")
+
+
 if __name__ == "__main__":
     det_pdf = Path("reports/lesion_detection_report.pdf")
     seg_pdf = Path("reports/lesion_segmentation_report.pdf")
     master_pdf = Path("reports/master_multi_task_clinical_report.pdf")
+    arch_pdf = Path("reports/codebase_architecture_guide.pdf")
 
-    for pdf_p, func in [(det_pdf, create_detection_pdf_ru), (seg_pdf, create_segmentation_pdf_ru), (master_pdf, create_master_pdf_ru)]:
+    tasks = [
+        (det_pdf, create_detection_pdf_ru),
+        (seg_pdf, create_segmentation_pdf_ru),
+        (master_pdf, create_master_pdf_ru),
+        (arch_pdf, create_architecture_pdf_ru),
+    ]
+
+    for pdf_p, func in tasks:
         try:
             func(pdf_p)
         except PermissionError:
@@ -471,3 +545,4 @@ if __name__ == "__main__":
             print(f"Ошибка при создании {pdf_p}: {e}")
 
     print("ВСЕ РУССКОЯЗЫЧНЫЕ PDF-ОТЧЕТЫ УСПЕШНО СФОРМИРОВАНЫ!")
+
