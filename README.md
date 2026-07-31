@@ -162,84 +162,19 @@ python main.py --mode pdf-report
 
 ---
 
-## 🛠️ Complete Operational Command Reference
+## ⚡ Quick Command Reference
 
-### 🧪 A. Automated Testing & Code Verification
-
-- **Run Full Automated PyTest Suite (175 Tests)**:
-  ```bash
-  pytest tests/ --no-cov -v
-  ```
-  * **What it does**: Executes 100% of all unit and integration tests across dataset parsing, loss functions, evaluation metrics, model backbones, FOV masking, and trainer checkpoints.
-  * **Why use it**: Validates code integrity before making commits or deploying new models.
-
----
-
-### 📷 B. Black & White (B&W) Mask Overlays & SOTA Benchmarks
-
-- **10 Real Fundus Images Lesion Mask Experiment (Class 3 & 4)**:
-  ```bash
-  python experiments/run_10_images_experiment.py
-  ```
-  * **What it does**: Evaluates the CUDA PyTorch model on 10 real fundus photographs containing Microaneurysms (`MA`) and Soft Exudates (`SE`).
-  * **Output**: Generates color overlays (`sample_XX.png`) and **high-contrast B&W masks** (`sample_XX_bw.png`) in `reports/class_3_4_batch_10/`.
-
-- **5 SOTA Model Architectures Lesion Benchmark**:
-  ```bash
-  python experiments/run_sota_benchmark_10_images.py
-  ```
-  * **What it does**: Compares 5 SOTA vision models (`ConvNeXt-Tiny`, `Swin-T`, `DenseNet121`, `EfficientNet-B0`, `ResNet-50`) on real test images.
-  * **Output**: Generates `reports/figures/detection_comparison/sota_benchmark_report.html` and B&W high-contrast masks.
-
----
-
-### 🔍 C. Explainable AI (XAI) & Master Clinical Reports
-
-- **5 SOTA XAI Algorithms Benchmark**:
-  ```bash
-  python scripts/evaluation/benchmark_xai.py
-  ```
-  * **What it does**: Computes feature attribution maps for `Grad-CAM`, `Grad-CAM++`, `Layer-CAM`, `Score-CAM`, and `Integrated Gradients` with strict 0% background bleeding.
-  * **Output**: Generates `reports/figures/xai_benchmark/xai_benchmark_report.html`.
-
-- **Master Clinical Diagnostic HTML Suite**:
-  ```bash
-  python scripts/reporting/generate_master_clinical_reports.py
-  ```
-  * **What it does**: Generates multi-panel clinical diagnostic cards combining DR stage predictions, 5 XAI heatmaps, lesion markers, and Faster R-CNN bounding boxes in `reports/master_clinical_reports/`.
-
----
-
-### 📄 D. Publication-Quality English PDF Report Compiler
-
-- **Compile All English PDF Reports**:
-  ```bash
-  python scripts/reporting/export_pdf_reports.py
-  ```
-  * **What it does**: Compiles 4 publication-quality PDF reports in `reports/` with 100% aspect-ratio preserved graphics:
-    1. `reports/master_multi_task_clinical_report.pdf` (Master 3-Task Multi-Task Report)
-    2. `reports/lesion_detection_report.pdf` (Lesion Object Detection Report)
-    3. `reports/lesion_segmentation_report.pdf` (Lesion Mask Segmentation Report)
-    4. `reports/codebase_architecture_guide.pdf` (Module Map & Data Flow Guide)
-
----
-
-### 🏋️ E. Model Training & Evaluation Scripts
-
-- **Train ConvNeXt-Tiny Classifier**:
-  ```bash
-  python scripts/training/train_model.py --config configs/exp_05_convnext_tiny.yaml
-  ```
-
-- **Fine-Tune Faster R-CNN Lesion Detector at 1536px**:
-  ```bash
-  python scripts/training/train_detector.py --config configs/exp_faster_rcnn_lesions_v3_1536.yaml
-  ```
-
-- **Evaluate Model Checkpoint on Test Set**:
-  ```bash
-  python scripts/evaluation/evaluate_model.py --checkpoint experiments/exp_05_convnext_tiny_v2/checkpoints/best.pt
-  ```
+| Task / Purpose | Command | Primary Output / Location |
+| :--- | :--- | :--- |
+| **Run PyTest Suite (175 Tests)** | `pytest tests/ --no-cov -v` | Console test status (100% pass) |
+| **B&W & Color Lesion Masks (10 Images)** | `python experiments/run_10_images_experiment.py` | `reports/class_3_4_batch_10/` |
+| **5 SOTA Models Benchmark** | `python experiments/run_sota_benchmark_10_images.py` | `reports/figures/detection_comparison/` |
+| **5 SOTA XAI Algorithms Benchmark** | `python scripts/evaluation/benchmark_xai.py` | `reports/figures/xai_benchmark/` |
+| **Master HTML Clinical Cards** | `python scripts/reporting/generate_master_clinical_reports.py` | `reports/master_clinical_reports/` |
+| **Compile All 4 PDF Reports** | `python scripts/reporting/export_pdf_reports.py` | `reports/*.pdf` |
+| **Train ConvNeXt-Tiny Classifier** | `python scripts/training/train_model.py --config configs/exp_05_convnext_tiny.yaml` | `experiments/exp_05_convnext_tiny/` |
+| **Train Faster R-CNN (1536px)** | `python scripts/training/train_detector.py --config configs/exp_faster_rcnn_lesions_v3_1536.yaml` | `experiments/exp_faster_rcnn_lesions_v3_1536/` |
+| **Evaluate Checkpoint on Test Set** | `python scripts/evaluation/evaluate_model.py --checkpoint ...` | Console metrics & confusion matrix |
 
 ---
 
