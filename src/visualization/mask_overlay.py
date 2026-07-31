@@ -194,11 +194,11 @@ class LesionMaskVisualizer:
         num_cols = 5
         
         row_keys = ["MA", "HE", "EX", "SE"]
-        row_labels_ru = {
-            "MA": "Микроаневризмы\n(MA)",
-            "HE": "Кровоизлияния\n(HE)",
-            "EX": "Твёрдые\nэкссудаты (EX)",
-            "SE": "Мягкие\nэкссудаты (SE)",
+        row_labels_en = {
+            "MA": "Microaneurysms\n(MA)",
+            "HE": "Hemorrhages\n(HE)",
+            "EX": "Hard Exudates\n(EX)",
+            "SE": "Soft Exudates\n(SE)",
         }
         class_color_bgr = {
             "MA": (0, 220, 0),     # Green
@@ -207,12 +207,12 @@ class LesionMaskVisualizer:
             "SE": (255, 120, 0),   # Cyan/Blue
         }
 
-        col_headers_ru = [
-            "Исходное\nизображение",
-            "Предсказанная маска\n(сырая)",
-            "После Top-Hat\nфильтра",
-            "После уточнения границ\n(финальная маска)",
-            "Наложение\nна изображение",
+        col_headers_en = [
+            "Original\nImage",
+            "Predicted Mask\n(Raw Step 1)",
+            "After Top-Hat\nFilter (Step 2)",
+            "After Edge Refinement\n(Final Step 3)",
+            "Color Mask\nOverlay",
         ]
 
         total_w = row_label_w + num_cols * cell_w
@@ -223,7 +223,7 @@ class LesionMaskVisualizer:
         canvas[:, :] = (42, 23, 15)
 
         # Draw Header Row
-        for col_idx, text in enumerate(col_headers_ru):
+        for col_idx, text in enumerate(col_headers_en):
             x1 = row_label_w + col_idx * cell_w
             x2 = x1 + cell_w
             cv2.rectangle(canvas, (x1, 0), (x2, header_h), (60, 35, 20), -1)
@@ -245,7 +245,7 @@ class LesionMaskVisualizer:
             cv2.rectangle(canvas, (0, y1), (row_label_w, y2), (45, 25, 18), -1)
             cv2.rectangle(canvas, (0, y1), (row_label_w, y2), (100, 70, 40), 1)
 
-            lbl_lines = row_labels_ru[r_key].split("\n")
+            lbl_lines = row_labels_en[r_key].split("\n")
             lbl_color = class_color_bgr[r_key]
             cv2.putText(canvas, lbl_lines[0], (10, y1 + cell_h // 2 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.48, lbl_color, 1, cv2.LINE_AA)
             if len(lbl_lines) > 1:
