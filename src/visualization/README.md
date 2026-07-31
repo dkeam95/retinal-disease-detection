@@ -12,7 +12,8 @@ The `src/visualization` module provides publication-quality plotting tools for e
 
 ```
 src/visualization/
-├── __init__.py           # Package exports (plots, ReportGenerator)
+├── __init__.py           # Package exports (plots, LesionMaskVisualizer, ReportGenerator)
+├── mask_overlay.py       # LesionMaskVisualizer & 5-Column Presentation Grid Renderers (Slides 3 & 4)
 ├── plots.py              # Matplotlib & Seaborn diagnostic chart plotting functions
 └── report_generator.py   # Automated PDF/HTML evaluation report compiler
 ```
@@ -21,7 +22,13 @@ src/visualization/
 
 ## 🔑 Key Components
 
-### 1. Diagnostic Plots (`plots.py`)
+### 1. Presentation Grid Renderers & Mask Visualizer (`mask_overlay.py`)
+Provides production mask visualization tools:
+* `render_slide3_comparison_grid()`: Renders the 5-column 3-step segmentation pipeline grid table image matching Slide 3 (`reports/figures/segmentation_pipeline_comparison_table.png`).
+* `render_xai_slide4_comparison_grid()`: Renders the 5-column SOTA XAI visual explanation grid table image matching Slide 4 (`reports/figures/xai_pipeline_comparison_table.png`).
+* `draw_mask_overlay()`: Color-coded lesion mask overlays (`MA` Green, `HE` Red, `EX` Yellow, `SE` Cyan/Blue).
+
+### 2. Diagnostic Plots (`plots.py`)
 Provides modular plotting functions:
 * `plot_confusion_matrix()`: Normalized confusion matrix heatmap with class labels.
 * `plot_training_curves()`: Multi-panel plot for Train/Val Loss, Accuracy, and QWK across training epochs.

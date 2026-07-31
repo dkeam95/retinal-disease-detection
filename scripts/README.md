@@ -10,6 +10,10 @@ This directory contains all operational entrypoints, evaluation benchmarks, XAI 
 scripts/
 ├── training/
 │   └── train_detection.py                  # CLI Faster R-CNN Lesion Detector Training
+├── visualization/
+│   ├── render_segmentation_slide_table.py  # 5-Column 3-Step Segmentation Grid Renderer (Slide 3)
+│   ├── render_xai_slide_table.py           # 5-Column SOTA XAI Visual Explanation Grid Renderer (Slide 4)
+│   └── render_architecture_diagram.py      # Architectural Graph Renderer (300 DPI)
 ├── evaluation/
 │   ├── benchmark_xai.py                    # Side-by-Side Benchmark of 5 SOTA XAI Algorithms
 │   ├── compare_detection_rounds.py         # 3-Round Resolution Benchmark (640 vs 1024 vs 1536 MAX)
@@ -19,6 +23,7 @@ scripts/
 │   └── test_severe_cases.py                # Grade 3 (Severe) & Grade 4 (Proliferative) Audit
 └── reporting/
     ├── generate_master_clinical_reports.py # Executive Clinical & AI Analytics Report Generator
+    ├── export_pdf_reports.py               # English PDF Executive Reports Compiler (4 PDFs)
     ├── generate_pdf_report.py              # Publication-Grade Executive PDF Report Generator
     └── run_demo_pipeline.py                # Full End-to-End Live Pipeline Demonstration
 ```
