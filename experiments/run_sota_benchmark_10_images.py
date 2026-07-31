@@ -10,6 +10,7 @@ Evaluates 5 SOTA architectures:
 Renders zero-shift letterboxed overlays with strict FOV clipping in reports/figures/
 """
 
+import torch
 import json
 from pathlib import Path
 import sys
@@ -70,6 +71,28 @@ def run_sota_benchmark():
         ("Swin-T", "Shifted-Window Vision Transformer (exp_07)", "0.7542", "0.7459", "16.5 ms"),
     ]
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Loading REAL trained Faster R-CNN model checkpoint on device: {device}...")
+    
+    ckpt_path = project_root / "experiments" / "exp_faster_rcnn_lesions_v3_1536" / "checkpoints" / "best.pt"
+    if not ckpt_path.exists():
+        ckpt_path = project_root / "experiments" / "exp_faster_rcnn_lesions" / "checkpoints" / "best.pt"
+
+    from detection.detector_model import build_lesion_detector
+    det_model = build_lesion_detector(num_classes=5, pretrained=False, min_size=1536, max_size=2048)
+    ckpt = torch.load(ckpt_path, map_location=device, weights_only=False)
+    state_dict = ckpt["model_state_dict"] if "model_state_dict" in ckpt else ckpt
+    det_model.load_state_dict(state_dict)
+    det_model.to(device)
+    det_model.eval()
+
+    real_detector = LesionDetectionPredictor(
+        model=det_model,
+        device=device,
+        score_thresh=0.20,
+        target_size=(1536, 1536)
+    )
+
     image_results = []
 
     for idx, (jpg_p, xml_p, annot) in enumerate(selected_samples, 1):
@@ -79,43 +102,8 @@ def run_sota_benchmark():
         rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
         h, w = rgb.shape[:2]
 
-        fov_extractor = FundusFOVExtractor()
-        fov_res = fov_extractor.process(rgb)
-        crop_x, crop_y = fov_res.crop_bbox[:2]
-
-        class XMLGroundTruthDetector(LesionDetectionPredictor):
-            def __init__(self, boxes, labels):
-                self._boxes = boxes
-                self._labels = labels
-
-            def predict(self, img_input):
-                in_h, in_w = img_input.shape[:2]
-                if (in_w, in_h) != (w, h):
-                    local_boxes = []
-                    for b in self._boxes:
-                        local_boxes.append([
-                            b[0] - crop_x,
-                            b[1] - crop_y,
-                            b[2] - crop_x,
-                            b[3] - crop_y
-                        ])
-                    ret_boxes = local_boxes
-                else:
-                    ret_boxes = self._boxes
-
-                return DetectionResult(
-                    boxes=ret_boxes,
-                    scores=[0.95] * len(ret_boxes),
-                    labels=self._labels,
-                    class_names=[LESION_ID_TO_NAME.get(l, str(l)) for l in self._labels],
-                )
-
-            def render_overlay(self, image_rgb, result, show_legend=True):
-                return image_rgb
-
-        gt_detector = XMLGroundTruthDetector(annot.boxes, annot.labels)
         predictor = MaskedLesionPredictor(
-            base_predictor=gt_detector,
+            base_predictor=real_detector,
             use_fov_crop=True,
             apply_graham=False,
             refine_edges=True,
