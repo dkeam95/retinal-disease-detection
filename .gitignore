@@ -94,9 +94,18 @@ models/pretrained/*
 !models/pretrained/.gitkeep
 
 # =============================================================================
-# Reports
+# Reports, PDFs & Image Outputs
 # =============================================================================
 
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.bmp
+
+reports/*.pdf
+reports/**/*.pdf
 reports/figures/*
 !reports/figures/.gitkeep
 
