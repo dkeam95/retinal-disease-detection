@@ -139,42 +139,15 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 2. Unified Master Entrypoint (`main.py`)
+### 2. Primary Command Reference
 
-Run the master pipeline or specific benchmark modes using `main.py`:
-
-```bash
-# Run Master Clinical Diagnostic & AI Analytics Pipeline (Default)
-python main.py
-
-# Run 3-Round Faster R-CNN Detection Resolution Benchmark
-python main.py --mode benchmark-det
-
-# Run 5 SOTA XAI Algorithms Side-by-Side Benchmark
-python main.py --mode benchmark-xai
-
-# Run Live Ensemble Demo & Error Analysis
-python main.py --mode demo
-
-# Generate Executive PDF Reports (Russian Cyrillic PDF Suite)
-python main.py --mode pdf-report
-```
-
----
-
-## ⚡ Quick Command Reference
-
-| Task / Purpose | Command | Primary Output / Location |
+| Primary Command | Purpose & Functionality | Primary Output / Location |
 | :--- | :--- | :--- |
-| **Run PyTest Suite (175 Tests)** | `pytest tests/ --no-cov -v` | Console test status (100% pass) |
-| **B&W & Color Lesion Masks (10 Images)** | `python experiments/run_10_images_experiment.py` | `reports/class_3_4_batch_10/` |
-| **5 SOTA Models Benchmark** | `python experiments/run_sota_benchmark_10_images.py` | `reports/figures/detection_comparison/` |
-| **5 SOTA XAI Algorithms Benchmark** | `python scripts/evaluation/benchmark_xai.py` | `reports/figures/xai_benchmark/` |
-| **Master HTML Clinical Cards** | `python scripts/reporting/generate_master_clinical_reports.py` | `reports/master_clinical_reports/` |
-| **Compile All 4 PDF Reports** | `python scripts/reporting/export_pdf_reports.py` | `reports/*.pdf` |
-| **Train ConvNeXt-Tiny Classifier** | `python scripts/training/train_model.py --config configs/exp_05_convnext_tiny.yaml` | `experiments/exp_05_convnext_tiny/` |
-| **Train Faster R-CNN (1536px)** | `python scripts/training/train_detector.py --config configs/exp_faster_rcnn_lesions_v3_1536.yaml` | `experiments/exp_faster_rcnn_lesions_v3_1536/` |
-| **Evaluate Checkpoint on Test Set** | `python scripts/evaluation/evaluate_model.py --checkpoint ...` | Console metrics & confusion matrix |
+| **`python main.py`** | **Master Clinical Pipeline.** Executes end-to-end multi-task diagnosis (Stage 0–4 Classification Ensemble + Faster R-CNN Lesion Detector + 5 XAI algorithms) and generates an interactive HTML report. | `reports/master_clinical_reports/` |
+| **`python main.py --mode pdf-report`** | **PDF Suite Compilation.** Automatically compiles all 4 publication-quality clinical and architectural PDF reports into the `reports/` directory. | `reports/*.pdf` |
+| **`python main.py --mode benchmark-xai`** | **5 SOTA XAI Suite Benchmark.** Compares feature attribution maps for Grad-CAM, Grad-CAM++, Layer-CAM, Score-CAM, and Integrated Gradients side-by-side. | `reports/figures/xai_benchmark/` |
+| **`python main.py --mode benchmark-det`** | **Detector Resolution Benchmark.** Evaluates Faster R-CNN lesion detection precision across input image resolutions. | `reports/figures/detection_comparison/` |
+| **`pytest tests/ --no-cov -v`** | **Automated Code Quality Suite.** Runs 175 unit and integration tests to ensure 100% code health and zero regressions. | Console test output (100% pass) |
 
 ---
 
