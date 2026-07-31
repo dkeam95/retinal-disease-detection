@@ -98,6 +98,10 @@ def generate_xai_slide_table(
         draw_contours=True,
     )
 
+    # Extract Retina ROI Binary Mask for zeroing out outer background
+    from preprocessing.roi import get_retina_binary_mask
+    retina_mask = get_retina_binary_mask(rgb)
+
     algorithms = ["gradcam", "gradcam++", "layer_cam", "score_cam", "integrated_gradients"]
     xai_results: dict[str, dict] = {}
 
@@ -105,18 +109,35 @@ def generate_xai_slide_table(
         print(f"  - Generating heatmap for algorithm: {algo}...")
         heatmap = engine.generate_heatmap(tensor, algorithm=algo, original_rgb=rgb)
 
-        # 1. Heatmap RGB (JET colormap)
+        # Resize retina_mask to heatmap size and ensure uint8
+        r_mask_resized = cv2.resize(retina_mask, (heatmap.shape[1], heatmap.shape[0]))
+        if r_mask_resized.dtype != np.uint8:
+            r_mask_resized = (r_mask_resized > 0).astype(np.uint8) * 255
+        else:
+            r_mask_resized = (r_mask_resized > 0).astype(np.uint8) * 255
+
+        # 1. Heatmap RGB (JET colormap with ROI & activation threshold zero-masking)
         heatmap_u8 = (heatmap * 255).astype(np.uint8)
         heatmap_bgr = cv2.applyColorMap(heatmap_u8, cv2.COLORMAP_JET)
-        heatmap_rgb = cv2.cvtColor(heatmap_bgr, cv2.COLOR_BGR2RGB)
+
+        # Zero out non-retina background and low activation noise (< 0.08) so background is pitch black
+        active_mask = ((r_mask_resized > 0) & (heatmap >= 0.08)).astype(np.uint8) * 255
+        clean_heatmap_bgr = cv2.bitwise_and(heatmap_bgr, heatmap_bgr, mask=active_mask)
+        heatmap_rgb = cv2.cvtColor(clean_heatmap_bgr, cv2.COLOR_BGR2RGB)
 
         # 2. Overlay RGB (Alpha blended heatmap over fundus)
         resized_rgb = cv2.resize(rgb, (heatmap.shape[1], heatmap.shape[0]))
-        overlay_rgb = cv2.addWeighted(resized_rgb, 0.55, heatmap_rgb, 0.45, 0)
+        overlay_bgr = cv2.addWeighted(cv2.cvtColor(resized_rgb, cv2.COLOR_RGB2BGR), 0.55, clean_heatmap_bgr, 0.45, 0)
+        # Re-apply ROI mask so background remains clean black
+        overlay_bgr = cv2.bitwise_and(overlay_bgr, overlay_bgr, mask=r_mask_resized)
+        overlay_rgb = cv2.cvtColor(overlay_bgr, cv2.COLOR_BGR2RGB)
 
         # 3. Highlighted Lesions RGB (Bounding boxes & masks overlaid on heatmap overlay)
         resized_lesions = cv2.resize(lesions_overlay_rgb, (heatmap.shape[1], heatmap.shape[0]))
-        lesions_rgb = cv2.addWeighted(resized_lesions, 0.65, heatmap_rgb, 0.35, 0)
+        lesions_bgr = cv2.cvtColor(resized_lesions, cv2.COLOR_RGB2BGR)
+        lesions_bgr = cv2.addWeighted(lesions_bgr, 0.70, clean_heatmap_bgr, 0.30, 0)
+        lesions_bgr = cv2.bitwise_and(lesions_bgr, lesions_bgr, mask=r_mask_resized)
+        lesions_rgb = cv2.cvtColor(lesions_bgr, cv2.COLOR_BGR2RGB)
 
         xai_results[algo] = {
             "original_rgb": resized_rgb,
