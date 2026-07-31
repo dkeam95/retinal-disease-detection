@@ -129,15 +129,14 @@ def main(target_grades: list[int] | None = None, custom_images: list[str] | None
 
     print("\n[3/4] Generating Individual High-Resolution Diagnostic Cards...\n")
     for stem in test_stems:
-        candidates = [
-            Path("data/raw/test") / f"{stem}.jpg",
-            Path("data/raw/lesion_segmentation/test/image") / f"{stem}.jpg",
-            Path("data/raw/lesion_segmentation/train/image") / f"{stem}.jpg",
-        ]
+        # Dynamic search across data/ for requested image stem (.jpg, .png, .jpeg)
         img_path = None
-        for cand in candidates:
-            if cand.exists():
-                img_path = cand
+        for ext in [".jpg", ".png", ".jpeg"]:
+            matches = list(Path("data").rglob(f"{stem}{ext}"))
+            if matches:
+                # Prefer lesion_segmentation or raw images over labels/masks
+                image_matches = [m for m in matches if "label" not in str(m) and "mask" not in str(m)]
+                img_path = image_matches[0] if image_matches else matches[0]
                 break
 
         if img_path is None:
