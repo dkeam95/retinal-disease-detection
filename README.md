@@ -144,10 +144,6 @@ pip install -r requirements.txt
 | Primary Command | Purpose & Functionality | Primary Output / Location |
 | :--- | :--- | :--- |
 | **`python main.py`** | **Master Clinical Pipeline.** Executes end-to-end multi-task diagnosis (Stage 0–4 Ensemble + Faster R-CNN Lesion Detector + 5 XAI algorithms + Slide 3 & 4 Grid Tables) and generates interactive HTML reports. | `reports/master_clinical_reports/` |
-| **`python main.py --mode pdf-report`** | **PDF Suite Compilation.** Automatically compiles all 4 publication-quality clinical and architectural PDF reports into the `reports/` directory in 100% English. | `reports/*.pdf` |
-| **`python main.py --mode benchmark-xai`** | **5 SOTA XAI Suite Benchmark.** Compares feature attribution maps (Grad-CAM, Grad-CAM++, Layer-CAM, Score-CAM, Integrated Gradients) and renders the 5-column Slide 4 grid table image. | `reports/figures/xai_pipeline_comparison_table.png` |
-| **`python main.py --mode benchmark-seg`** | **Segmentation Pipeline Benchmark.** Evaluates 3-step lesion segmentation (Raw Mask -> Top-Hat Filter -> Guided Edge Refinement) on Class 3-4 images and renders the 5-column Slide 3 grid table image. | `reports/figures/segmentation_pipeline_comparison_table.png` |
-| **`python main.py --mode benchmark-det`** | **Detector Resolution Benchmark.** Evaluates Faster R-CNN lesion detection precision across input image resolutions (512px, 1024px, 1536px). | `reports/figures/detection_comparison/` |
 | **`pytest tests/ --no-cov -v`** | **Automated Code Quality Suite.** Runs 175 unit and integration tests to ensure 100% code health and zero regressions. | Console test output (100% pass) |
 
 ---
