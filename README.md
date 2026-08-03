@@ -148,17 +148,6 @@ pip install -r requirements.txt
 
 ---
 
-## 🏥 Clinical Diagnostic Reports Generated
-
-All generated reports are placed inside the relative `reports/` directory of the project:
-
-- **Master Multi-Task PDF Report**: `reports/master_multi_task_clinical_report.pdf`
-- **Lesion Detection PDF Report**: `reports/lesion_detection_report.pdf`
-- **Lesion Segmentation PDF Report**: `reports/lesion_segmentation_report.pdf`
-- **Codebase Architecture Guide PDF**: `reports/codebase_architecture_guide.pdf`
-- **Master Clinical Diagnostic HTML Report**: `reports/master_clinical_reports/master_clinical_diagnostic_report.html`
-
----
 
 ## 🛠 Technology Stack
 
