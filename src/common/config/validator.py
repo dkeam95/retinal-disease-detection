@@ -26,6 +26,7 @@ def validate_config(config: ProjectConfig) -> None:
     _validate_loss(config)
     _validate_metrics(config)
     _validate_experiment(config)
+    _validate_detection(config)
 
 
 def _validate_dataset(config: ProjectConfig) -> None:
@@ -196,6 +197,9 @@ def _validate_metrics(config: ProjectConfig) -> None:
         "recall",
         "balanced_accuracy",
         "weighted_f1",
+        "map",
+        "map_50",
+        "map_75",
     }
 
     for metric in config.metrics.primary:
@@ -231,4 +235,62 @@ def _validate_experiment(config: ProjectConfig) -> None:
             param_name="experiment.seed",
             value=exp.seed,
             reason="Random seed must be a non-negative integer.",
+        )
+
+
+def _validate_detection(config: ProjectConfig) -> None:
+    """Validate optional detector configuration."""
+    dataset = config.detection_dataset
+    model = config.detection_model
+
+    if dataset is not None and dataset.num_classes <= 1:
+        raise InvalidConfigurationError(
+            param_name="detection_dataset.num_classes",
+            value=dataset.num_classes,
+            reason="Detection requires background plus at least one lesion class.",
+        )
+
+    if model is None:
+        return
+
+    if not model.architecture.strip():
+        raise InvalidConfigurationError(
+            param_name="detection_model.architecture",
+            value=model.architecture,
+            reason="Detector architecture identifier cannot be empty.",
+        )
+
+    if model.num_classes <= 1:
+        raise InvalidConfigurationError(
+            param_name="detection_model.num_classes",
+            value=model.num_classes,
+            reason="Detection requires background plus at least one lesion class.",
+        )
+
+    if dataset is not None and model.num_classes != dataset.num_classes:
+        raise InvalidConfigurationError(
+            param_name="detection_model.num_classes",
+            value=model.num_classes,
+            reason="Detection model and dataset class counts must match.",
+        )
+
+    if not 0.0 <= model.score_thresh <= 1.0:
+        raise InvalidConfigurationError(
+            param_name="detection_model.score_thresh",
+            value=model.score_thresh,
+            reason="Score threshold must be between 0 and 1.",
+        )
+
+    if not 0.0 <= model.nms_thresh <= 1.0:
+        raise InvalidConfigurationError(
+            param_name="detection_model.nms_thresh",
+            value=model.nms_thresh,
+            reason="NMS threshold must be between 0 and 1.",
+        )
+
+    if model.min_size <= 0 or model.max_size <= 0 or model.max_size < model.min_size:
+        raise InvalidConfigurationError(
+            param_name="detection_model.min_size/max_size",
+            value=(model.min_size, model.max_size),
+            reason="Detector image sizes must be positive and max_size >= min_size.",
         )

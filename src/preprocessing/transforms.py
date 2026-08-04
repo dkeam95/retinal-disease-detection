@@ -1,6 +1,6 @@
 """Image transformation for the preprocessing module.
 
-This module contains reusable Albumentations transformations used 
+This module contains reusable Albumentations transformations used
 to build preprocessing pipelines."""
 
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
@@ -17,7 +17,7 @@ from preprocessing.config import (
 
 def resize(settings: PreprocessingSettings) -> A.Resize:
     """Create a resize transformation.
-        
+
     Parameters
     ----------
     settings : PreprocessingSettings
@@ -29,8 +29,16 @@ def resize(settings: PreprocessingSettings) -> A.Resize:
         Resize transformation.
     """
 
-    h = settings.image_size[0] if isinstance(settings.image_size, (tuple, list)) else int(settings.image_size)
-    w = settings.image_size[1] if isinstance(settings.image_size, (tuple, list)) else int(settings.image_size)
+    h = (
+        settings.image_size[0]
+        if isinstance(settings.image_size, (tuple, list))
+        else int(settings.image_size)
+    )
+    w = (
+        settings.image_size[1]
+        if isinstance(settings.image_size, (tuple, list))
+        else int(settings.image_size)
+    )
     return A.Resize(
         height=h,
         width=w,

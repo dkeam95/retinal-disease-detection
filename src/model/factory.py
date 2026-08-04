@@ -49,14 +49,11 @@ def create_model(
     # Wrap enum parsing failure in domain-specific exception
     except ValueError as error:
         raise UnknownModelArchitectureError(
-            f"Unsupported model architecture: "
-            f"{config.architecture}"
+            f"Unsupported model architecture: {config.architecture}"
         ) from error
 
     # Retrieve registered builder function for requested architecture
-    builder = MODEL_REGISTRY[
-        architecture
-    ]
+    builder = MODEL_REGISTRY[architecture]
 
     # Instantiate and return neural network model
     return builder(

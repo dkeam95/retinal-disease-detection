@@ -40,12 +40,11 @@ def build_weighted_cross_entropy(
     """
 
     if class_weights is None:
-        raise LossInitializationError(          # Ensure class weights tensor is explicitly provided
-            "Weighted Cross Entropy requires "
-            "class weights."
+        raise LossInitializationError(  # Ensure class weights tensor is explicitly provided
+            "Weighted Cross Entropy requires class weights."
         )
 
-    return nn.CrossEntropyLoss(                 # Instantiate weighted PyTorch CrossEntropyLoss
-        weight=class_weights,                   # Pass required class weighting tensor
-        reduction=config.reduction,             # Set reduction strategy (mean, sum, none)
+    return nn.CrossEntropyLoss(  # Instantiate weighted PyTorch CrossEntropyLoss
+        weight=class_weights,  # Pass required class weighting tensor
+        reduction=config.reduction,  # Set reduction strategy (mean, sum, none)
     )

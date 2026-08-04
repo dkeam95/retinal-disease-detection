@@ -28,6 +28,7 @@ dist/
 
 .vscode/
 .idea/
+*.code-workspace
 
 # =============================================================================
 # OS
@@ -94,17 +95,12 @@ models/pretrained/*
 !models/pretrained/.gitkeep
 
 # =============================================================================
-# Reports
+# Reports (Ignore all generated reports recursively while keeping structure)
 # =============================================================================
 
-reports/figures/*
-!reports/figures/.gitkeep
-
-reports/metrics/*
-!reports/metrics/.gitkeep
-
-reports/benchmarks/*
-!reports/benchmarks/.gitkeep
+reports/**/*
+!reports/**/
+!reports/**/.gitkeep
 
 # =============================================================================
 # Data

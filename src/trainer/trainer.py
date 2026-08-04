@@ -101,22 +101,43 @@ class Trainer:
         if self._device.type == "cuda":
             self._model = model.to(self._device, memory_format=torch.channels_last)
             try:
-                print("[Trainer] Attempting model compilation with PyTorch 2.x torch.compile()...", flush=True)
+                print(
+                    "[Trainer] Attempting model compilation with PyTorch 2.x torch.compile()...",
+                    flush=True,
+                )
                 import time
+
                 t_comp_start = time.perf_counter()
                 compiled_model = torch.compile(self._model, mode="default")
                 t_comp_end = time.perf_counter()
-                print(f"[Trainer] torch.compile() setup finished in {(t_comp_end - t_comp_start)*1000:.2f} ms", flush=True)
+                print(
+                    f"[Trainer] torch.compile() setup finished in {(t_comp_end - t_comp_start) * 1000:.2f} ms",
+                    flush=True,
+                )
                 self._model = compiled_model
             except Exception as error:
                 import traceback
-                print(f"[Trainer WARNING] torch.compile failed on Windows/PyTorch Inductor: {error}", flush=True)
-                print(f"[Trainer WARNING] Stack trace:\n{traceback.format_exc()}", flush=True)
-                print("[Trainer INFO] Continuing with fast channels_last CUDA model without JIT Inductor compilation.", flush=True)
+
+                print(
+                    f"[Trainer WARNING] torch.compile failed on Windows/PyTorch Inductor: {error}",
+                    flush=True,
+                )
+                print(
+                    f"[Trainer WARNING] Stack trace:\n{traceback.format_exc()}",
+                    flush=True,
+                )
+                print(
+                    "[Trainer INFO] Continuing with fast channels_last CUDA model without JIT Inductor compilation.",
+                    flush=True,
+                )
         else:
             self._model = model.to(self._device)
         self._optimizer = optimizer
-        self._criterion = criterion.to(self._device) if isinstance(criterion, torch.nn.Module) else criterion
+        self._criterion = (
+            criterion.to(self._device)
+            if isinstance(criterion, torch.nn.Module)
+            else criterion
+        )
         self._scheduler = scheduler
 
         # Data loaders
@@ -128,7 +149,11 @@ class Trainer:
         if checkpoint_manager is not None:
             self._checkpoint_manager = checkpoint_manager
         else:
-            chk_dir = checkpoint_directory if checkpoint_directory is not None else Path("checkpoints")
+            chk_dir = (
+                checkpoint_directory
+                if checkpoint_directory is not None
+                else Path("checkpoints")
+            )
             self._checkpoint_manager = CheckpointManager(checkpoint_directory=chk_dir)
 
         # Hyperparameters
@@ -140,7 +165,9 @@ class Trainer:
         self._log_every_n_steps = log_every_n_steps
 
         # Automatic Mixed Precision GradScaler
-        self._scaler = torch.amp.GradScaler(self._device.type, enabled=self._mixed_precision)
+        self._scaler = torch.amp.GradScaler(
+            self._device.type, enabled=self._mixed_precision
+        )
 
         # State tracker
         self._state = TrainerState()
@@ -180,8 +207,11 @@ class Trainer:
             )
 
             import math
+
             if math.isnan(step_output.loss):
-                raise ValueError(f"NaN loss detected at step {self._state.global_step}!")
+                raise ValueError(
+                    f"NaN loss detected at step {self._state.global_step}!"
+                )
 
             running_loss += step_output.loss
             self._state.increment_step()
@@ -225,7 +255,9 @@ class Trainer:
                     images = images.to(memory_format=torch.channels_last)
                 targets = move_to_device(batch.label, self._device)
 
-                with autocast(device_type=self._device.type, enabled=self._mixed_precision):
+                with autocast(
+                    device_type=self._device.type, enabled=self._mixed_precision
+                ):
                     logits, step_output = validation_step(
                         model=self._model,
                         criterion=self._criterion,
@@ -274,7 +306,7 @@ class Trainer:
             Final training summary.
         """
 
-        is_loss_monitor = (monitor == "val_loss" or "loss" in monitor.lower())
+        is_loss_monitor = monitor == "val_loss" or "loss" in monitor.lower()
         if is_loss_monitor and self._state.best_metric == float("-inf"):
             self._state.best_metric = float("inf")
 
@@ -325,11 +357,15 @@ class Trainer:
                     epochs_without_improvement += 1
 
                 if epochs_without_improvement >= self._early_stopping_patience:
-                    print(f"\nEarly stopping triggered at epoch {self._state.current_epoch}")
+                    print(
+                        f"\nEarly stopping triggered at epoch {self._state.current_epoch}"
+                    )
                     break
 
             if self._scheduler is not None:
-                if isinstance(self._scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+                if isinstance(
+                    self._scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau
+                ):
                     if validation_output is not None:
                         self._scheduler.step(validation_output.loss)
                 else:
@@ -392,7 +428,9 @@ class Trainer:
                     images = images.to(memory_format=torch.channels_last)
                 targets = move_to_device(batch.label, self._device)
 
-                with torch.amp.autocast(device_type=self._device.type, enabled=self._mixed_precision):
+                with torch.amp.autocast(
+                    device_type=self._device.type, enabled=self._mixed_precision
+                ):
                     logits, step_output = validation_step(
                         model=self._model,
                         criterion=self._criterion,

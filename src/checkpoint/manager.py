@@ -88,9 +88,7 @@ class CheckpointManager:
             "model_state": model.state_dict(),
             "optimizer_state": optimizer.state_dict(),
             "scheduler_state": (
-                scheduler.state_dict()
-                if scheduler is not None
-                else None
+                scheduler.state_dict() if scheduler is not None else None
             ),
             "trainer_state": trainer_state,
             "metadata": {

@@ -72,7 +72,9 @@ class RetinalPredictor:
         self.model = model.to(self.device)
         self.model.eval()
         self.config = config
-        self.class_names = class_names if class_names is not None else DEFAULT_CLASS_NAMES
+        self.class_names = (
+            class_names if class_names is not None else DEFAULT_CLASS_NAMES
+        )
         self.transform = build_validation_pipeline(config.preprocessing)
 
     @classmethod
@@ -101,6 +103,7 @@ class RetinalPredictor:
             architecture=config.model.architecture,
             pretrained=False,
             num_classes=config.model.num_classes,
+            dropout_rate=config.model.dropout_rate,
         )
 
         checkpoint_data = torch.load(path, map_location=dev, weights_only=False)
@@ -113,7 +116,9 @@ class RetinalPredictor:
 
         return cls(model=model, config=config, device=dev)
 
-    def _prepare_image_tensor(self, image_input: str | Path | np.ndarray | Image.Image) -> torch.Tensor:
+    def _prepare_image_tensor(
+        self, image_input: str | Path | np.ndarray | Image.Image
+    ) -> torch.Tensor:
         """Load and preprocess image input into a batch tensor."""
         if isinstance(image_input, (str, Path)):
             path = Path(image_input)
@@ -126,7 +131,11 @@ class RetinalPredictor:
         elif isinstance(image_input, Image.Image):
             rgb = np.array(image_input.convert("RGB"))
         elif isinstance(image_input, np.ndarray):
-            rgb = image_input if image_input.ndim == 3 and image_input.shape[2] == 3 else cv2.cvtColor(image_input, cv2.COLOR_BGR2RGB)
+            rgb = (
+                image_input
+                if image_input.ndim == 3 and image_input.shape[2] == 3
+                else cv2.cvtColor(image_input, cv2.COLOR_BGR2RGB)
+            )
         else:
             raise TypeError(f"Unsupported image input type: {type(image_input)}")
 
@@ -135,7 +144,9 @@ class RetinalPredictor:
         return tensor.unsqueeze(0).to(self.device)  # Tensor (1, C, H, W)
 
     @torch.no_grad()
-    def predict(self, image_input: str | Path | np.ndarray | Image.Image) -> PredictionResult:
+    def predict(
+        self, image_input: str | Path | np.ndarray | Image.Image
+    ) -> PredictionResult:
         """Run disease severity prediction on a single fundus image.
 
         Args:
@@ -151,7 +162,11 @@ class RetinalPredictor:
         probs = torch.softmax(logits, dim=1).squeeze(0).cpu().numpy()
         grade_id = int(np.argmax(probs))
         confidence = float(probs[grade_id])
-        grade_name = self.class_names[grade_id] if grade_id < len(self.class_names) else f"Grade {grade_id}"
+        grade_name = (
+            self.class_names[grade_id]
+            if grade_id < len(self.class_names)
+            else f"Grade {grade_id}"
+        )
 
         return PredictionResult(
             grade_id=grade_id,

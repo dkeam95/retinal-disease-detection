@@ -32,7 +32,7 @@ def build_cross_entropy(
         Configured Cross Entropy loss.
     """
 
-    return nn.CrossEntropyLoss(                 # Instantiate standard PyTorch CrossEntropyLoss
-        weight=class_weights,                   # Apply optional class weighting tensor
-        reduction=config.reduction,             # Set reduction strategy (mean, sum, none)
+    return nn.CrossEntropyLoss(  # Instantiate standard PyTorch CrossEntropyLoss
+        weight=class_weights,  # Apply optional class weighting tensor
+        reduction=config.reduction,  # Set reduction strategy (mean, sum, none)
     )

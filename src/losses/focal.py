@@ -49,28 +49,27 @@ class FocalLoss(nn.Module):
                 If configuration parameters are invalid.
         """
 
-        super().__init__()                      # Initialize parent PyTorch nn.Module class
+        super().__init__()  # Initialize parent PyTorch nn.Module class
 
         if gamma < 0:
-            raise LossInitializationError(      # Validate that gamma focus parameter is non-negative
+            raise LossInitializationError(  # Validate that gamma focus parameter is non-negative
                 "Gamma must be non-negative."
             )
 
-        supported_reductions = {                # Set of valid reduction modes
+        supported_reductions = {  # Set of valid reduction modes
             "mean",
             "sum",
             "none",
         }
 
         if reduction not in supported_reductions:
-            raise LossInitializationError(      # Validate reduction parameter against allowed set
-                f"Unsupported reduction: "
-                f"{reduction}"
+            raise LossInitializationError(  # Validate reduction parameter against allowed set
+                f"Unsupported reduction: {reduction}"
             )
 
-        self._gamma = gamma                     # Store focusing parameter
-        self._alpha = alpha                     # Store optional alpha balancing factor
-        self._reduction = reduction             # Store reduction strategy name
+        self._gamma = gamma  # Store focusing parameter
+        self._alpha = alpha  # Store optional alpha balancing factor
+        self._reduction = reduction  # Store reduction strategy name
 
     def forward(
         self,
@@ -91,33 +90,34 @@ class FocalLoss(nn.Module):
             Computed focal loss.
         """
 
-        cross_entropy_loss = F.cross_entropy(   # Calculate unreduced standard cross entropy
-            logits,
-            targets,
-            reduction="none",
+        cross_entropy_loss = (
+            F.cross_entropy(  # Calculate unreduced standard cross entropy
+                logits,
+                targets,
+                reduction="none",
+            )
         )
 
-        pt = torch.exp(                         # Estimate class probabilities p_t from CE loss
+        pt = torch.exp(  # Estimate class probabilities p_t from CE loss
             -cross_entropy_loss,
         )
 
-        focal_loss = (                          # Apply focal weighting factor (1 - p_t)^gamma
+        focal_loss = (  # Apply focal weighting factor (1 - p_t)^gamma
             (1.0 - pt) ** self._gamma
         ) * cross_entropy_loss
 
         if self._alpha is not None:
-            focal_loss = (                      # Scale loss by alpha balancing factor if defined
-                self._alpha
-                * focal_loss
+            focal_loss = (  # Scale loss by alpha balancing factor if defined
+                self._alpha * focal_loss
             )
 
         if self._reduction == "mean":
-            return focal_loss.mean()            # Return mean loss across batch
+            return focal_loss.mean()  # Return mean loss across batch
 
         if self._reduction == "sum":
-            return focal_loss.sum()             # Return total sum of losses across batch
+            return focal_loss.sum()  # Return total sum of losses across batch
 
-        return focal_loss                       # Return raw loss tensor without reduction
+        return focal_loss  # Return raw loss tensor without reduction
 
 
 def build_focal_loss(
@@ -138,7 +138,7 @@ def build_focal_loss(
         Configured Focal Loss instance.
     """
 
-    return FocalLoss(                           # Instantiate and return FocalLoss module
+    return FocalLoss(  # Instantiate and return FocalLoss module
         gamma=config.gamma,
         alpha=config.alpha,
         reduction=config.reduction,

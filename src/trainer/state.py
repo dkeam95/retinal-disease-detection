@@ -26,7 +26,9 @@ class TrainerState:
     global_step: int = 0
 
     # Best validation results tracking
-    best_metric: float = float("-inf")  # Initialized to negative infinity so any initial score is higher
+    best_metric: float = float(
+        "-inf"
+    )  # Initialized to negative infinity so any initial score is higher
     best_epoch: int = 0
 
     # Loss values for the current epoch

@@ -19,4 +19,3 @@ def __getattr__(name: str):
 
         return ExperimentComparator
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
-

@@ -56,6 +56,7 @@ class ModelFactory:
         *,
         pretrained: bool,
         num_classes: int,
+        dropout_rate: float = 0.0,
     ) -> nn.Module:
         """
         Build a neural network model.
@@ -109,11 +110,53 @@ class ModelFactory:
 
         builder = builders.get(normalized_architecture)
         if builder is None:
-            raise ModelFactoryError(
-                f"Unknown model architecture '{architecture}'."
-            )
+            raise ModelFactoryError(f"Unknown model architecture '{architecture}'.")
 
-        return builder(pretrained=pretrained, num_classes=num_classes)
+        model = builder(pretrained=pretrained, num_classes=num_classes)
+        if dropout_rate > 0.0:
+            ModelFactory._add_dropout(model, dropout_rate)
+        return model
+
+    @staticmethod
+    def _add_dropout(model: nn.Module, dropout_rate: float) -> None:
+        """Add dropout before final classification layer."""
+        if hasattr(model, "fc") and isinstance(model.fc, nn.Linear):
+            in_features = model.fc.in_features
+            out_features = model.fc.out_features
+            model.fc = nn.Sequential(
+                nn.Dropout(p=dropout_rate), nn.Linear(in_features, out_features)
+            )
+        elif hasattr(model, "classifier"):
+            if isinstance(model.classifier, nn.Linear):
+                in_features = model.classifier.in_features
+                out_features = model.classifier.out_features
+                model.classifier = nn.Sequential(
+                    nn.Dropout(p=dropout_rate), nn.Linear(in_features, out_features)
+                )
+            elif isinstance(model.classifier, nn.Sequential):
+                last_layer = model.classifier[-1]
+                if isinstance(last_layer, nn.Linear):
+                    in_features = last_layer.in_features
+                    out_features = last_layer.out_features
+                    model.classifier[-1] = nn.Sequential(
+                        nn.Dropout(p=dropout_rate), nn.Linear(in_features, out_features)
+                    )
+        elif (
+            hasattr(model, "heads")
+            and hasattr(model.heads, "head")
+            and isinstance(model.heads.head, nn.Linear)
+        ):
+            in_features = model.heads.head.in_features
+            out_features = model.heads.head.out_features
+            model.heads.head = nn.Sequential(
+                nn.Dropout(p=dropout_rate), nn.Linear(in_features, out_features)
+            )
+        elif hasattr(model, "head") and isinstance(model.head, nn.Linear):
+            in_features = model.head.in_features
+            out_features = model.head.out_features
+            model.head = nn.Sequential(
+                nn.Dropout(p=dropout_rate), nn.Linear(in_features, out_features)
+            )
 
     # ------------------------------------------------------------------
     # Individual model builders
@@ -127,7 +170,9 @@ class ModelFactory:
     ) -> nn.Module:
         weights = EfficientNet_B0_Weights.DEFAULT if pretrained else None
         model = efficientnet_b0(weights=weights)
-        ModelFactory._replace_sequential_classifier(model=model, num_classes=num_classes)
+        ModelFactory._replace_sequential_classifier(
+            model=model, num_classes=num_classes
+        )
         return model
 
     @staticmethod
@@ -238,10 +283,14 @@ class ModelFactory:
 
         last_layer = model.classifier[-1]
         if not isinstance(last_layer, nn.Linear):
-            raise ModelFactoryError("Expected the last classifier layer to be nn.Linear.")
+            raise ModelFactoryError(
+                "Expected the last classifier layer to be nn.Linear."
+            )
 
         in_features = last_layer.in_features
-        model.classifier[-1] = nn.Linear(in_features=in_features, out_features=num_classes)
+        model.classifier[-1] = nn.Linear(
+            in_features=in_features, out_features=num_classes
+        )
         ModelFactory._initialize_classifier(model.classifier[-1])
 
     @staticmethod
@@ -257,5 +306,9 @@ class ModelFactory:
         model: nn.Module,
     ) -> tuple[int, int]:
         total_parameters = sum(parameter.numel() for parameter in model.parameters())
-        trainable_parameters = sum(parameter.numel() for parameter in model.parameters() if parameter.requires_grad)
+        trainable_parameters = sum(
+            parameter.numel()
+            for parameter in model.parameters()
+            if parameter.requires_grad
+        )
         return total_parameters, trainable_parameters

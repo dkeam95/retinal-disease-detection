@@ -47,8 +47,7 @@ def build_backbone(model_name: str, config: ModelConfig) -> nn.Module:
     # Wrap any TIMM instantiation errors in domain-specific exception
     except Exception as error:
         raise ModelInitializationError(
-            f"Failed to initialize backbone "
-            f"'{model_name}'."
+            f"Failed to initialize backbone '{model_name}'."
         ) from error
 
     # Return constructed feature extractor module

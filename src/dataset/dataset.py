@@ -93,9 +93,7 @@ class RetinalDataset(Dataset[DataSample]):
 
         # Ensure image file exists before attempting to read it
         if not image_path.exists():
-            raise ImageLoadingError(
-                f"Image file does not exist: {image_path}"
-            )
+            raise ImageLoadingError(f"Image file does not exist: {image_path}")
 
         # Read image file using OpenCV in standard 3-channel color mode
         image = cv2.imread(
@@ -105,15 +103,11 @@ class RetinalDataset(Dataset[DataSample]):
 
         # Check if cv2 returned None (file missing, corrupt, or unsupported format)
         if image is None:
-            raise ImageLoadingError(
-                f"Failed to load image: {image_path}"
-            )
+            raise ImageLoadingError(f"Failed to load image: {image_path}")
 
         # Validate image dimensionality
         if image.ndim != 3:
-            raise ImageLoadingError(
-                f"Invalid image dimensions: {image.shape}"
-            )
+            raise ImageLoadingError(f"Invalid image dimensions: {image.shape}")
 
         # Validate image channel count
         if image.shape[2] != 3:
@@ -153,9 +147,7 @@ class RetinalDataset(Dataset[DataSample]):
 
         # Explicitly validate bounds to prevent silent negative or out-of-range indexing bugs
         if not 0 <= index < len(self):
-            raise IndexError(
-                f"Dataset index out of range: {index}"
-            )
+            raise IndexError(f"Dataset index out of range: {index}")
 
         # Retrieve target annotation metadata record
         annotation = self._annotations[index]

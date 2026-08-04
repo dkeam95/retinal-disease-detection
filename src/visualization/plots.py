@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 import matplotlib
+
 matplotlib.use("Agg")  # Non-interactive backend
 import matplotlib.pyplot as plt
 import numpy as np
@@ -41,9 +42,23 @@ def plot_learning_curves(
     # 1. Loss curves
     ax_loss = axes[0]
     if "train_loss" in history:
-        ax_loss.plot(epochs, history["train_loss"], label="Train Loss", color="#1f77b4", linewidth=2, marker="o")
+        ax_loss.plot(
+            epochs,
+            history["train_loss"],
+            label="Train Loss",
+            color="#1f77b4",
+            linewidth=2,
+            marker="o",
+        )
     if "val_loss" in history:
-        ax_loss.plot(epochs, history["val_loss"], label="Val Loss", color="#ff7f0e", linewidth=2, marker="s")
+        ax_loss.plot(
+            epochs,
+            history["val_loss"],
+            label="Val Loss",
+            color="#ff7f0e",
+            linewidth=2,
+            marker="s",
+        )
     ax_loss.set_title("Loss Trajectory", fontsize=12)
     ax_loss.set_xlabel("Epoch", fontsize=10)
     ax_loss.set_ylabel("Loss", fontsize=10)
@@ -52,7 +67,11 @@ def plot_learning_curves(
 
     # 2. Metrics curves (QWK / Accuracy / F1)
     ax_metric = axes[1]
-    color_map = {"val_qwk": "#2ca02c", "val_accuracy": "#d62728", "val_macro_f1": "#9467bd"}
+    color_map = {
+        "val_qwk": "#2ca02c",
+        "val_accuracy": "#d62728",
+        "val_macro_f1": "#9467bd",
+    }
     for metric_name in ["val_qwk", "val_accuracy", "val_macro_f1"]:
         if metric_name in history:
             label = metric_name.replace("val_", "").upper()
@@ -132,7 +151,16 @@ def plot_confusion_matrix(
             val = matrix_display[i, j]
             text = f"{val:.1%}" if normalize else f"{int(matrix[i, j])}"
             color = "white" if val > thresh else "black"
-            ax.text(j, i, text, ha="center", va="center", color=color, fontsize=10, fontweight="bold")
+            ax.text(
+                j,
+                i,
+                text,
+                ha="center",
+                va="center",
+                color=color,
+                fontsize=10,
+                fontweight="bold",
+            )
 
     plt.tight_layout()
 

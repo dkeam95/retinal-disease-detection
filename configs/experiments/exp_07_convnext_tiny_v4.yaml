@@ -1,0 +1,78 @@
+dataset:
+  path: data/raw
+  annotation_file: train.txt
+  image_directory: train
+  num_classes: 5
+
+preprocessing:
+  # img_size: 384
+  resize: { height: 512, width: 512 }
+  horizontal_flip_prob: 0.5
+  vertical_flip_prob: 0.5
+  rotation_limit: 180
+  rotation_prob: 0.5
+  brightness_contrast_prob: 0.4
+  normalize:
+    mean: [0.485, 0.456, 0.406]
+    std: [0.229, 0.224, 0.225]
+
+model:
+  architecture: convnext_tiny
+  pretrained: true
+  num_classes: 5
+  dropout_rate: 0.3
+
+postprocessing:
+  optimized_thresholds: [0.51, 1.57, 2.575, 3.163]
+
+loss:
+  # Use standard cross_entropy, as balancing is now handled via DataLoader
+  name: cross_entropy
+
+optimizer:
+  name: adamw
+  learning_rate: 0.0001
+  weight_decay: 0.01
+
+scheduler:
+  name: cosine
+  eta_min: 1.0e-6
+
+training:
+  epochs: 35
+  device: cuda
+  deterministic: true
+
+mixed_precision:
+  enabled: true
+  dtype: float16
+
+dataloader:
+  batch_size: 16
+  num_workers: 4
+  shuffle: true
+  weight_class_balance: true # <--- ENABLES WeightedRandomSampler!
+  pin_memory: true
+  persistent_workers: true
+  drop_last: false
+
+checkpoint:
+  directory: experiments/exp_07_convnext_tiny_v4/checkpoints
+  monitor: qwk
+
+early_stopping:
+  enabled: true
+  patience: 10
+  monitor: qwk
+
+logging:
+  log_every_n_steps: 10
+
+metrics:
+  primary: [accuracy, qwk]
+  secondary: [macro_f1]
+  per_class: true
+
+experiment:
+  name: exp_07_convnext_tiny_v4
+  seed: 42

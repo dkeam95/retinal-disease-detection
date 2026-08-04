@@ -26,7 +26,9 @@ class LossFactory:
     """Factory for creating loss functions."""
 
     @staticmethod
-    def build(name: str, *, weight: Tensor | None = None, label_smoothing: float = 0.0) -> nn.Module:
+    def build(
+        name: str, *, weight: Tensor | None = None, label_smoothing: float = 0.0
+    ) -> nn.Module:
         """
         Build a loss function.
 

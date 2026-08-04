@@ -23,7 +23,7 @@ class AnnotationRecord:
     """
 
     image_path: Path  # Resolved path to the target image file
-    label: int        # Non-negative target class label identifier
+    label: int  # Non-negative target class label identifier
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,6 +32,6 @@ class DataSample:
     Represents a single dataset sample.
     """
 
-    image_path: Path           # Resolved path to the target image file
-    image: NDArray[np.uint8]   # Loaded 3-channel RGB image tensor as NumPy array
-    label: int                 # Non-negative target class label identifier
+    image_path: Path  # Resolved path to the target image file
+    image: NDArray[np.uint8]  # Loaded 3-channel RGB image tensor as NumPy array
+    label: int  # Non-negative target class label identifier

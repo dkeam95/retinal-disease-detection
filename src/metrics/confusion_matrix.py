@@ -57,10 +57,7 @@ def compute_confusion_matrix(
     matrix = confusion_matrix(
         y_true=targets.cpu().numpy(),
         y_pred=predictions.cpu().numpy(),
-        labels=[
-            member.value
-            for member in DRClass
-        ],
+        labels=[member.value for member in DRClass],
     )
 
     # Convert computed NumPy array back to PyTorch int64 tensor for downstream evaluation

@@ -38,20 +38,15 @@ def validate_shapes(
     # Verify that predicted logits tensor is 2-dimensional (batch_size, num_classes)
     if logits.ndim != 2:
         raise MetricInitializationError(
-            "Logits must have shape "
-            "(batch_size, num_classes)."
+            "Logits must have shape (batch_size, num_classes)."
         )
 
     # Verify that target labels tensor is 1-dimensional (batch_size,)
     if targets.ndim != 1:
-        raise MetricInitializationError(
-            "Targets must have shape "
-            "(batch_size,)."
-        )
+        raise MetricInitializationError("Targets must have shape (batch_size,).")
 
     # Ensure batch sizes (dimension index 0) between predictions and targets are identical
     if logits.shape[0] != targets.shape[0]:
         raise MetricInitializationError(
-            "Batch size mismatch between "
-            "logits and targets."
+            "Batch size mismatch between logits and targets."
         )

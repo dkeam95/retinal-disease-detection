@@ -46,28 +46,29 @@ def build_loss(
     """
 
     try:
-        loss_name = LossName(                   # Convert string name from config to LossName enum
+        loss_name = LossName(  # Convert string name from config to LossName enum
             config.name,
         )
 
     except ValueError as error:
-        available_losses = ", ".join(           # Format list of available loss names for error message
-            loss.value
-            for loss in LossName
+        available_losses = (
+            ", ".join(  # Format list of available loss names for error message
+                loss.value for loss in LossName
+            )
         )
 
-        raise UnknownLossError(                 # Raise exception if loss name is not supported
+        raise UnknownLossError(  # Raise exception if loss name is not supported
             f"Unknown loss function: "
             f"{config.name!r}. "
             f"Available losses: "
             f"{available_losses}"
         ) from error
 
-    builder = LOSS_REGISTRY[                    # Retrieve loss builder function from registry
+    builder = LOSS_REGISTRY[  # Retrieve loss builder function from registry
         loss_name
     ]
 
-    return builder(                             # Instantiate and return configured loss module
+    return builder(  # Instantiate and return configured loss module
         config,
         class_weights,
     )

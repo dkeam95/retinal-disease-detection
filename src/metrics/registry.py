@@ -51,23 +51,12 @@ _METRIC_REGISTRY: dict[
     MetricName,
     MetricFunction,
 ] = {
-    MetricName.ACCURACY:
-        compute_accuracy,
-
-    MetricName.PRECISION:
-        compute_precision,
-
-    MetricName.RECALL:
-        compute_recall,
-
-    MetricName.F1:
-        compute_f1,
-
-    MetricName.QUADRATIC_WEIGHTED_KAPPA:
-        compute_quadratic_weighted_kappa,
-
-    MetricName.CONFUSION_MATRIX:
-        compute_confusion_matrix,
+    MetricName.ACCURACY: compute_accuracy,
+    MetricName.PRECISION: compute_precision,
+    MetricName.RECALL: compute_recall,
+    MetricName.F1: compute_f1,
+    MetricName.QUADRATIC_WEIGHTED_KAPPA: compute_quadratic_weighted_kappa,
+    MetricName.CONFUSION_MATRIX: compute_confusion_matrix,
 }
 
 
@@ -92,22 +81,14 @@ def get_metric(
 
     try:
         # Fetch the metric computation function from the private lookup dictionary
-        return _METRIC_REGISTRY[
-            metric_name
-        ]
+        return _METRIC_REGISTRY[metric_name]
 
     except KeyError as error:
         # Format list of available valid metrics for informative error messaging
-        available_metrics = ", ".join(
-            metric.value
-            for metric in MetricName
-        )
+        available_metrics = ", ".join(metric.value for metric in MetricName)
 
         raise UnknownMetricError(
-            f"Unknown metric: "
-            f"{metric_name!r}. "
-            f"Available metrics: "
-            f"{available_metrics}"
+            f"Unknown metric: {metric_name!r}. Available metrics: {available_metrics}"
         ) from error
 
 

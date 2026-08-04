@@ -60,11 +60,23 @@ def overlay_heatmap(
     else:
         img_uint8 = image_rgb.copy()
 
-    heatmap_uint8 = (np.clip(heatmap, 0, 1) * 255).astype(np.uint8)
+    h_img, w_img = img_uint8.shape[:2]
+    heatmap_resized = cv2.resize(heatmap, (w_img, h_img))
+
+    # Generate clean inner FOV mask to eliminate background bleeding & color tint shift
+    gray = cv2.cvtColor(img_uint8, cv2.COLOR_RGB2GRAY)
+    _, fov_mask = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
+    fov_mask = cv2.erode(fov_mask, kernel)
+
+    heatmap_resized[fov_mask == 0] = 0.0
+    heatmap_uint8 = (np.clip(heatmap_resized, 0, 1) * 255).astype(np.uint8)
     colored_heatmap = cv2.applyColorMap(heatmap_uint8, colormap)
     colored_heatmap_rgb = cv2.cvtColor(colored_heatmap, cv2.COLOR_BGR2RGB)
+    colored_heatmap_rgb[fov_mask == 0] = 0
 
     blended = cv2.addWeighted(img_uint8, 1 - alpha, colored_heatmap_rgb, alpha, 0)
+    blended[fov_mask == 0] = img_uint8[fov_mask == 0]
     return blended
 
 
@@ -79,7 +91,9 @@ class GradCAM:
             target_layer: Specific layer instance to hook. If None, auto-locates last Conv2d layer.
         """
         self.model = model
-        self.target_layer = target_layer if target_layer is not None else _find_target_layer(model)
+        self.target_layer = (
+            target_layer if target_layer is not None else _find_target_layer(model)
+        )
 
         self.activations: torch.Tensor | None = None
         self.gradients: torch.Tensor | None = None
@@ -90,7 +104,9 @@ class GradCAM:
         def forward_hook(module: nn.Module, input: Any, output: torch.Tensor) -> None:
             self.activations = output.detach()
 
-        def backward_hook(module: nn.Module, grad_input: Any, grad_output: tuple[torch.Tensor, ...]) -> None:
+        def backward_hook(
+            module: nn.Module, grad_input: Any, grad_output: tuple[torch.Tensor, ...]
+        ) -> None:
             self.gradients = grad_output[0].detach()
 
         self.target_layer.register_forward_hook(forward_hook)
@@ -124,7 +140,9 @@ class GradCAM:
         score.backward()
 
         if self.gradients is None or self.activations is None:
-            raise RuntimeError("Grad-CAM hooks failed to capture gradients or activations.")
+            raise RuntimeError(
+                "Grad-CAM hooks failed to capture gradients or activations."
+            )
 
         gradients = self.gradients[0]  # (C, H_feat, W_feat)
         activations = self.activations[0]  # (C, H_feat, W_feat)
@@ -140,6 +158,14 @@ class GradCAM:
 
         h, w = input_tensor.shape[2], input_tensor.shape[3]
         heatmap_resized = cv2.resize(cam_np, (w, h))
+
+        # Generate clean inner FOV mask to eliminate camera background bleeding
+        gray = cv2.cvtColor(np.zeros((h, w, 3), dtype=np.uint8), cv2.COLOR_RGB2GRAY) if not hasattr(self, "_last_rgb") else cv2.cvtColor(self._last_rgb, cv2.COLOR_RGB2GRAY)
+        if hasattr(self, "_last_rgb") and self._last_rgb is not None:
+            _, fov_mask = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
+            fov_mask = cv2.erode(fov_mask, kernel)
+            heatmap_resized[fov_mask == 0] = 0.0
 
         return heatmap_resized
 
@@ -172,3 +198,58 @@ class GradCAM:
         cv2.imwrite(str(out_path), bgr)
 
         return out_path
+
+    def save_experiment_visualization(
+        self,
+        input_tensor: torch.Tensor,
+        original_rgb: np.ndarray,
+        image_id: str,
+        experiment_or_model: str = "gradcam",
+        output_dir: str | Path = "reports/figures/gradcam",
+        true_label: int | str | None = None,
+        predicted_label: int | str | None = None,
+        confidence: float | None = None,
+        target_class: int | None = None,
+        alpha: float = 0.5,
+    ) -> Path:
+        """Save Grad-CAM visualization into a dedicated experiment subfolder with structured filename.
+
+        Subfolder created: <output_dir>/<experiment_or_model>/
+        Filename created: <experiment_or_model>_<image_id>[_gt<true_label>][_pred<pred_label>][_conf<confidence>].png
+
+        Args:
+            input_tensor: Preprocessed tensor (1, C, H, W).
+            original_rgb: Original image numpy RGB (H, W, 3).
+            image_id: Unique identifier/stem of the image (e.g. '20170413102628830').
+            experiment_or_model: Experiment name or model architecture.
+            output_dir: Base output directory (default: 'reports/figures/gradcam').
+            true_label: Optional Ground Truth label index or name.
+            predicted_label: Optional predicted class label index or name.
+            confidence: Optional model confidence probability (0.0 - 1.0).
+            target_class: Optional class target for Grad-CAM backprop.
+            alpha: Blend ratio for heatmap overlay.
+
+        Returns:
+            Path object to saved visualization PNG.
+        """
+        stem = Path(image_id).stem
+        parts = [experiment_or_model, stem]
+
+        if true_label is not None:
+            parts.append(f"gt{true_label}")
+        if predicted_label is not None:
+            parts.append(f"pred{predicted_label}")
+        if confidence is not None:
+            parts.append(f"conf{confidence:.2f}")
+
+        filename = "_".join(parts) + ".png"
+        target_dir = Path(output_dir) / experiment_or_model
+        save_path = target_dir / filename
+
+        return self.save_visualization(
+            input_tensor=input_tensor,
+            original_rgb=original_rgb,
+            save_path=save_path,
+            target_class=target_class,
+            alpha=alpha,
+        )

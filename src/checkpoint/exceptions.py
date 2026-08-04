@@ -15,7 +15,7 @@ class CheckpointError(Exception):
 class CheckpointNotFoundError(CheckpointError, FileNotFoundError):
     """
     Raised when a requested checkpoint file or directory does not exist on disk.
-    
+
     Inherits from FileNotFoundError to allow standard Python exception handling.
     """
 

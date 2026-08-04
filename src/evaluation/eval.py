@@ -22,12 +22,34 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Retinal Disease Detection - Model Evaluation CLI")
-    parser.add_argument("--config", type=Path, default=PROJECT_ROOT / "configs" / "config.yaml", help="Path to config file")
-    parser.add_argument("--checkpoint", type=Path, required=True, help="Path to saved checkpoint file (.pt)")
-    parser.add_argument("--split", type=str, choices=["test", "valid"], default="test", help="Dataset split to evaluate")
-    parser.add_argument("--report", type=Path, default=None, help="Output HTML report path")
-    parser.add_argument("--json", type=Path, default=None, help="Output JSON results path")
+    parser = argparse.ArgumentParser(
+        description="Retinal Disease Detection - Model Evaluation CLI"
+    )
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=PROJECT_ROOT / "configs" / "config.yaml",
+        help="Path to config file",
+    )
+    parser.add_argument(
+        "--checkpoint",
+        type=Path,
+        required=True,
+        help="Path to saved checkpoint file (.pt)",
+    )
+    parser.add_argument(
+        "--split",
+        type=str,
+        choices=["test", "valid"],
+        default="test",
+        help="Dataset split to evaluate",
+    )
+    parser.add_argument(
+        "--report", type=Path, default=None, help="Output HTML report path"
+    )
+    parser.add_argument(
+        "--json", type=Path, default=None, help="Output JSON results path"
+    )
     args = parser.parse_args()
 
     print("=" * 60)
@@ -36,26 +58,44 @@ def main() -> None:
 
     # 1. Load config & device
     config = ConfigLoader.load(args.config)
-    device = "cuda" if config.training.device == "cuda" and torch.cuda.is_available() else "cpu"
+    device = (
+        "cuda"
+        if config.training.device == "cuda" and torch.cuda.is_available()
+        else "cpu"
+    )
     print(f"Config Path : {args.config}")
     print(f"Checkpoint  : {args.checkpoint}")
     print(f"Target Split: {args.split}")
     print(f"Device      : {device}")
 
     # 2. Build Dataset & DataLoader
-    dataset_root = config.dataset.path if config.dataset.path.is_absolute() else (PROJECT_ROOT / config.dataset.path).resolve()
+    dataset_root = (
+        config.dataset.path
+        if config.dataset.path.is_absolute()
+        else (PROJECT_ROOT / config.dataset.path).resolve()
+    )
     annotation_file = f"{args.split}.txt"
     if not (dataset_root / annotation_file).exists():
         annotation_file = config.dataset.annotation_file
 
     ds = RetinalDataset(config=config.dataset, annotation_file=annotation_file)
-    loader_builder = build_test_dataloader if args.split == "test" else build_validation_dataloader
+    loader_builder = (
+        build_test_dataloader if args.split == "test" else build_validation_dataloader
+    )
     loader = loader_builder(dataset=ds, config=config.dataloader)
 
     # 3. Instantiate Evaluator & run
-    evaluator = ModelEvaluator.from_checkpoint(checkpoint_path=args.checkpoint, config=config, device=device)
-    report_path = args.report or PROJECT_ROOT / "reports" / "metrics" / f"eval_{args.split}_report.html"
-    json_path = args.json or PROJECT_ROOT / "reports" / "metrics" / f"eval_{args.split}_metrics.json"
+    evaluator = ModelEvaluator.from_checkpoint(
+        checkpoint_path=args.checkpoint, config=config, device=device
+    )
+    report_path = (
+        args.report
+        or PROJECT_ROOT / "reports" / "metrics" / f"eval_{args.split}_report.html"
+    )
+    json_path = (
+        args.json
+        or PROJECT_ROOT / "reports" / "metrics" / f"eval_{args.split}_metrics.json"
+    )
 
     print("\nRunning evaluation loop...")
     results = evaluator.evaluate(
@@ -76,4 +116,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     import torch
+
     main()

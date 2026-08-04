@@ -1,0 +1,92 @@
+dataset:
+  path: data/raw
+  annotation_file: train.txt
+  image_directory: train
+  num_classes: 5
+
+preprocessing:
+  # Preserve aspect ratio before resize to avoid stretching the eye globe
+  pipeline:
+    [
+      longest_max_size,
+      pad_if_needed,
+      horizontal_flip,
+      vertical_flip,
+      rotation,
+      brightness_contrast,
+      normalize,
+      to_tensor,
+    ]
+
+  # Increase resolution from 224 to 384 for finer detail resolution
+  img_size: 384
+  resize: { height: 384, width: 384 }
+
+  horizontal_flip_prob: 0.5
+  vertical_flip_prob: 0.5
+  rotation_limit: 180
+  rotation_prob: 0.5
+  brightness_contrast_prob: 0.4
+  normalize:
+    mean: [0.485, 0.456, 0.406]
+    std: [0.229, 0.224, 0.225]
+
+model:
+  architecture: convnext_tiny
+  pretrained: true
+  num_classes: 5
+  dropout_rate: 0.4 # Slightly increase dropout to reduce false positives on Grade 0
+
+loss:
+  name: class_balanced_focal
+  gamma: 2.0
+  beta: 0.9999 # Class-balanced focal loss handles class imbalance well
+
+optimizer:
+  name: adamw
+  learning_rate: 0.0001
+  weight_decay: 0.01 # Slightly stronger L2 regularization
+
+scheduler:
+  name: cosine
+  eta_min: 1.0e-6
+
+training:
+  # Increase training epochs to 35 for better convergence with CosineAnnealing
+  epochs: 40
+  device: cuda
+  deterministic: true
+
+mixed_precision:
+  enabled: true
+  dtype: float16
+
+dataloader:
+  # Reduced batch size to 16 due to higher resolution (384px) to avoid VRAM OOM
+  batch_size: 16
+  num_workers: 4
+  shuffle: true
+  pin_memory: true
+  persistent_workers: true
+  drop_last: false
+
+checkpoint:
+  directory: experiments/exp_06_convnext_tiny_v3/checkpoints
+  monitor: qwk
+
+early_stopping:
+  enabled: true
+  patience: 10 # Allow more epochs for rare classes to converge
+  monitor: qwk
+
+logging:
+  log_every_n_steps: 10
+
+metrics:
+  primary: [accuracy, qwk]
+  secondary: [macro_f1]
+  per_class: true
+
+experiment:
+  name: exp_06_convnext_tiny_v3
+  seed: 42

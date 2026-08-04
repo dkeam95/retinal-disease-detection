@@ -17,6 +17,7 @@ _SUPPORTED_SCHEDULERS: tuple[str, ...] = (
     "step",
 )
 
+
 class SchedulerFactory:
     """Factory for creating learning rate schedulers."""
 
@@ -69,10 +70,7 @@ class SchedulerFactory:
         """
 
         try:
-            validate_component_name(
-                name=name,
-                supported=_SUPPORTED_SCHEDULERS
-            )
+            validate_component_name(name=name, supported=_SUPPORTED_SCHEDULERS)
 
         except ValueError as error:
             raise SchedulerFactoryError(str(error)) from error
@@ -80,17 +78,10 @@ class SchedulerFactory:
         name = normalize_name(name)
 
         if name == "cosine":
-            return CosineAnnealingLR(
-                optimizer,
-                T_max=epochs
-            )
+            return CosineAnnealingLR(optimizer, T_max=epochs)
 
         if name == "step":
-            return StepLR(
-                optimizer,
-                step_size=step_size,
-                gamma=gamma
-            )
+            return StepLR(optimizer, step_size=step_size, gamma=gamma)
 
         if name == "onecycle":
             if steps_per_epoch is None:
@@ -107,9 +98,7 @@ class SchedulerFactory:
                 optimizer,
                 max_lr=max_learning_rate,
                 steps_per_epoch=steps_per_epoch,
-                epochs=epochs
+                epochs=epochs,
             )
 
-        raise SchedulerFactoryError(
-            f"Unknown scheduler name: {name}"
-        )
+        raise SchedulerFactoryError(f"Unknown scheduler name: {name}")

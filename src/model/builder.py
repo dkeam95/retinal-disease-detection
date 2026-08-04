@@ -49,10 +49,7 @@ def build_timm_model(model_name: str, config: ModelConfig) -> nn.Module:
         backbone,
         "num_features",
     ):
-        raise AttributeError(
-            f"Backbone '{model_name}' "
-            "does not expose num_features."
-        )
+        raise AttributeError(f"Backbone '{model_name}' does not expose num_features.")
 
     # Construct classification head matching backbone's output feature dimension
     classifier = build_classifier(
