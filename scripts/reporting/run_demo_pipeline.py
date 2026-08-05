@@ -43,18 +43,18 @@ EXPERIMENTS_DIR = Path("experiments")
 
 MODELS = [
     (
-        "exp_05_convnext_tiny_v2",
-        EXPERIMENTS_DIR / "exp_05_convnext_tiny_v2" / "checkpoints" / "best.pt",
+        "exp_07_convnext_tiny_v4",
+        EXPERIMENTS_DIR / "exp_07_convnext_tiny_v4" / "checkpoints" / "best.pt",
         0.40,
     ),
     (
-        "exp_07_swin_t_v2",
-        EXPERIMENTS_DIR / "exp_07_swin_t_v2" / "checkpoints" / "best.pt",
+        "exp_07_swin_t",
+        EXPERIMENTS_DIR / "exp_07_swin_t" / "checkpoints" / "best.pt",
         0.35,
     ),
     (
-        "exp_02_densenet121_v2",
-        EXPERIMENTS_DIR / "exp_02_densenet121_v2" / "checkpoints" / "best.pt",
+        "exp_02_densenet121",
+        EXPERIMENTS_DIR / "exp_02_densenet121" / "checkpoints" / "best.pt",
         0.25,
     ),
 ]
