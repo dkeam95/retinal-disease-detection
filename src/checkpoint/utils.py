@@ -8,6 +8,7 @@ for checkpoint file generation, validation, path creation, and discovery.
 from __future__ import annotations  # Enables modern type hints (|)
 
 from pathlib import Path  # Object-oriented filesystem path utility
+from typing import Any
 
 from checkpoint.exceptions import (  # Custom exceptions
     CheckpointNotFoundError,
@@ -109,3 +110,29 @@ def create_checkpoint_directory(checkpoint_directory: Path) -> None:
 
     # Create directory and parent directories if needed, ignoring error if it already exists
     checkpoint_directory.mkdir(parents=True, exist_ok=True)
+
+
+def clean_state_dict(state_dict: dict[str, Any]) -> dict[str, Any]:
+    """
+    Remove common prefixes like '_orig_mod.' and 'module.' from state_dict keys.
+
+    Parameters
+    ----------
+    state_dict : dict[str, Any]
+        Original state dictionary loaded from checkpoint.
+
+    Returns
+    -------
+    dict[str, Any]
+        Cleaned state dictionary ready to load.
+    """
+    cleaned_state_dict = {}
+    for k, v in state_dict.items():
+        name = k
+        if name.startswith("_orig_mod."):
+            name = name[len("_orig_mod."):]
+        if name.startswith("module."):
+            name = name[len("module."):]
+        cleaned_state_dict[name] = v
+    return cleaned_state_dict
+

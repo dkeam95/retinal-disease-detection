@@ -1,70 +1,40 @@
-# Explainability (XAI) Module (`src/explainability`)
+# Explainability Module (`src/explainability/`)
 
-Explainable AI (XAI) algorithms, saliency heatmap generation, lesion segmentation, and clinical spotlighting for Retinal Disease Detection.
+## Overview
 
-## 📌 Overview
+The `explainability` module provides algorithms and tools for Explainable AI (XAI) in clinical decision support. It generates attribution maps and segmentation overlays highlighting retinal lesions (microaneurysms, hemorrhages, exudates) that guided classification predictions.
 
-The `src/explainability` module provides medical-grade model interpretability tools. It enables clinicians and researchers to visualize which retinal regions (e.g., microaneurysms, hard exudates, hemorrhages, cotton wool spots) influenced the model's classification decision.
+## Key Features
 
----
+- **Pixel Attribution Maps**: Computes saliency maps using Grad-CAM++, Score-CAM, Layer-CAM, and Integrated Gradients.
+- **Lesion Localization Filters**: Custom filters to extract and highlight diabetic retinopathy markers (HE, MA, EX, SE).
+- **Spotlight Visualizer**: Annotates focus regions to improve diagnostic interpretability for clinical reviews.
 
-## 🗂️ Directory Structure
+## API & Interfaces
 
-```
-src/explainability/
-├── __init__.py               # Package exports (GradCAM, GradCAMPlusPlus, LayerCAM, etc.)
-├── engine.py                 # Unified XAI execution engine interface
-├── gradcam.py                # Gradient-weighted Class Activation Mapping (Grad-CAM)
-├── gradcam_plus_plus.py      # Grad-CAM++ for multi-lesion localization
-├── layer_cam.py              # Layer-CAM for multi-scale feature layer activation
-├── score_cam.py              # Score-CAM (gradient-free activation mapping)
-├── integrated_gradients.py   # Integrated Gradients axiomatic attribution
-├── lesion_segmenter.py       # Automated lesion segmentation & contour extraction from heatmaps
-├── spotlight.py              # Clinical spotlighting & pathology bounding box visualizer
-├── batch_audit.py            # Large-scale XAI dataset auditing framework
-└── generate_heatmaps.py      # CLI script for bulk heatmap generation
-```
+### Classes
 
----
+#### `GradCAMPlusPlus`
+Generates gradient-weighted class activation maps.
+- **`generate(input_tensor: torch.Tensor, target_class: int) -> np.ndarray`**: Generates heatmaps.
+- **`save_visualization(heatmap: np.ndarray, original_img: np.ndarray, filepath: Path)`**: Overlays and saves heatmap.
 
-## 🔑 Supported Algorithms
+#### `IntegratedGradients`
+Calculates pixel-level feature attribution relative to a neutral baseline image.
+- **`generate(input_tensor: torch.Tensor, target_class: int, steps: int = 50) -> np.ndarray`**
 
-| Algorithm | Type | Best Used For |
-| :--- | :--- | :--- |
-| **Grad-CAM** | Gradient-based | General feature localization in final Conv layer |
-| **Grad-CAM++** | Gradient-based | Small lesion detection (microaneurysms, punctate hemorrhages) |
-| **Layer-CAM** | Gradient-based | Fine-grained localization across intermediate layers |
-| **Score-CAM** | Gradient-free | High-fidelity activation maps without gradient noise |
-| **Integrated Gradients** | Axiomatic | Precise pixel-level attribution baseline comparison |
+#### `LesionSegmenter`
+Extracts lesion-specific segments and renders clinical overlays.
+- **`detect_exudates(image: np.ndarray) -> list[dict]`**: Returns contour and spatial metadata for bright hard exudates (EX).
+- **`detect_hemorrhages(image: np.ndarray) -> list[dict]`**: Returns contour and spatial metadata for dark hemorrhages/microaneurysms (HE/MA).
+- **`annotate(image_rgb: np.ndarray, draw_exudates: bool = True, draw_hemorrhages: bool = True, show_legend: bool = True) -> tuple[np.ndarray, dict]`**: Renders color-coded clinical circle annotations on top of the fundus image.
 
----
+### Functions
 
-## 🔍 Additional Clinical XAI Features
+- **`clahe_enhance(image: np.ndarray) -> np.ndarray`**
+  Applies Contrast Limited Adaptive Histogram Equalization to highlight small lesions (e.g., microaneurysms).
 
-### 1. Lesion Segmenter (`lesion_segmenter.py`)
-Thresholds saliency maps using adaptive Otsu thresholding to segment candidate lesion regions and compute lesion area coverage ratio.
+## Dependencies
 
-### 2. Clinical Spotlight (`spotlight.py`)
-Overlays bounding boxes and focus spotlights around high-activation retinal pathology regions, formatted for ophthalmologist inspection.
-
----
-
-## 💻 Usage Example
-
-```python
-from src.explainability import GradCAM, LesionSegmenter, SpotlightVisualizer
-
-# Initialize Grad-CAM for target layer
-cam = GradCAM(model=model, target_layer=model.backbone.layer4[-1])
-
-# Generate heatmap for target class
-heatmap = cam.generate(input_tensor=img_tensor, target_class=3)  # Severe NPDR
-
-# Segment lesion contours
-segmenter = LesionSegmenter(threshold_ratio=0.6)
-contours, mask = segmenter.segment(heatmap)
-
-# Visualize clinical spotlight
-spotlight = SpotlightVisualizer()
-result_img = spotlight.render(original_image=img, heatmap=heatmap, contours=contours)
-```
+- `opencv-python`: Heatmap and image masking algorithms.
+- `torch`: Backward gradients hook parsing.

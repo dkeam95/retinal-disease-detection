@@ -1,56 +1,43 @@
-# Losses Module
+# Losses Module (`src/losses/`)
 
-## Purpose
+## Overview
 
-The `losses` module provides a unified interface and registry for loss functions used during neural network training.
+The `losses` module registers and initializes loss functions designed for training deep learning models, with a strong focus on ordinal classification and handling severe class imbalance.
 
-All loss functions are instantiated via a factory/registry pattern, allowing loss selection directly from configuration without altering training loop code.
+## Key Features
 
----
+- **Class Imbalance Resolution**: Features Weighted Cross-Entropy, Focal Loss, and Class-Balanced Focal Loss to prioritize hard-to-classify samples and rare classes.
+- **Ordinal Target Formatting**: Support for Ordinal regression losses (e.g., CORAL loss).
+- **Extensible Registry**: A centralized registry linking loss enums to implementation builders.
 
-## Supported Loss Functions
+## API & Interfaces
 
-1. **Cross-Entropy Loss (`cross_entropy`)**: Standard multi-class cross-entropy with optional label smoothing.
-2. **Weighted Cross-Entropy (`weighted_cross_entropy`)**: Class-weighted cross-entropy for handling imbalanced class distributions.
-3. **Focal Loss (`focal`)**: Implements Lin et al. (*Focal Loss for Dense Object Detection*), down-weighting easy examples to focus on hard samples.
-4. **Class-Balanced Focal Loss (`class_balanced_focal`)**: Implements Cui et al. (*Class-Balanced Loss Based on Effective Number of Samples*), combining effective sample weights with focal loss.
+### Classes
 
----
+#### `FocalLoss(nn.Module)`
+Focuses training on hard samples by dynamically scaling loss using focusing parameter $\gamma$ and balance coefficient $\alpha$.
+- **`forward(logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor`**
 
-## Module Structure
+#### `ClassBalancedFocalLoss(nn.Module)`
+Calculates class balance weights based on the effective number of samples per class ($E_n = \frac{1 - \beta^n}{1 - \beta}$) and applies them to Focal Loss.
+- **`forward(logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor`**
 
-```text
-losses/
-├── __init__.py                # Public API exports
-├── loss_names.py              # LossName enumeration
-├── factory.py                 # build_loss factory function
-├── registry.py                # LOSS_REGISTRY mapping
-├── cross_entropy.py           # Cross-entropy loss builders
-├── weighted_cross_entropy.py  # Weighted cross-entropy builders
-├── focal.py                   # Focal loss implementation
-├── class_balanced_focal.py    # Class-balanced focal loss implementation
-├── exceptions.py              # LossError hierarchy
-└── README.md                  # Technical documentation
-```
+#### `CoralLoss(nn.Module)`
+Consistent Ordinal Regression Loss for predicting ordinal scales.
+- **`forward(logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor`**
 
----
+### Functions
 
-## Usage Example
+- **`build_loss(config: LossConfig, class_counts: Optional[np.ndarray] = None) -> nn.Module`**
+  Factory function returning the configured loss function.
+- **`coral_logits_to_probs(logits: torch.Tensor) -> torch.Tensor`**
+  Converts CORAL output logits to class probabilities.
 
-```python
-from losses import build_loss
+### Exceptions
 
-# Build loss function from config
-criterion = build_loss(config.loss)
+- `UnknownLossError`: Raised if the requested loss name is not registered.
+- `LossInitializationError`: Raised if parameters like class counts are missing during class-balanced loss setup.
 
-# Compute loss
-loss = criterion(logits, targets)
-```
+## Dependencies
 
----
-
-## Design Principles
-
-- **Registry Pattern**: Losses registered under type-checked `LossName` enum values.
-- **Fail-Fast Initialization**: Hyperparameter validation occurs during factory construction (`build_loss`).
-- **Class Imbalance Focus**: Built-in support for medical imaging class imbalance via Focal and Class-Balanced loss variants.
+- `torch`: PyTorch math operations.

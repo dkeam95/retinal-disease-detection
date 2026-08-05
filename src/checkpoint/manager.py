@@ -126,8 +126,10 @@ class CheckpointManager:
             Restored trainer progress and metric state instance.
         """
 
+        from checkpoint.utils import clean_state_dict
+
         # Restore parameters for model and optimizer
-        model.load_state_dict(checkpoint["model_state"])
+        model.load_state_dict(clean_state_dict(checkpoint["model_state"]))
         optimizer.load_state_dict(checkpoint["optimizer_state"])
 
         # Restore scheduler state if both instance and saved state exist

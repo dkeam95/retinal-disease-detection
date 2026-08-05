@@ -19,9 +19,9 @@ from .exceptions import (
 from .types import (
     CheckpointConfig,
     DataLoaderConfig,
+    DatasetConfig,
     DetectionDatasetConfig,
     DetectionModelConfig,
-    DatasetConfig,
     EarlyStoppingConfig,
     ExperimentConfig,
     LoggingConfig,

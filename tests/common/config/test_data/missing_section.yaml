@@ -26,7 +26,7 @@ preprocessing:
   brightness_contrast_prob: 0.2
 
 # training:
-#   ← намеренно отсутствует
+#   ← intentionally missing
 
 model:
   architecture: "resnet50"

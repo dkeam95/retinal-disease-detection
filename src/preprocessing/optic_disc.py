@@ -7,8 +7,6 @@ Resolves the critical false-positive bottleneck where the anatomical Optic Disc
 
 from __future__ import annotations
 
-from typing import Any
-
 import cv2
 import numpy as np
 

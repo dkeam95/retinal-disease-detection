@@ -10,7 +10,6 @@ morphological operators combined with adaptive blob contour detection.
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Any
 
 import cv2

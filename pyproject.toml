@@ -81,7 +81,7 @@ select = [
     "B"    # flake8-bugbear
 ]
 
-ignore = []
+ignore = ["E501"]
 
 [tool.ruff.format]
 quote-style = "double"

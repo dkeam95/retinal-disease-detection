@@ -131,3 +131,25 @@ def test_find_latest_checkpoint_empty(
     )
 
     assert result is None
+
+
+def test_clean_state_dict() -> None:
+    """
+    Verify state dict key cleaning.
+    """
+    from checkpoint.utils import clean_state_dict
+
+    state_dict = {
+        "_orig_mod.backbone.weight": 1,
+        "module.classifier.bias": 2,
+        "normal_layer.weight": 3,
+    }
+
+    cleaned = clean_state_dict(state_dict)
+
+    assert cleaned == {
+        "backbone.weight": 1,
+        "classifier.bias": 2,
+        "normal_layer.weight": 3,
+    }
+

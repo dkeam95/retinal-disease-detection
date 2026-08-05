@@ -17,7 +17,7 @@ def test_load_annotations_success(tmp_path: Path) -> None:
     img_dir = tmp_path / "images"
     img_dir.mkdir()
 
-    # Создаем фиктивные изображения
+    # Create dummy images
     (img_dir / "img1.jpg").touch()
     (img_dir / "img2.jpg").touch()
 
@@ -52,7 +52,7 @@ def test_load_annotations_missing_image_directory(tmp_path: Path) -> None:
         load_annotations(annot_file, non_existent_dir)
     assert "Image directory not found" in str(exc_info.value)
 
-    # Передаем файл вместо директории
+    # Pass a file instead of a directory
     file_as_dir = tmp_path / "some_file.txt"
     file_as_dir.touch()
     with pytest.raises(InvalidAnnotationError) as exc_info:
@@ -79,13 +79,13 @@ def test_load_annotations_invalid_label_value(tmp_path: Path) -> None:
     img_dir.mkdir()
     (img_dir / "img1.jpg").touch()
 
-    # Нечисловая метка
+    # Non-numeric label
     annot_file = tmp_path / "bad_label.txt"
     annot_file.write_text("img1.jpg abc\n", encoding="utf-8")
     with pytest.raises(InvalidAnnotationError):
         load_annotations(annot_file, img_dir)
 
-    # Метка вне диапазона
+    # Out of range label
     annot_file_out_of_range = tmp_path / "out_of_range.txt"
     annot_file_out_of_range.write_text("img1.jpg 99\n", encoding="utf-8")
     with pytest.raises(InvalidAnnotationError):

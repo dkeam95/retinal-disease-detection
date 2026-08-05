@@ -56,7 +56,7 @@ class ModelEvaluator:
 
     @classmethod
     def from_checkpoint(
-        self,
+        cls,
         checkpoint_path: str | Path,
         config: ProjectConfig,
         device: torch.device | str = "cpu",
@@ -76,22 +76,25 @@ class ModelEvaluator:
             raise FileNotFoundError(f"Checkpoint file not found: {path}")
 
         dev = torch.device(device)
-        model = ModelFactory.build(
-            architecture=config.model.architecture,
-            pretrained=False,
-            num_classes=config.model.num_classes,
-            dropout_rate=config.model.dropout_rate,
-        )
-
         checkpoint_data = torch.load(path, map_location=dev, weights_only=False)
         state_dict = (
             checkpoint_data["model_state"]
             if isinstance(checkpoint_data, dict) and "model_state" in checkpoint_data
             else checkpoint_data
         )
-        model.load_state_dict(state_dict)
 
-        return ModelEvaluator(model=model, device=dev)
+        model = ModelFactory.build(
+            architecture=config.model.architecture,
+            pretrained=False,
+            num_classes=config.model.num_classes,
+            dropout_rate=config.model.dropout_rate,
+            state_dict=state_dict,
+        )
+
+        from checkpoint.utils import clean_state_dict
+        model.load_state_dict(clean_state_dict(state_dict))
+
+        return cls(model=model, device=dev)
 
     @torch.no_grad()
     def evaluate(
@@ -121,7 +124,10 @@ class ModelEvaluator:
             elif isinstance(batch, dict):
                 images, targets = batch["image"], batch["label"]
             else:
-                images, targets = batch.images, batch.labels
+                images = getattr(batch, "image", getattr(batch, "images", None))
+                targets = getattr(batch, "label", getattr(batch, "labels", None))
+                if images is None or targets is None:
+                    raise AttributeError("Batch sample object has no valid image/images or label/labels attributes.")
 
             images = images.to(self.device)
             outputs = self.model(images)

@@ -7,21 +7,22 @@ Generates publication-quality PDF reports in English:
 4. Codebase Architecture & Module Guide -> reports/codebase_architecture_guide.pdf
 """
 
-import sys
 from pathlib import Path
-from PIL import Image as PILImage
 
+from PIL import Image as PILImage
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.platypus import (
     HRFlowable,
-    Image as RLImage,
     Paragraph,
     SimpleDocTemplate,
     Spacer,
     Table,
     TableStyle,
+)
+from reportlab.platypus import (
+    Image as RLImage,
 )
 
 # Standard Helvetica fonts for English PDF generation

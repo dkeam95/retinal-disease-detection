@@ -198,12 +198,22 @@ def build_datasets(
     valid_config = replace(config.dataset, image_directory=valid_img_dir)
     test_config = replace(config.dataset, image_directory=test_img_dir)
 
+    from preprocessing.pipeline import (
+        build_test_pipeline,
+        build_train_pipeline,
+        build_validation_pipeline,
+    )
+
+    train_transform = build_train_pipeline(config.preprocessing)
+    valid_transform = build_validation_pipeline(config.preprocessing)
+    test_transform = build_test_pipeline(config.preprocessing)
+
     # Build typed dataset instances
     train_dataset = RetinalDataset(
-        config=config.dataset, annotation_file=train_file.name
+        config=config.dataset, annotation_file=train_file.name, transform=train_transform
     )
-    valid_dataset = RetinalDataset(config=valid_config, annotation_file=valid_file.name)
-    test_dataset = RetinalDataset(config=test_config, annotation_file=test_file.name)
+    valid_dataset = RetinalDataset(config=valid_config, annotation_file=valid_file.name, transform=valid_transform)
+    test_dataset = RetinalDataset(config=test_config, annotation_file=test_file.name, transform=test_transform)
 
     return train_dataset, valid_dataset, test_dataset
 
@@ -236,14 +246,17 @@ def build_dataloaders(
     train_loader = build_train_dataloader(
         dataset=train_dataset,
         config=config.dataloader,
+        target_size=config.preprocessing.image_size,
     )
     validation_loader = build_validation_dataloader(
         dataset=validation_dataset,
         config=config.dataloader,
+        target_size=config.preprocessing.image_size,
     )
     test_loader = build_test_dataloader(
         dataset=test_dataset,
         config=config.dataloader,
+        target_size=config.preprocessing.image_size,
     )
     return train_loader, validation_loader, test_loader
 

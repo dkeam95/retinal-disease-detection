@@ -94,20 +94,23 @@ def main() -> None:
     device = torch.device(args.device)
 
     # 1. Load config
+    from dataclasses import replace
     config = ConfigLoader.load(args.config)
-    config.training.epochs = args.epochs
-    config.dataloader.batch_size = args.batch_size
-
-    # Ensure detection_model config matches CLI overrides
-    config.detection_model = DetectionModelConfig(
-        architecture="fasterrcnn_resnet50_fpn",
-        pretrained=True,
-        num_classes=5,
-        score_thresh=0.25,
-        nms_thresh=0.45,
-        min_size=args.min_size,
-        max_size=args.max_size,
+    config = replace(
+        config,
+        training=replace(config.training, epochs=args.epochs),
+        dataloader=replace(config.dataloader, batch_size=args.batch_size),
+        detection_model=DetectionModelConfig(
+            architecture="fasterrcnn_resnet50_fpn",
+            pretrained=True,
+            num_classes=5,
+            score_thresh=0.25,
+            nms_thresh=0.45,
+            min_size=args.min_size,
+            max_size=args.max_size,
+        ),
     )
+
 
     # 2. Build Datasets
     logger.info(f"Loading training data from: {args.train_dir}")

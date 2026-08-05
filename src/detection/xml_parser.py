@@ -9,9 +9,9 @@ Parses XML bounding box annotations for 4 lesion classes:
 
 from __future__ import annotations
 
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
-import xml.etree.ElementTree as ET
 
 # Mapping from DDR XML class names to integer class IDs
 LESION_CLASS_MAP: dict[str, int] = {

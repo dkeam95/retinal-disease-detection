@@ -8,7 +8,7 @@ from disk and provide them to the PyTorch training pipeline.
 from __future__ import annotations  # Enables modern type hints (Python 3.7+)
 
 from pathlib import Path  # Object-oriented filesystem path navigation
-from typing import cast  # Type hint utility to inform static type checkers
+from typing import Any, cast  # Type hint utilities
 
 import cv2  # OpenCV library for fast image I/O and color space conversions
 import numpy as np  # Fundamental package for array manipulation
@@ -36,6 +36,7 @@ class RetinalDataset(Dataset[DataSample]):
         self,
         config: DatasetConfig,
         annotation_file: str | Path | None = None,
+        transform: Any | None = None,
     ) -> None:
         """
         Initialize the dataset.
@@ -46,6 +47,8 @@ class RetinalDataset(Dataset[DataSample]):
             Dataset configuration.
         annotation_file : str | Path | None, optional
             Override annotation filename, by default None.
+        transform : Any, optional
+            Albumentations transformations to apply, by default None.
         """
 
         target_annotation_file = (
@@ -59,6 +62,7 @@ class RetinalDataset(Dataset[DataSample]):
             annotation_file=config.path / target_annotation_file,
             image_directory=config.path / config.image_directory,
         )
+        self.transform = transform
 
     def __len__(self) -> int:
         """
@@ -156,6 +160,10 @@ class RetinalDataset(Dataset[DataSample]):
         image = self._load_image(
             annotation.image_path,
         )
+
+        if self.transform is not None:
+            transformed = self.transform(image=image)
+            image = transformed["image"]
 
         # Construct and return strongly typed DataSample object
         return DataSample(

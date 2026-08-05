@@ -35,10 +35,24 @@ def build_weighted_sampler(
         Sampler balancing classes according to inverse class frequencies.
     """
 
-    # Extract class labels from every dataset sample
-    labels = [
-        dataset[index].label for index in range(len(typing.cast(typing.Sized, dataset)))
-    ]
+    # Extract class labels from every dataset sample (avoiding synchronous disk image load/decode if cached)
+    if hasattr(dataset, "_annotations"):
+        labels = [ann.label for ann in dataset._annotations]
+    else:
+        try:
+            if hasattr(dataset, "labels"):
+                labels = list(dataset.labels)
+            elif hasattr(dataset, "targets"):
+                labels = list(dataset.targets)
+            else:
+                labels = [
+                    dataset[index].label if hasattr(dataset[index], "label") else dataset[index][1]
+                    for index in range(len(typing.cast(typing.Sized, dataset)))
+                ]
+        except Exception:
+            labels = [
+                dataset[index].label for index in range(len(typing.cast(typing.Sized, dataset)))
+            ]
 
     # Count occurrences of every class label across the dataset
     class_counts = Counter(labels)

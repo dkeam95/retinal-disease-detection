@@ -25,11 +25,16 @@ def build_classifier(in_features: int, config: ModelConfig) -> nn.Module:
     Returns:
         Classification head module containing Dropout and Linear projection layers.
     """
+    dropout_rate = getattr(config, "dropout_rate", 0.0)
+    linear = nn.Linear(in_features, config.num_classes)
+
+    # Weight/bias initialization (Xavier Uniform / Zeros)
+    nn.init.xavier_uniform_(linear.weight)
+    if linear.bias is not None:
+        nn.init.zeros_(linear.bias)
 
     # Assemble simple linear classification head with dropout regularization
     return nn.Sequential(
-        nn.Dropout(p=0.2),  # Dropout layer with 20% probability for regularization
-        nn.Linear(
-            in_features, config.num_classes
-        ),  # Linear projection from backbone embeddings to target classes
+        nn.Dropout(p=dropout_rate),
+        linear,
     )

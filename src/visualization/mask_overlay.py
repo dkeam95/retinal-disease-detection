@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import cv2
 import numpy as np
+from typing import Any
 
 # Color palette for medical lesion visualization (BGR format)
 LESION_COLOR_PALETTE_BGR: dict[int, tuple[int, int, int]] = {
@@ -164,17 +165,17 @@ class LesionMaskVisualizer:
         """Render exact 5-Column Segmentation Pipeline Comparison Grid matching Slide 3.
 
         Columns:
-          1. Исходное изображение (Original Image)
-          2. Предсказанная маска (сырая) (Raw Mask - Step 1)
-          3. После Top-Hat фильтра (Top-Hat Mask - Step 2)
-          4. После уточнения границ (финальная маска) (Final Refined Mask - Step 3)
-          5. Наложение на изображение (Color Mask Overlay)
+          1. Original Image
+          2. Raw Mask - Step 1
+          3. Top-Hat Mask - Step 2
+          4. Final Refined Mask - Step 3
+          5. Color Mask Overlay
 
         Rows:
-          1. Микроаневризмы (MA) - Green
-          2. Кровоизлияния (HE) - Red
-          3. Твёрдые экссудаты (EX) - Yellow
-          4. Мягкие экссудаты (SE) - Blue
+          1. Microaneurysms (MA) - Green
+          2. Hemorrhages (HE) - Red
+          3. Hard Exudates (EX) - Yellow
+          4. Soft Exudates (SE) - Blue
 
         Args:
           class_samples: Dict mapping class_code ('MA', 'HE', 'EX', 'SE') -> dict containing:
@@ -192,7 +193,7 @@ class LesionMaskVisualizer:
         header_h = 60
         row_label_w = 160
         num_cols = 5
-        
+
         row_keys = ["MA", "HE", "EX", "SE"]
         row_labels_en = {
             "MA": "Microaneurysms\n(MA)",

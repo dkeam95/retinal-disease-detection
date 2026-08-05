@@ -65,20 +65,23 @@ def generate_experiment_heatmaps(
 
     exp_name = experiment_name or config.experiment.name or config.model.architecture
 
-    # Build model & load state dict
-    model = ModelFactory.build(
-        architecture=config.model.architecture,
-        pretrained=False,
-        num_classes=config.model.num_classes,
-        dropout_rate=config.model.dropout_rate,
-    )
     checkpoint_data = torch.load(ckpt_path, map_location=dev, weights_only=False)
     state_dict = (
         checkpoint_data["model_state"]
         if isinstance(checkpoint_data, dict) and "model_state" in checkpoint_data
         else checkpoint_data
     )
-    model.load_state_dict(state_dict)
+
+    # Build model & load state dict
+    model = ModelFactory.build(
+        architecture=config.model.architecture,
+        pretrained=False,
+        num_classes=config.model.num_classes,
+        dropout_rate=config.model.dropout_rate,
+        state_dict=state_dict,
+    )
+    from checkpoint.utils import clean_state_dict
+    model.load_state_dict(clean_state_dict(state_dict))
     model.to(dev)
 
     transform = build_validation_pipeline(config.preprocessing)

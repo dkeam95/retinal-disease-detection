@@ -5,8 +5,9 @@ Generates reports/figures/codebase_architecture_diagram.png.
 """
 
 from pathlib import Path
-import matplotlib.pyplot as plt
+
 import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 
 
 def render_architecture_diagram(output_path: Path) -> None:
@@ -22,13 +23,13 @@ def render_architecture_diagram(output_path: Path) -> None:
         (0.5, 8.5, 3.0, 1.0, "src/common", "Config, Classes, Exceptions", "#e0f2fe", "#0284c7"),
         (4.5, 8.5, 3.0, 1.0, "src/dataset", "Parsers, RetinalDataset", "#fef3c7", "#d97706"),
         (8.5, 8.5, 3.0, 1.0, "src/dataloader", "Batches, Albumentations", "#fef3c7", "#d97706"),
-        
+
         (0.5, 6.0, 3.0, 1.2, "src/model", "ConvNeXt-Tiny, Swin-T,\nDenseNet121, ModelRegistry", "#dcfce7", "#16a34a"),
         (4.5, 6.0, 3.0, 1.2, "src/losses", "CB-Focal Loss,\nWeighted Cross-Entropy", "#fee2e2", "#dc2626"),
         (8.5, 6.0, 3.0, 1.2, "src/metrics", "QWK, F1-Score, Accuracy,\nConfusion Matrix", "#e0e7ff", "#4f46e5"),
-        
+
         (4.5, 3.5, 4.0, 1.3, "src/trainer", "Epoch Loops, EarlyStopping,\nCheckpoint Manager", "#fae8ff", "#c084fc"),
-        
+
         (0.5, 1.0, 3.2, 1.2, "src/detection", "Faster R-CNN (1536px),\nMicro-Anchors, mAP", "#fce7f3", "#db2777"),
         (4.2, 1.0, 3.2, 1.2, "src/preprocessing", "FundusFOVExtractor (98%),\nOpticDiscDetector", "#ccfbf1", "#0d9488"),
         (8.0, 1.0, 3.2, 1.2, "src/inference", "Ensemble (QWK=0.7685),\nMaskedLesionPredictor", "#ffedd5", "#ea580c"),
@@ -45,7 +46,7 @@ def render_architecture_diagram(output_path: Path) -> None:
             linewidth=2,
         )
         ax.add_patch(rect)
-        
+
         ax.text(
             x + w / 2.0, y + h * 0.65, title,
             ha="center", va="center",

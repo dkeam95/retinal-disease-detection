@@ -17,13 +17,13 @@ def dummy_dataset_env(tmp_path: Path) -> DatasetConfig:
     img_dir = tmp_path / "images"
     img_dir.mkdir()
 
-    # Создаем тестовую RGB картинку (10x10x3) и сохраняем через cv2
+    # Create dummy RGB image (10x10x3) and save via cv2
     img1_path = img_dir / "test1.png"
     dummy_img = np.zeros((10, 10, 3), dtype=np.uint8)
-    dummy_img[:, :] = (255, 0, 0)  # Синий цвет в BGR
+    dummy_img[:, :] = (255, 0, 0)  # Blue color in BGR
     cv2.imwrite(str(img1_path), dummy_img)
 
-    # Создаем файл аннотаций
+    # Create annotation file
     annot_path = tmp_path / "train.txt"
     annot_path.write_text("test1.png 2\n", encoding="utf-8")
 
@@ -49,7 +49,7 @@ def test_retinal_dataset_getitem_success(dummy_dataset_env: DatasetConfig) -> No
     assert sample.label == 2
     assert sample.image.shape == (10, 10, 3)
     assert sample.image.dtype == np.uint8
-    # В cv2 запись была (255, 0, 0) BGR -> в RGB должно быть (0, 0, 255)
+    # In cv2 the write was (255, 0, 0) BGR -> in RGB it should be (0, 0, 255)
     assert np.array_equal(sample.image[0, 0], np.array([0, 0, 255], dtype=np.uint8))
 
 

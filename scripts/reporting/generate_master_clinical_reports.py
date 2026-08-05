@@ -13,8 +13,8 @@ import os
 
 os.environ["NO_ALBUMENTATIONS_UPDATE"] = "1"
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Ensure src/ is on sys.path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -25,7 +25,6 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 import cv2
-import numpy as np
 import torch
 
 from common.config.loader import ConfigLoader
@@ -35,11 +34,11 @@ from inference.detection_predictor import LesionDetectionPredictor
 from inference.predictor import RetinalPredictor
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
-CLASSIFICATION_CONFIG = Path("configs/experiments/exp_05_convnext_tiny_v2.yaml")
-CLASSIFICATION_CKPT = Path("experiments/exp_05_convnext_tiny_v2/checkpoints/best.pt")
+CLASSIFICATION_CONFIG = Path("configs/experiments/exp_07_convnext_tiny_v4.yaml")
+CLASSIFICATION_CKPT = Path("experiments/exp_07_convnext_tiny_v4/checkpoints/best.pt")
 
-DETECTION_CONFIG = Path("configs/detection/exp_faster_rcnn_lesions_v3_1536.yaml")
-DETECTION_CKPT = Path("experiments/exp_faster_rcnn_lesions_v3_1536/checkpoints/best.pt")
+DETECTION_CONFIG = Path("configs/detection/exp_faster_rcnn_lesions_v3_1280.yaml")
+DETECTION_CKPT = Path("experiments/exp_faster_rcnn_lesions_v3_1280/checkpoints/best.pt")
 
 TEST_XML_DIR = Path("data/raw/lesion_detection/test")
 OUTPUT_DIR = Path("reports/master_clinical_reports")
@@ -74,10 +73,12 @@ def main(target_grades: list[int] | None = None, custom_images: list[str] | None
     cls_predictor = RetinalPredictor.from_checkpoint(
         checkpoint_path=CLASSIFICATION_CKPT, config=cfg_cls, device=device
     )
-    
+
+    # Attempt loading champion ensemble if checkpoints exist
     # Attempt loading champion ensemble if checkpoints exist
     ensemble_pairs = [
         (CLASSIFICATION_CKPT, CLASSIFICATION_CONFIG),
+        (Path("experiments/exp_07_convnext_tiny_v4/checkpoints/best.pt"), Path("configs/experiments/exp_07_convnext_tiny_v4.yaml")),
         (Path("experiments/exp_06_swin_tiny_v2/checkpoints/best.pt"), Path("configs/experiments/exp_06_swin_tiny_v2.yaml")),
         (Path("experiments/exp_02_densenet121_v2/checkpoints/best.pt"), Path("configs/experiments/exp_02_densenet121_v2.yaml")),
     ]
@@ -145,7 +146,7 @@ def main(target_grades: list[int] | None = None, custom_images: list[str] | None
             print(f"  [SKIP] Image for {stem} not found.")
             continue
 
-        print(f"--------------------------------------------------------------------------------")
+        print("--------------------------------------------------------------------------------")
         print(f"Processing Patient Record: {img_path.name}")
 
         bgr = cv2.imread(str(img_path))

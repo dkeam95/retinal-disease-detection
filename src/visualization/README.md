@@ -1,61 +1,55 @@
-# Visualization Module (`src/visualization`)
+# Visualization Module (`src/visualization/`)
 
-Plotting utilities, diagnostic chart generation, and automated report generation for Retinal Disease Detection.
+## Overview
 
-## 📌 Overview
+The `visualization` module converts model outputs and evaluation statistics into charts, comparison grids, and interactive reports. It produces side-by-side diagnostic summaries and HTML-based reports.
 
-The `src/visualization` module provides publication-quality plotting tools for exploratory data analysis (EDA), model training convergence tracking, metric visualization, and clinical report generation.
+## Key Features
 
----
+- **Lesion Mask Overlays**: Alpha-blended semi-transparent overlays and sharp contour strokes for 4 lesion types (EX, HE, MA, SE).
+- **Segmentation Pipeline Comparison Grids**: 5-column breakdown matching Slide 3 (Raw Mask ➔ Top-Hat Filter ➔ Guided Edge Refinement ➔ Color Overlay).
+- **Training Curve Plotting**: Automatically draws training/validation loss and QWK curves across epochs.
+- **Confusion Matrix Rendering**: Generates normalized $5 \times 5$ confusion matrices using Seaborn heatmaps.
+- **HTML Report Generation**: Compiles model architectures, parameters, metrics plots, and XAI overlay images into a standalone interactive HTML report.
 
-## 🗂️ Directory Structure
+## Executable Visualizer Scripts (`scripts/visualization/`)
 
-```
-src/visualization/
-├── __init__.py           # Package exports (plots, LesionMaskVisualizer, ReportGenerator)
-├── mask_overlay.py       # LesionMaskVisualizer & 5-Column Presentation Grid Renderers (Slides 3 & 4)
-├── plots.py              # Matplotlib & Seaborn diagnostic chart plotting functions
-└── report_generator.py   # Automated PDF/HTML evaluation report compiler
-```
+- **`visualize_mask_overlay.py`**: Interactive CLI, file argument, or native GUI dialog for rendering mask overlays on any custom fundus image.
+  ```bash
+  python scripts/visualization/visualize_mask_overlay.py --image 007-3396-200.jpg
+  python scripts/visualization/visualize_mask_overlay.py --gui
+  ```
+- **`render_segmentation_slide_table.py`**: Renders 5-column segmentation pipeline comparison grid (Slide 3) for custom images.
+  ```bash
+  python scripts/visualization/render_segmentation_slide_table.py --image 007-1774-100.jpg
+  python scripts/visualization/render_segmentation_slide_table.py --gui
+  ```
 
----
+## API & Interfaces
 
-## 🔑 Key Components
+### Classes
 
-### 1. Presentation Grid Renderers & Mask Visualizer (`mask_overlay.py`)
-Provides production mask visualization tools:
-* `render_slide3_comparison_grid()`: Renders the 5-column 3-step segmentation pipeline grid table image matching Slide 3 (`reports/figures/segmentation_pipeline_comparison_table.png`).
-* `render_xai_slide4_comparison_grid()`: Renders the 5-column SOTA XAI visual explanation grid table image matching Slide 4 (`reports/figures/xai_pipeline_comparison_table.png`).
-* `draw_mask_overlay()`: Color-coded lesion mask overlays (`MA` Green, `HE` Red, `EX` Yellow, `SE` Cyan/Blue).
+#### `LesionMaskVisualizer`
+Renders annotated image grids highlighting pathology types.
+- **`draw_mask_overlay(image_rgb: np.ndarray, masks: list|dict|np.ndarray, labels: list|None = None, draw_contours: bool = True, high_contrast_bw: bool = False) -> np.ndarray`**
+- **`draw_side_by_side(image_rgb: np.ndarray, masks: list|dict|np.ndarray) -> np.ndarray`**
+- **`render_slide3_comparison_grid(class_samples: dict, cell_size: tuple = (240, 240)) -> np.ndarray`**
+  Renders a 5-column comparison grid showing raw images, raw masks, top-hat filtered outputs, boundary refined masks, and color overlays.
 
-### 2. Diagnostic Plots (`plots.py`)
-Provides modular plotting functions:
-* `plot_confusion_matrix()`: Normalized confusion matrix heatmap with class labels.
-* `plot_training_curves()`: Multi-panel plot for Train/Val Loss, Accuracy, and QWK across training epochs.
-* `plot_class_distribution()`: Bar chart visualizing dataset class imbalance ratios.
-* `plot_roc_curves()`: One-vs-Rest ROC-AUC curves for multi-class DR severity.
+#### `HTMLReportGenerator`
+Generates comprehensive clinical model summary documents.
+- **`generate(report_data: dict, output_filepath: Path) -> None`**: Evaluates HTML layouts using Jinja2 templates.
 
-### 2. Report Generator (`report_generator.py`)
-Compiles comprehensive visual reports:
-* Consolidates dataset statistics, model architecture hyperparameters, test set evaluation metrics, confusion matrices, and Grad-CAM heatmaps into structured reports.
+### Functions
 
----
+- **`plot_confusion_matrix(cm: np.ndarray, class_names: list[str]) -> plt.Figure`**
+  Generates a Seaborn heatmap representing the confusion matrix.
+- **`plot_learning_curves(history: dict) -> plt.Figure`**
+  Plots learning curves for loss and accuracy/kappa.
 
-## 💻 Usage Example
+## Dependencies
 
-```python
-from src.visualization import plot_confusion_matrix, plot_training_curves
-
-# Plot training history
-plot_training_curves(
-    history={"train_loss": [...], "val_loss": [...], "val_qwk": [...]},
-    save_path="reports/figures/training_history.png",
-)
-
-# Plot confusion matrix
-plot_confusion_matrix(
-    cm=confusion_matrix_matrix,
-    class_names=CLASS_NAMES,
-    save_path="reports/figures/confusion_matrix.png",
-)
-```
+- `opencv-python`: High-resolution OpenCV image blending and contour strokes.
+- `matplotlib`: Graph rendering.
+- `seaborn`: Specialized heatmaps.
+- `jinja2`: HTML templates compilation.

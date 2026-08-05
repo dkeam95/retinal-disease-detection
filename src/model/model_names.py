@@ -12,6 +12,7 @@ class ModelArchitecture(StrEnum):
     """Supported model architecture."""
 
     EFFICIENTNET_B0 = "efficientnet_b0"
+    RESNET18 = "resnet18"
     RESNET50 = "resnet50"
     DENSENET121 = "densenet121"
     MOBILENET_V3_LARGE = "mobilenet_v3_large"

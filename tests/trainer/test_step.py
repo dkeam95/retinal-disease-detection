@@ -84,7 +84,7 @@ def test_train_step_updates_parameters() -> None:
 
     assert any(
         not torch.equal(before_tensor, after_tensor)
-        for before_tensor, after_tensor in zip(before, after)
+        for before_tensor, after_tensor in zip(before, after, strict=True)
     )
 
 
@@ -124,5 +124,5 @@ def test_validation_step_returns_logits_and_stats() -> None:
 
     assert all(
         torch.equal(before_tensor, after_tensor)
-        for before_tensor, after_tensor in zip(before, after)
+        for before_tensor, after_tensor in zip(before, after, strict=True)
     )

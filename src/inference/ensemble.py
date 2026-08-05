@@ -3,14 +3,12 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 import numpy as np
 import torch
 from PIL import Image
 
 from common.config.loader import ConfigLoader
-from common.config.types import ProjectConfig
 from inference.predictor import DEFAULT_CLASS_NAMES, PredictionResult, RetinalPredictor
 
 

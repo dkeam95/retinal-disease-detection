@@ -1,120 +1,46 @@
-# Trainer Module
+# Trainer Module (`src/trainer/`)
 
-## Purpose
+## Overview
 
-The `trainer` module implements the core training execution loop for the Retinal Disease Detection framework.
+The `trainer` module orchestrates the training, validation, and testing execution pipelines. It manages epoch loops, learning rate decay schedules, gradient backpropagation with Automatic Mixed Precision (AMP), early stopping, and metric checkpoint evaluations.
 
-It orchestrates:
+## Key Features
 
-- Iterating over training and validation epochs;
-- Forward/backward passes with Automatic Mixed Precision (AMP) support;
-- Computing evaluation metrics across validation steps;
-- Tracking mutable state (`TrainerState`);
-- Integrating stateful checkpoint saving and loading;
-- Returning final training summary statistics (`TrainingOutput`).
+- **Automatic Mixed Precision (AMP)**: Optimizes GPU memory and computation speed using FP16 operations safely.
+- **State Serialization**: Saves complete state (epochs, steps, best metric values, metrics history) to resume training runs cleanly.
+- **Gradient Accumulation**: Supports virtual batch scaling by accumulating gradients over multiple sub-steps.
 
----
+## API & Interfaces
 
-## Module Structure
+### Classes
 
-```text
-trainer/
-├── __init__.py      # Public API exports
-├── trainer.py       # Main Trainer class
-├── step.py          # train_step & validation_step functions
-├── state.py         # TrainerState tracking class
-├── types.py         # StepOutput, EpochOutput, TrainingOutput dataclasses
-├── exceptions.py     # TrainerError hierarchy
-├── utils.py         # Helper utilities (moving tensors to device, loss accumulation)
-└── README.md        # Technical documentation
-```
+#### `Trainer`
+Orchestrator of optimization loops.
+- **`__init__(model, optimizer, scheduler, loss_fn, metrics, config, state=None)`**
+- **`fit(train_loader: DataLoader, val_loader: DataLoader) -> TrainingOutput`**
+  Executes training epochs, periodically validating, tracking performance metrics, and triggerring early stopping.
+- **`test(test_loader: DataLoader) -> EpochOutput`**
+  Evaluates model performance on the test split.
 
----
+#### `TrainerState`
+State tracking container:
+- `epoch`: int
+- `step`: int
+- `best_metric_value`: float
+- `metrics_history`: list
 
-## Core Types
+### Functions
 
-### `StepOutput`
-Stores statistics for a single batch iteration step.
-- `loss`: `float`
-- `batch_size`: `int`
+- **`train_step(model, batch, optimizer, loss_fn, scaler, device) -> StepOutput`**
+  Executes single forward pass, computes loss, scales gradients, and executes optimizer step.
+- **`validation_step(model, batch, loss_fn, device) -> StepOutput`**
+  Performs inference step on a validation batch without tracking gradients.
 
-### `EpochOutput`
-Stores aggregated performance metrics for a completed epoch.
-- `loss`: `float`
-- `metrics`: `dict[str, float]`
+### Exceptions
 
-### `TrainingOutput`
-Stores the final summary of the complete training run.
-- `best_epoch`: `int`
-- `best_metric`: `float`
-- `epochs_completed`: `int`
+- `InvalidTrainerStateError`: Raised if state histories contain NaN values or incorrect shapes.
+- `TrainingStepError`: Raised if forward/backward passes raise runtime exceptions (e.g. out of memory).
 
----
+## Dependencies
 
-## Workflow Architecture
-
-```text
-               ┌────────────────────────────────┐
-               │         Trainer.train()        │
-               └───────────────┬────────────────┘
-                               │
-                For Epoch in 1..Total_Epochs
-                               │
-               ┌───────────────┴────────────────┐
-               ▼                                ▼
-       train_epoch()                    validate_epoch()
-               │                                │
-    For Batch in TrainLoader             For Batch in ValLoader
-               │                                │
-          train_step()                   validation_step()
-               │                                │
-    - Forward pass (AMP)             - Forward pass (eval)
-    - Backward pass (scaler)         - Compute loss
-    - Optimizer step                 - Collect predictions
-               │                                │
-               └───────────────┬────────────────┘
-                               │
-                               ▼
-                    compute_metrics(QWK, F1)
-                               │
-                               ▼
-                     CheckpointManager.save()
-```
-
----
-
-## Step Functions
-
-### `train_step(...)`
-Runs one optimization step for a batch:
-1. Moves images and labels to the configured device (`cuda` or `cpu`);
-2. Executes forward pass within `torch.cuda.amp.autocast` if AMP is enabled;
-3. Calculates loss via the configured criterion;
-4. Performs backward pass with gradient scaling;
-5. Updates optimizer parameters and detaches loss.
-
-### `validation_step(...)`
-Runs evaluation on a single validation batch:
-1. Disables gradient tracking (`torch.no_grad()`);
-2. Executes forward pass;
-3. Calculates validation loss and returns batch predictions/logits.
-
----
-
-## Exceptions
-
-The module defines dedicated, typed exceptions:
-
-- `TrainerError`: Base exception for trainer failures.
-- `InvalidTrainerStateError`: Raised on invalid state transitions.
-- `TrainingStepError`: Raised during training batch execution failures.
-- `ValidationStepError`: Raised during validation batch execution failures.
-
----
-
-## Design Principles
-
-- **Single Responsibility Principle**: Isolates training execution from dataset construction and model building.
-- **Explicit State Tracking**: `TrainerState` immutably logs global steps, current epoch, and best metric scores.
-- **Automatic Mixed Precision**: Native support for float16/bfloat16 training via PyTorch AMP.
-- **Fail-Safe Checkpoints**: Seamless integration with `CheckpointManager` to guarantee state recoverability.
+- `torch`: CUDA support, `autocast`, gradients scaling, and module parameters optimization.

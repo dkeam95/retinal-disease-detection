@@ -6,8 +6,6 @@ forcing models and XAI attribution algorithms to evaluate exclusively inside the
 
 from __future__ import annotations
 
-from typing import Tuple
-
 import cv2
 import numpy as np
 

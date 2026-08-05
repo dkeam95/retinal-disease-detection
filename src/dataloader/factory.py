@@ -8,6 +8,7 @@ custom batch collation, and multi-process loading settings.
 
 from __future__ import annotations
 
+import functools
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -96,6 +97,7 @@ def collate_datasamples(
 def build_train_dataloader(
     dataset: Dataset[DataSample],
     config: DataLoaderConfig,
+    target_size: tuple[int, int] = (224, 224),
 ) -> DataLoader:
     """
     Build the training DataLoader.
@@ -106,6 +108,8 @@ def build_train_dataloader(
         Training dataset instance.
     config : DataLoaderConfig
         DataLoader execution configuration parameters.
+    target_size : tuple[int, int], default=(224, 224)
+        Target image dimension to resize to.
 
     Returns
     -------
@@ -124,7 +128,7 @@ def build_train_dataloader(
         num_workers=config.num_workers,
         pin_memory=config.pin_memory,
         drop_last=config.drop_last,
-        collate_fn=collate_datasamples,
+        collate_fn=functools.partial(collate_datasamples, target_size=target_size),
         persistent_workers=(
             config.persistent_workers if config.num_workers > 0 else False
         ),
@@ -134,6 +138,7 @@ def build_train_dataloader(
 def build_validation_dataloader(
     dataset: Dataset[DataSample],
     config: DataLoaderConfig,
+    target_size: tuple[int, int] = (224, 224),
 ) -> DataLoader:
     """
     Build the validation DataLoader.
@@ -144,6 +149,8 @@ def build_validation_dataloader(
         Validation dataset instance.
     config : DataLoaderConfig
         DataLoader execution configuration parameters.
+    target_size : tuple[int, int], default=(224, 224)
+        Target image dimension to resize to.
 
     Returns
     -------
@@ -157,7 +164,7 @@ def build_validation_dataloader(
         num_workers=config.num_workers,
         pin_memory=config.pin_memory,
         drop_last=False,
-        collate_fn=collate_datasamples,
+        collate_fn=functools.partial(collate_datasamples, target_size=target_size),
         persistent_workers=(
             config.persistent_workers if config.num_workers > 0 else False
         ),
@@ -167,6 +174,7 @@ def build_validation_dataloader(
 def build_test_dataloader(
     dataset: Dataset[DataSample],
     config: DataLoaderConfig,
+    target_size: tuple[int, int] = (224, 224),
 ) -> DataLoader:
     """
     Build the test DataLoader.
@@ -177,6 +185,8 @@ def build_test_dataloader(
         Test dataset instance.
     config : DataLoaderConfig
         DataLoader execution configuration parameters.
+    target_size : tuple[int, int], default=(224, 224)
+        Target image dimension to resize to.
 
     Returns
     -------
@@ -190,7 +200,7 @@ def build_test_dataloader(
         num_workers=config.num_workers,
         pin_memory=config.pin_memory,
         drop_last=False,
-        collate_fn=collate_datasamples,
+        collate_fn=functools.partial(collate_datasamples, target_size=target_size),
         persistent_workers=(
             config.persistent_workers if config.num_workers > 0 else False
         ),
@@ -205,7 +215,8 @@ class DataLoaderFactory:
         dataset: Dataset[DataSample],
         config: DataLoaderConfig,
         training: bool = True,
+        target_size: tuple[int, int] = (224, 224),
     ) -> DataLoader:
         if training:
-            return build_train_dataloader(dataset, config)
-        return build_validation_dataloader(dataset, config)
+            return build_train_dataloader(dataset, config, target_size)
+        return build_validation_dataloader(dataset, config, target_size)

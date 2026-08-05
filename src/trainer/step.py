@@ -37,8 +37,9 @@ def train_step(
     optimizer.zero_grad(set_to_none=True)
 
     with torch.amp.autocast(device_type=device_type, enabled=mixed_precision):
-        logits = model(images)
-        loss = criterion(logits, targets)
+        outputs = model(images)
+        logits_tensor = outputs.logits if hasattr(outputs, "logits") else outputs
+        loss = criterion(logits_tensor, targets)
 
     if scaler is not None and mixed_precision:
         scaler.scale(loss).backward()
@@ -83,13 +84,14 @@ def validation_step(
     # Disable gradient tracking to reduce memory usage and speed up evaluation
     with torch.no_grad():
         # Pass the input batch through the model to get predictions
-        logits = model(images)
+        outputs = model(images)
+        logits_tensor = outputs.logits if hasattr(outputs, "logits") else outputs
 
         # Calculate the validation loss value
-        loss = criterion(logits, targets)
+        loss = criterion(logits_tensor, targets)
 
     # Return model predictions alongside loss and batch size statistics
-    return logits, StepOutput(
+    return logits_tensor, StepOutput(
         loss=detach_loss(loss),
         batch_size=targets.size(0),
     )

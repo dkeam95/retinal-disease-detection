@@ -14,8 +14,8 @@ import os
 # Suppress albumentations update check warnings (fires in every DataLoader worker on Windows)
 os.environ["NO_ALBUMENTATIONS_UPDATE"] = "1"
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Ensure src/ is on sys.path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent

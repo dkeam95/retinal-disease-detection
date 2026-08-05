@@ -1,0 +1,78 @@
+# ==========================================================
+# Detection Experiment Configuration: Anchor-Free YOLOv8 / YOLOv11 (1024x1024 Tiling)
+# ==========================================================
+
+dataset:
+  path: data/processed/yolo_lesions_1024
+  dataset_yaml: data/processed/yolo_lesions_1024/dataset.yaml
+  num_classes: 4
+
+detection_dataset:
+  xml_dir: data/raw/lesion_detection/train
+  image_dir: data/raw/train
+  num_classes: 4
+
+detection_model:
+  architecture: yolov8m
+  pretrained: true
+  num_classes: 4
+  score_thresh: 0.25
+  nms_thresh: 0.45
+  min_size: 1024
+  max_size: 1024
+
+preprocessing:
+  pipeline: [resize, normalize, to_tensor]
+  resize:
+    height: 1024
+    width: 1024
+
+model:
+  architecture: yolov8m
+  pretrained: true
+  num_classes: 4
+
+optimizer:
+  name: adamw
+  learning_rate: 0.0001
+  weight_decay: 0.0005
+
+scheduler:
+  name: cosine
+  eta_min: 1.0e-6
+
+training:
+  epochs: 50
+  device: cuda
+  deterministic: true
+
+mixed_precision:
+  enabled: true
+  dtype: float16
+
+dataloader:
+  batch_size: 4
+  num_workers: 2
+  shuffle: true
+  pin_memory: true
+
+checkpoint:
+  directory: experiments/exp_yolov8_lesions_1024/checkpoints
+  monitor: map_50
+
+early_stopping:
+  enabled: true
+  patience: 10
+  monitor: map_50
+
+logging:
+  log_every_n_steps: 10
+
+metrics:
+  primary: [map_50, map_75]
+  secondary: [map]
+  per_class: true
+
+experiment:
+  name: exp_yolov8_lesions_1024
+  seed: 42

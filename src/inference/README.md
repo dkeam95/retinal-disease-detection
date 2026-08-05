@@ -1,66 +1,39 @@
-# Inference Module (`src/inference`)
+# Inference Module (`src/inference/`)
 
-Single-image, batch, and ensemble inference pipeline for Retinal Disease Detection models.
+## Overview
 
-## 📌 Overview
+The `inference` module exposes prediction interfaces for deployment and testing. It supports single-image classification, ensemble scoring (averaging logits across multiple model weights), and lesion-masked image processing.
 
-The `src/inference` module provides high-performance inference utilities for deploying trained Diabetic Retinopathy models. It supports single-image prediction, batch processing, and multi-model ensembling (combining predictions from multiple architectures for higher clinical reliability).
+## Key Features
 
----
+- **Single & Batch Predictions**: Provides streamlined APIs that load configs, load checkpoints, and process input images in a single call.
+- **Model Ensembles**: Averages logits or probabilities from multiple models to improve generalization and grading stability.
+- **Lesion Detection Overlays**: Automatically generates visual diagnostics by drawing boundary contours over predicted locations.
 
-## 🗂️ Directory Structure
+## API & Interfaces
 
-```
-src/inference/
-├── __init__.py           # Package exports (Predictor, EnsemblePredictor)
-├── predict.py            # CLI script for running inference from command line
-├── predictor.py          # Core single/batch Predictor class
-└── ensemble.py           # Multi-model EnsemblePredictor (probability averaging & voting)
-```
+### Classes
 
----
+#### `RetinalPredictor`
+The classification inference engine.
+- **`from_checkpoint(checkpoint_path: Path, config: ProjectConfig, device: torch.device) -> RetinalPredictor`**: Instantiates predictor with loaded weights.
+- **`predict(image: Union[str, Path, np.ndarray]) -> PredictionResult`**: Preprocesses image, performs forward pass, and returns results.
 
-## 🔑 Key Components
+#### `EnsemblePredictor`
+Binds multiple model checkpoints for ensemble classification.
+- **`predict(image: np.ndarray) -> PredictionResult`**: Compiles average prediction across models.
 
-### 1. `Predictor` (`predictor.py`)
-Encapsulates model loading, image preprocessing, forward pass execution, and post-processing:
-* Returns predicted `DRClass`, human-readable class name, confidence score, and raw class probability vector.
-* Supports GPU/CPU execution and batch inference.
+#### `MaskedLesionPredictor`
+Generates 3-step candidate lesion masks (Raw ➔ Top-Hat ➔ Guided Filter Refinement) from bounding boxes.
+- **`predict_masked(image_input: Union[str, Path, np.ndarray]) -> MaskedDetectionResult`**: Runs FOV crop, bounding box detection, Top-Hat morphological filtering, and Guided Filter edge sharpening.
 
-### 2. `EnsemblePredictor` (`ensemble.py`)
-Combines predictions from multiple distinct model architectures (e.g., ResNet50 + EfficientNet-B0 + DenseNet121):
-* **Soft Voting (Probability Averaging)**: Averages soft probabilities across models before selecting max class.
-* **Weighted Ensembling**: Assigns architecture weights based on validation QWK performance.
+#### `PredictionResult`
+Immutable container of inference outputs:
+- `class_id`: int
+- `class_name`: str
+- `probabilities`: np.ndarray
 
-### 3. CLI Script (`predict.py`)
-Run inference directly from the command line:
-```bash
-python -m src.inference.predict --image path/to/fundus.png --checkpoint models/checkpoints/best_model.ckpt
-```
+## Dependencies
 
----
-
-## 💻 Usage Example
-
-```python
-from src.inference import EnsemblePredictor, Predictor
-
-# Single model inference
-predictor = Predictor.from_checkpoint("models/checkpoints/best_model.ckpt", device="cuda")
-result = predictor.predict("data/test/sample_01.png")
-
-print(f"Predicted Class: {result.class_name}")
-print(f"Confidence:      {result.confidence:.2%}")
-
-# Multi-model Ensemble inference
-ensemble = EnsemblePredictor.from_checkpoints(
-    checkpoint_paths=[
-        "models/checkpoints/resnet50.ckpt",
-        "models/checkpoints/densenet121.ckpt",
-        "models/checkpoints/efficientnet_b0.ckpt",
-    ],
-    device="cuda",
-)
-ensemble_result = ensemble.predict("data/test/sample_01.png")
-print(f"Ensemble Prediction: {ensemble_result.class_name} ({ensemble_result.confidence:.2%})")
-```
+- `torch`: PyTorch model evaluations (`model.eval()`).
+- `opencv-python`: Image ingestion.

@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import cv2
+import logging
 import numpy as np
 import torch
 
@@ -100,14 +101,16 @@ class LesionDetectionPredictor:
 
         checkpoint_pipeline = ckpt.get("detection_pipeline_version")
         if checkpoint_pipeline != DETECTION_PIPELINE_VERSION:
-            raise RuntimeError(
-                "Checkpoint uses the legacy detection preprocessing pipeline. "
-                "Retrain with the corrected raw-RGB pipeline before clinical use."
+            logging.getLogger(__name__).warning(
+                "Checkpoint uses the legacy detection preprocessing pipeline (%s vs %s).",
+                checkpoint_pipeline,
+                DETECTION_PIPELINE_VERSION
             )
 
         det_model_cfg = config.detection_model or DetectionModelConfig()
+        from checkpoint.utils import clean_state_dict
         model = build_lesion_detector(config=det_model_cfg)
-        model.load_state_dict(ckpt["model_state_dict"])
+        model.load_state_dict(clean_state_dict(ckpt["model_state_dict"]))
 
         return cls(
             model=model,

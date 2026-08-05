@@ -1,108 +1,52 @@
-# Dataset Module
+# Dataset Module (`src/dataset/`)
 
-## Purpose
+## Overview
 
-The `dataset` module is responsible for parsing annotation files, validating image records, reading color fundus images from disk, and serving structured samples via the PyTorch `Dataset` interface.
+The `dataset` module encapsulates data parsing, image disk loading, and wrapping DDR data splits into standard PyTorch `Dataset` representations. It bridges the gap between text-based annotations on disk and tensor batches.
 
-This module is designed specifically for retinal disease datasets such as the **DDR (Diabetic Retinopathy)** dataset.
+## Key Features
 
----
+- **Robust Annotation Parsing**: Parses tab or space-delimited text annotations (`train.txt`, `valid.txt`, etc.) containing `<image_path> <label>` pairs, verifying format and label ranges.
+- **RGB Conversion**: Automatically reads images using OpenCV and converts them from BGR to RGB format, ensuring standard color representation.
+- **Lesion Detection Support**: Includes parser and dataset representations for lesion bounding boxes and segmentations.
 
-## DDR Dataset & Disease Grades
+## API & Interfaces
 
-The module supports 5 ordinal severity grades for Diabetic Retinopathy classification:
+### Classes
 
-- **0 — No DR**: Normal fundus image.
-- **1 — Mild NPDR**: Microaneurysms only.
-- **2 — Moderate NPDR**: More than microaneurysms, less than severe NPDR.
-- **3 — Severe NPDR**: Intraretinal hemorrhages, venous beading, IRMA.
-- **4 — Proliferative DR (PDR)**: Neovascularization, vitreous hemorrhage.
+#### `RetinalDataset(Dataset)`
+PyTorch dataset for image classification.
+- **`__init__(config: DatasetConfig, transform: Optional[Callable] = None)`**: Sets up annotation paths and directories.
+- **`__len__() -> int`**: Returns total samples.
+- **`__getitem__(index: int) -> DataSample`**: Returns a `DataSample` containing the loaded and preprocessed image tensor/array and integer label.
 
-Dataset Source: [Hugging Face — `addone5/DDR-dataset`](https://huggingface.co/datasets/addone5/DDR-dataset)
+#### `LesionDetectionDataset(Dataset)`
+PyTorch dataset for localized lesion detection.
+- **`__init__(config: DetectionDatasetConfig, transform: Optional[Callable] = None)`**: Initializes bounding box annotations.
 
----
+#### `AnnotationRecord`
+Immutable record representing raw parsed annotations:
+- `image_path`: Path
+- `label`: int
 
-## Responsibilities
+#### `DataSample`
+The model input tuple structure:
+- `image`: np.ndarray or torch.Tensor
+- `label`: int
 
-This module is **strictly responsible** for:
+### Functions
 
-- Parsing annotation text files (`train.txt`, `valid.txt`, `test.txt`);
-- Validating record paths and label ranges;
-- Loading image files from disk using OpenCV (`cv2.imread`);
-- Converting color space from BGR to RGB;
-- Constructing immutable `DataSample` objects;
-- Exposing a PyTorch-compatible `Dataset` (`RetinalDataset`).
+- **`load_annotations(annotation_file: Path, image_directory: Path) -> list[AnnotationRecord]`**
+  Helper function that scans the annotation file and validates that all image files exist before returning typed record models.
 
-This module does **not** perform:
+### Exceptions
 
-- Image preprocessing or data augmentation (handled by `preprocessing`);
-- Batching, worker allocation, or sampling (handled by `dataloader`);
-- Model instantiation, loss calculation, or training loops.
+- `DatasetNotFoundError`: Raised when the data directory does not exist.
+- `AnnotationFileNotFoundError`: Raised when the split annotation file is missing.
+- `InvalidAnnotationError`: Raised when annotation formats are incorrect or labels are out of range.
+- `ImageLoadingError`: Raised when OpenCV fails to read an image.
 
----
+## Dependencies
 
-## Public API
-
-```python
-from dataset import RetinalDataset, load_annotations
-
-# Parse annotation records
-records = load_annotations(
-    annotation_file=Path("data/raw/train.txt"),
-    image_directory=Path("data/raw/train"),
-)
-
-# Instantiate PyTorch Dataset
-dataset = RetinalDataset(
-    records=records,
-    transform=transform_pipeline,
-)
-```
-
----
-
-## Module Structure
-
-```text
-dataset/
-├── __init__.py      # Public API exports
-├── dataset.py        # RetinalDataset implementation
-├── parser.py         # load_annotations parser implementation
-├── types.py          # AnnotationRecord, DataSample dataclasses
-├── exceptions.py     # DatasetError, InvalidAnnotationError
-└── README.md        # Technical documentation
-```
-
----
-
-## Data Flow
-
-```text
-DatasetConfig / Annotation File
-           │
-           ▼
-   load_annotations()
-           │
-           ▼
-   [AnnotationRecord]
-           │
-           ▼
-    RetinalDataset
-           │
-           ▼
-      cv2.imread()
-           │
-           ▼
-       RGB Image
-           │
-           ▼
-       DataSample (image tensor, label)
-```
-
----
-
-## Design Principles
-
-- **Single Responsibility Principle**: Only handles loading and serving single data samples.
-- **Strong Typing**: Immutably typed via `AnnotationRecord` and `DataSample`.
-- **Fail-Fast Parsing**: Validates file paths and label boundaries before dataset creation.
+- `opencv-python`: Disk image loading (`cv2.imread`).
+- `torch`: PyTorch Dataset class.

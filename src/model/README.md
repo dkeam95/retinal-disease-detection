@@ -1,90 +1,42 @@
-# Model Module
+# Model Module (`src/model/`)
 
 ## Overview
 
-The `model` module constructs neural network architectures for multi-class Diabetic Retinopathy classification on fundus photography.
+The `model` module manages neural network architecture assembly, backbone instantiation, and customized classifier head construction. It decouples feature extraction from class prediction, allowing easy swap-ins of backbones from the `timm` library.
 
-Following a modular, registry-based design, models are assembled from decoupled components: feature backbones (`backbone.py`) and classification heads (`classifier.py`).
+## Key Features
 
----
+- **Backbone Decoupling**: Backbones are initialized with `num_classes=0` to act strictly as feature extractors.
+- **Custom Classifier Heads**: Standard classification heads consist of a linear layer, customizable dropout, and optional normalization.
+- **Structured Outputs**: Forward passes return a typed `ModelOutput` containing both logits and intermediate feature embeddings.
 
-## Responsibilities
+## API & Interfaces
 
-- Constructing feature extraction backbones via `timm`;
-- Building classification heads with configurable dropout and linear layers;
-- Assembling backbone and head into a `ClassificationModel`;
-- Returning structured `ModelOutput` dataclass (containing logits and feature vectors);
-- Managing architecture registry (`MODEL_REGISTRY`) and `ModelArchitecture` enumeration.
+### Classes
 
----
+#### `ClassificationModel(nn.Module)`
+Main model assembly.
+- **`__init__(backbone: nn.Module, head: nn.Module)`**: Binds the backbone and classification head.
+- **`forward(x: torch.Tensor) -> ModelOutput`**: Performs forward pass.
 
-## Architecture Flow
+#### `ModelOutput`
+Immutable output container:
+- `logits`: `torch.Tensor` of shape `(N, num_classes)`
+- `features`: `torch.Tensor` of shape `(N, feature_dim)`
 
-```text
-       ModelConfig
-            │
-            ▼
-      create_model()
-            │
-            ▼
-   ClassificationModel
-            │
-   ┌────────┴────────┐
-   ▼                 ▼
-Backbone         Classifier
- (TIMM)            (Head)
-   │                 │
-   └────────┬────────┘
-            ▼
-       ModelOutput (logits, features)
-```
+### Functions
 
----
+- **`create_model(config: ModelConfig) -> ClassificationModel`**
+  Primary factory function that builds and loads TIMM models based on configuration inputs.
+- **`build_timm_model(arch_name: str, pretrained: bool) -> nn.Module`**
+  Helper function loading raw TIMM architectures.
 
-## Module Structure
+### Exceptions
 
-```text
-model/
-├── __init__.py               # Public API exports
-├── backbone.py               # TIMM backbone feature extractor builder
-├── classifier.py             # Classification head builder
-├── classification_model.py   # Integrated PyTorch nn.Module
-├── builder.py                # Architecture assembly logic
-├── factory.py                # Model creation factory entry point
-├── model_names.py            # ModelArchitecture enumeration
-├── registry.py               # Registry mapping names to builders
-├── types.py                  # ModelOutput dataclass
-├── exceptions.py             # ModelError hierarchy
-└── README.md                 # Technical documentation
-```
+- `UnknownModelArchitectureError`: Raised when the requested TIMM architecture is not registered or supported.
+- `ModelInitializationError`: Raised when weights loading or shape checks fail during initialization.
 
----
+## Dependencies
 
-## Supported Architectures
-
-- `efficientnet_b0` (Default baseline)
-- Extensible via `MODEL_REGISTRY` for `efficientnet_b3`, `convnext_tiny`, `resnet50`, `vit_base_patch16_224`.
-
----
-
-## Public API
-
-```python
-from model import create_model
-
-# Construct model from configuration
-model = create_model(config.model)
-
-# Forward pass returns ModelOutput
-output = model(image_tensor)
-logits = output.logits
-features = output.features
-```
-
----
-
-## Design Principles
-
-- **Separation of Concerns**: Backbones extract features; classifiers compute logits.
-- **Structured Output**: Models return `ModelOutput` rather than raw tensors, enabling downstream explainability (e.g., Grad-CAM) and metric learning.
-- **Type Safety**: Architectural choices are governed by `ModelArchitecture` enum.
+- `timm`: Main vision models library.
+- `torch`: PyTorch neural networks modules.

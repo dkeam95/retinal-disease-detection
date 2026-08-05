@@ -52,6 +52,7 @@ Examples:
             "benchmark-det",
             "train-detection",
             "pdf-report",
+            "download-dataset",
             "all",
         ],
         help="Pipeline mode to execute (default: master-report)",
@@ -82,14 +83,20 @@ Examples:
         print("[INIT] Executing Master Clinical Diagnostic & AI Analytics Pipeline...\n")
         # Ensure Presentation Comparison Grid Tables are generated
         try:
-            from scripts.visualization.render_segmentation_slide_table import generate_segmentation_slide_table
-            from scripts.visualization.render_xai_slide_table import generate_xai_slide_table
+            from scripts.visualization.render_segmentation_slide_table import (
+                generate_segmentation_slide_table,
+            )
+            from scripts.visualization.render_xai_slide_table import (
+                generate_xai_slide_table,
+            )
             generate_segmentation_slide_table()
             generate_xai_slide_table()
         except Exception as e:
             print(f"[WARNING] Could not auto-render presentation tables: {e}")
 
-        from scripts.reporting.generate_master_clinical_reports import main as run_master
+        from scripts.reporting.generate_master_clinical_reports import (
+            main as run_master,
+        )
 
         t_grades = [int(g.strip()) for g in args.target_grades.split(",") if g.strip().isdigit()] if args.target_grades else None
         c_images = [img.strip() for img in args.images.split(",") if img.strip()] if args.images else None
@@ -110,9 +117,12 @@ Examples:
 
     elif mode == "benchmark-seg":
         print("[INIT] Executing 5-Column Lesion Segmentation Pipeline Grid Renderer (Slide 3)...\n")
-        from scripts.visualization.render_segmentation_slide_table import generate_segmentation_slide_table
+        from scripts.visualization.render_segmentation_slide_table import (
+            generate_segmentation_slide_table,
+        )
 
-        generate_segmentation_slide_table()
+        target_img_p = Path(args.images.split(",")[0].strip()) if args.images else None
+        generate_segmentation_slide_table(target_image=target_img_p)
 
     elif mode == "benchmark-det":
         print("[INIT] Executing 3-Round Faster R-CNN Detection Resolution Benchmark...\n")
@@ -131,12 +141,18 @@ Examples:
         print("[INIT] Generating Publication-Grade PDF Executive Report...\n")
         from scripts.reporting.export_pdf_reports import main as export_pdfs
         export_pdfs()
-        
+
         try:
             from scripts.reporting.generate_pdf_report import build_pdf_report
             build_pdf_report()
         except ImportError:
             pass
+
+    elif mode == "download-dataset":
+        print("[INIT] Downloading & Verifying DDR Dataset from Hugging Face...\n")
+        from scripts.download_dataset import download_ddr_dataset
+
+        download_ddr_dataset()
 
 
 if __name__ == "__main__":

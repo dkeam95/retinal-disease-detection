@@ -28,10 +28,6 @@ from torchvision.models import (
 )
 
 from training.exceptions import ModelFactoryError
-from training.utils import (
-    normalize_name,
-    validate_component_name,
-)
 
 _SUPPORTED_MODELS: tuple[str, ...] = (
     "efficientnet_b0",
@@ -57,6 +53,7 @@ class ModelFactory:
         pretrained: bool,
         num_classes: int,
         dropout_rate: float = 0.0,
+        state_dict: dict[str, Any] | None = None,
     ) -> nn.Module:
         """
         Build a neural network model.
@@ -72,6 +69,9 @@ class ModelFactory:
         num_classes : int
             Number of output classes.
 
+        state_dict : dict[str, Any] | None, optional
+            State dict of model to load, used for legacy fallback check.
+
         Returns
         -------
         nn.Module
@@ -82,40 +82,51 @@ class ModelFactory:
         ModelFactoryError
             If the requested architecture is not supported.
         """
+        use_legacy = False
+        if state_dict is not None:
+            from checkpoint.utils import clean_state_dict
+            cleaned = clean_state_dict(state_dict)
+            if not any(k.startswith("backbone.") for k in cleaned.keys()):
+                use_legacy = True
+                if any("classifier." in k and ".1.weight" in k for k in cleaned.keys()) and dropout_rate == 0.0:
+                    dropout_rate = 0.2
 
-        try:
-            validate_component_name(
-                name=architecture,
-                supported=_SUPPORTED_MODELS,
-            )
-        except ValueError as error:
-            raise ModelFactoryError(
-                str(error),
-            ) from error
+        if use_legacy:
+            from training.utils import normalize_name
+            normalized_architecture = normalize_name(architecture)
+            builders = {
+                "efficientnet_b0": ModelFactory._build_efficientnet_b0,
+                "resnet18": ModelFactory._build_resnet18,
+                "resnet50": ModelFactory._build_resnet50,
+                "densenet121": ModelFactory._build_densenet121,
+                "mobilenet_v3_large": ModelFactory._build_mobilenet_v3_large,
+                "convnext_tiny": ModelFactory._build_convnext_tiny,
+                "vit_b_16": ModelFactory._build_vit_b_16,
+                "swin_t": ModelFactory._build_swin_t,
+            }
+            builder = builders.get(normalized_architecture)
+            if builder is None:
+                raise ModelFactoryError(f"Unknown legacy model architecture '{architecture}'.")
+            model = builder(pretrained=pretrained, num_classes=num_classes)
+            if dropout_rate > 0.0:
+                ModelFactory._add_dropout(model, dropout_rate)
+            return model
 
-        normalized_architecture = normalize_name(
-            architecture,
+        from common.config.types import ModelConfig
+        from model.exceptions import UnknownModelArchitectureError
+        from model.factory import create_model
+
+        config = ModelConfig(
+            architecture=architecture,
+            pretrained=pretrained,
+            num_classes=num_classes,
+            dropout_rate=dropout_rate,
         )
 
-        builders = {
-            "efficientnet_b0": ModelFactory._build_efficientnet_b0,
-            "resnet18": ModelFactory._build_resnet18,
-            "resnet50": ModelFactory._build_resnet50,
-            "densenet121": ModelFactory._build_densenet121,
-            "mobilenet_v3_large": ModelFactory._build_mobilenet_v3_large,
-            "convnext_tiny": ModelFactory._build_convnext_tiny,
-            "vit_b_16": ModelFactory._build_vit_b_16,
-            "swin_t": ModelFactory._build_swin_t,
-        }
-
-        builder = builders.get(normalized_architecture)
-        if builder is None:
-            raise ModelFactoryError(f"Unknown model architecture '{architecture}'.")
-
-        model = builder(pretrained=pretrained, num_classes=num_classes)
-        if dropout_rate > 0.0:
-            ModelFactory._add_dropout(model, dropout_rate)
-        return model
+        try:
+            return create_model(config)
+        except UnknownModelArchitectureError as error:
+            raise ModelFactoryError(str(error)) from error
 
     @staticmethod
     def _add_dropout(model: nn.Module, dropout_rate: float) -> None:

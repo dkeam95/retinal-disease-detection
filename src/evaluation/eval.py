@@ -13,6 +13,8 @@ if _src_dir not in sys.path:
 import argparse
 from pathlib import Path
 
+import torch
+
 from common.config.loader import ConfigLoader
 from dataloader.factory import build_test_dataloader, build_validation_dataloader
 from dataset.dataset import RetinalDataset
@@ -78,11 +80,22 @@ def main() -> None:
     if not (dataset_root / annotation_file).exists():
         annotation_file = config.dataset.annotation_file
 
-    ds = RetinalDataset(config=config.dataset, annotation_file=annotation_file)
+    from preprocessing.pipeline import build_test_pipeline, build_validation_pipeline
+    transform_builder = (
+        build_test_pipeline if args.split == "test" else build_validation_pipeline
+    )
+    transform = transform_builder(config.preprocessing)
+    ds = RetinalDataset(
+        config=config.dataset, annotation_file=annotation_file, transform=transform
+    )
     loader_builder = (
         build_test_dataloader if args.split == "test" else build_validation_dataloader
     )
-    loader = loader_builder(dataset=ds, config=config.dataloader)
+    loader = loader_builder(
+        dataset=ds,
+        config=config.dataloader,
+        target_size=config.preprocessing.image_size,
+    )
 
     # 3. Instantiate Evaluator & run
     evaluator = ModelEvaluator.from_checkpoint(
@@ -115,6 +128,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    import torch
-
     main()

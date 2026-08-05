@@ -1,70 +1,53 @@
-# Configuration Module (`common/config`)
+# Config Module (`src/common/config/`)
 
-## Purpose
+## Overview
 
-The `config` module provides strongly typed, immutable configuration loading for the Retinal Disease Detection system.
-
-It parses YAML configuration files and maps their hierarchical key-value pairs into frozen Python dataclasses (`ProjectConfig`).
-
----
+The `config` module provides a strongly-typed, immutable, and fail-fast configuration system. It loads parameters from YAML configuration files, parses them into nested Python dataclasses, and runs validation constraints to prevent runtime failures downstream.
 
 ## Key Features
 
-- **Immutable Dataclasses**: Configured via `@dataclass(frozen=True, slots=True)` to prevent unintentional runtime mutations.
-- **Fail-Fast Schema Validation**: Instantly detects missing required sections, invalid data types, or file loading errors.
-- **Unified Entrypoint**: `ConfigLoader.load(path)` serves as the single loader for the entire system.
+- **Immutability**: All configuration schemas are defined using `@dataclass(frozen=True, slots=True)` to prevent accidental modifications at runtime.
+- **Fail-Fast Validation**: The loader validates type compatibility, structure, directory existence, and numeric bounds immediately upon loading.
+- **Strict Error Handling**: Throws clear, descriptive, custom exception types if parsing or validation fails.
 
----
+## API & Interfaces
 
-## Hierarchical Configuration Tree
+### Classes
 
-```text
-ProjectConfig
-├── DatasetConfig
-├── PreprocessingConfig
-├── ModelConfig
-├── LossConfig
-├── OptimizerConfig
-├── SchedulerConfig
-├── TrainingConfig
-├── DataLoaderConfig
-├── CheckpointConfig
-├── EarlyStoppingConfig
-├── MetricsConfig
-└── ExperimentConfig
-```
+#### `ConfigLoader`
+Main entry point for loading configurations.
+- **`load(config_path: Union[str, Path]) -> ProjectConfig`**
+  Loads a YAML configuration file from the specified path, parses it, validates all parameters, and returns a frozen `ProjectConfig` hierarchy.
 
----
+#### `ProjectConfig`
+The root configuration object composed of sub-configs:
+- `dataset`: `DatasetConfig` - Paths, files, and classes.
+- `preprocessing`: `PreprocessingConfig` - Image size, normalizations, and augmentation probabilities.
+- `dataloader`: `DataLoaderConfig` - Batch size, workers, and shuffling settings.
+- `model`: `ModelConfig` - Architecture, dropout rate, and pretraining flags.
+- `loss`: `LossConfig` - Choice of loss and focal scaling factors.
+- `optimizer`: `OptimizerConfig` - Optimizer choice, learning rate, and weight decay.
+- `scheduler`: `SchedulerConfig` - Learning rate scheduling settings.
+- `training`: `TrainingConfig` - Device type, epochs, and determinism.
+- `checkpoint`: `CheckpointConfig` - Path settings for saving state dicts.
+- `early_stopping`: `EarlyStoppingConfig` - Stop patience and monitoring criteria.
+- `mixed_precision`: `MixedPrecisionConfig` - AMP configuration.
+- `metrics`: `MetricsConfig` - Primary and secondary metrics to calculate.
+- `experiment`: `ExperimentConfig` - Seed and experiment naming metadata.
 
-## Module Structure
+### Functions
 
-```text
-config/
-├── __init__.py      # Public API exports
-├── config.py        # ConfigLoader implementation
-├── types.py         # ProjectConfig and child dataclass definitions
-├── exceptions.py     # ConfigFileNotFoundError, InvalidConfigurationError
-└── README.md        # Technical documentation
-```
+- **`validate_config(config: ProjectConfig) -> None`**
+  Validates parameter ranges, paths existence, and architectural compatibility. Raises `InvalidConfigurationError` if check fails.
 
----
+### Exceptions
 
-## Public API Usage
+- `ConfigurationError`: Base class for configuration exceptions.
+- `ConfigFileNotFoundError`: Raised when the YAML file is not found.
+- `ConfigurationParsingError`: Raised when YAML parsing fails.
+- `InvalidConfigurationError`: Raised when any field fails validation constraints.
 
-```python
-from common.config import ConfigLoader
+## Dependencies
 
-# Load configuration file
-config = ConfigLoader.load("configs/config.yaml")
-
-# Access strongly typed configuration attributes
-print(config.model.architecture)  # "efficientnet_b0"
-print(config.training.epochs)      # 100
-```
-
----
-
-## Design Principles
-
-- **Declarative Separation**: Configuration data is completely separated from executable Python code.
-- **Fail-Fast Error Handling**: Emits descriptive exceptions specifying the missing key or invalid field path.
+- `pyyaml`: YAML parsing.
+- `typing_extensions` (if backporting slots/frozen dataclasses).

@@ -33,13 +33,13 @@ This project is trained and evaluated on the **DDR (Diabetic Retinopathy)** data
 
 The system evaluates fundus images according to the International Clinical Diabetic Retinopathy Disease Severity Scale (5 classes):
 
-| Grade | Disease State | Description |
-| :---: | :--- | :--- |
-| **0** | No DR | Normal fundus image without detectable lesions. |
-| **1** | Mild NPDR | Microaneurysms only. |
-| **2** | Moderate NPDR | More than microaneurysms but less than severe NPDR. |
-| **3** | Severe NPDR | Intraretinal hemorrhages, venous beading, or prominent IRMA. |
-| **4** | Proliferative DR (PDR) | Neovascularization, vitreous/preretinal hemorrhage. |
+| Grade | Disease State          | Description                                                  |
+| :---: | :--------------------- | :----------------------------------------------------------- |
+| **0** | No DR                  | Normal fundus image without detectable lesions.              |
+| **1** | Mild NPDR              | Microaneurysms only.                                         |
+| **2** | Moderate NPDR          | More than microaneurysms but less than severe NPDR.          |
+| **3** | Severe NPDR            | Intraretinal hemorrhages, venous beading, or prominent IRMA. |
+| **4** | Proliferative DR (PDR) | Neovascularization, vitreous/preretinal hemorrhage.          |
 
 ---
 
@@ -106,6 +106,7 @@ The project supports loading parameters via environment variables. To set them u
    cp .env.example .env
    ```
 2. Configure your paths and options inside `.env`:
+
    ```env
    # Path to the dataset root folder
    DATA_ROOT=data/raw
@@ -164,18 +165,41 @@ Train the model using the primary configuration:
 python -m src.trainer.train --config configs/experiments/exp_07_convnext_tiny_v4.yaml
 ```
 
-### 4. Running Evaluation & Inference
+### 4. Running Evaluation, Inference & Mask Overlay Visualizations
 
-Evaluate model performance on the test set:
+Evaluate classification model performance on the test set:
 
 ```bash
 python scripts/evaluation/evaluate_cls.py
 ```
 
-Perform inference on a single custom fundus image:
+Perform Diabetic Retinopathy grading on a single custom fundus image:
 
 ```bash
 python scripts/evaluation/test_cls.py --image data/raw/test/001-0001-000.jpg
+```
+
+Render precision lesion mask overlays (Exudates, Hemorrhages, Microaneurysms, Soft Exudates):
+
+```bash
+# Interactive terminal selection menu
+python scripts/visualization/visualize_mask_overlay.py
+
+# Specific image selection by filename/path
+python scripts/visualization/visualize_mask_overlay.py --image 007-3396-200.jpg
+
+# Native OS GUI file browser dialog
+python scripts/visualization/visualize_mask_overlay.py --gui
+```
+
+Render 5-column 3-step segmentation pipeline grid (Slide 3):
+
+```bash
+# Process custom image
+python scripts/visualization/render_segmentation_slide_table.py --image 007-1774-100.jpg
+
+# Native OS GUI file browser dialog
+python scripts/visualization/render_segmentation_slide_table.py --gui
 ```
 
 ### 5. Running Code Quality & Tests

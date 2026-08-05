@@ -11,8 +11,9 @@ if _src_dir not in sys.path:
     sys.path.insert(0, _src_dir)
 
 import argparse
-import json
 from pathlib import Path
+
+import torch
 
 from common.config.loader import ConfigLoader
 from inference.predictor import RetinalPredictor
@@ -23,6 +24,12 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Retinal Disease Detection - Single Image Prediction CLI"
+    )
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=PROJECT_ROOT / "configs" / "config.yaml",
+        help="Path to YAML configuration file",
     )
     parser.add_argument(
         "--image",
@@ -84,8 +91,9 @@ def main() -> None:
         print(f"    - Grade {i} ({name:16s}): {prob * 100:6.2f}%")
 
     if args.save_gradcam:
-        from explainability.gradcam import GradCAM
         import cv2
+
+        from explainability.gradcam import GradCAM
 
         bgr = cv2.imread(str(args.image))
         if bgr is not None:
@@ -109,6 +117,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    import torch
-
     main()

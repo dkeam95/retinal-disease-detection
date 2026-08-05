@@ -157,7 +157,7 @@ def test_validate_non_existent_dataset_path(valid_yaml_file: Path) -> None:
     """Test validation failure when dataset directory path doesn't exist."""
     config = ConfigLoader.load(valid_yaml_file)
 
-    # Создаем модифицированную копию замороженного объекта
+    # Create a modified copy of the frozen object
     invalid_dataset = replace(config.dataset, path=Path("/non/existent/path/for/dataset"))
     invalid_config = replace(config, dataset=invalid_dataset)
 

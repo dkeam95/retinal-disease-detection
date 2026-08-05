@@ -1,82 +1,44 @@
-# DataLoader Module
+# DataLoader Module (`src/dataloader/`)
 
-## Purpose
+## Overview
 
-The `dataloader` module provides factory functions to instantiate PyTorch `DataLoader` objects for training, validation, and testing splits.
+The `dataloader` module builds PyTorch `DataLoader` instances with configurable worker allocation, memory pinning, shuffling policies, and weighted class balancing to combat severe dataset imbalance.
 
-It encapsulates class-balanced weighted sampling (`WeightedRandomSampler`), custom batch collation (`collate_datasamples`), and multi-worker execution settings.
+## Key Features
 
----
+- **Class-Weighted Sampling**: Computes sample-specific weights to feed into `WeightedRandomSampler`, ensuring underrepresented disease grades are trained on adequately.
+- **Custom Collate Functions**: Implements collating functions that aggregate individual `DataSample` objects into a unified `BatchSample` dataclass.
 
-## Responsibilities
+## API & Interfaces
 
-- Constructing PyTorch `DataLoader` instances driven by `DataLoaderConfig`.
-- Providing `collate_datasamples` to stack `DataSample` instances into `BatchSample` tensors ($N, C, H, W$).
-- Supporting class-balanced weighted sampling via `build_weighted_sampler` for handling imbalanced DR severity grades.
-- Supporting pinned memory, persistent workers, and configurable worker threads.
+### Classes
 
----
+#### `DataLoaderFactory`
+Factory class that builds training, validation, and test dataloaders.
+- **`build(dataset: Dataset, config: DataLoaderConfig, is_training: bool = False) -> DataLoader`**
+  Builds and configures a standard `DataLoader` with correct batching, shuffling, and worker threads.
 
-## Public API
+#### `BatchSample`
+Dataclass holding batched model inputs:
+- `image`: torch.Tensor of shape `(N, C, H, W)`
+- `label`: torch.Tensor of shape `(N,)`
 
-```python
-from dataloader import DataLoaderFactory, DataLoaderConfig
+### Functions
 
-# Create training dataloader
-train_loader = DataLoaderFactory.build(
-    dataset=train_dataset,
-    config=config,
-    training=True,
-)
+- **`build_weighted_sampler(dataset: RetinalDataset) -> WeightedRandomSampler`**
+  Calculates category frequencies and generates a sampler that balances class representation per batch.
+- **`collate_datasamples(batch: list[DataSample]) -> BatchSample`**
+  Collates list of individual dataset sample dictionaries/dataclasses into a batched `BatchSample`.
+- **`build_train_dataloader(dataset, config) -> DataLoader`**
+- **`build_validation_dataloader(dataset, config) -> DataLoader`**
+- **`build_test_dataloader(dataset, config) -> DataLoader`**
 
-# Create validation / test dataloader
-val_loader = DataLoaderFactory.build(
-    dataset=val_dataset,
-    config=config,
-    training=False,
-)
-```
+### Exceptions
 
----
+- `InvalidBatchSizeError`: Raised when the batch size parameter is negative or zero.
+- `InvalidNumWorkersError`: Raised when workers count is invalid.
+- `InvalidSamplerError`: Raised if sample weight calculations encounter mismatches.
 
-## Module Structure
+## Dependencies
 
-```text
-dataloader/
-├── __init__.py      # Public API exports
-├── factory.py       # DataLoaderFactory & collate_datasamples implementation
-├── sampler.py       # Class-balanced WeightedRandomSampler builder
-├── types.py         # DataLoaderConfig, BatchSample dataclasses
-├── exceptions.py     # DataLoaderError, InvalidSamplerError
-└── README.md        # Technical documentation
-```
-
----
-
-## Data Flow
-
-```text
-RetinalDataset + DataLoaderConfig
-                │
-                ▼
-      DataLoaderFactory.build()
-                │
-                ├──────────────────────────────┐
-                ▼                              ▼
-    [WeightedRandomSampler]          [Standard Shuffling]
-                │                              │
-                └──────────────┬───────────────┘
-                               ▼
-                       collate_datasamples
-                               │
-                               ▼
-            BatchSample (image, label, paths)
-```
-
----
-
-## Design Principles
-
-- **Single Responsibility Principle**: Handles only batching, sampling strategies, and dataloader creation.
-- **Class Balance Support**: Automatic calculation of inverse class frequencies to build a `WeightedRandomSampler` when `weight_class_balance=True`.
-- **Fail-Safe Collation**: Handles numpy array to PyTorch tensor conversion, channel order adjustment (HWC to CHW), and ImageNet normalization.
+- `torch`: Data utilities (`DataLoader`, `WeightedRandomSampler`).

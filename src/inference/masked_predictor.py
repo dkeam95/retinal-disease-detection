@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+
 import cv2
 import numpy as np
 
@@ -111,7 +112,7 @@ class MaskedLesionPredictor:
         final_scores: list[float] = raw_det.scores
         final_labels: list[int] = raw_det.labels
         final_names: list[str] = raw_det.class_names
-        
+
         final_raw_masks: list[np.ndarray] = []
         final_tophat_masks: list[np.ndarray] = []
         final_masks: list[np.ndarray] = []

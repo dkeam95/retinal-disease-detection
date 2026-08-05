@@ -13,7 +13,7 @@ from pathlib import Path
 
 import torch
 from torch import nn
-from torch.amp import GradScaler, autocast
+from torch.amp import autocast
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LRScheduler
 from torch.utils.data import DataLoader

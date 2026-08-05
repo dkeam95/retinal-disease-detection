@@ -23,18 +23,23 @@ src/evaluation/
 ## 🔑 Key Components
 
 ### 1. `Evaluator` (`evaluator.py`)
+
 Computes comprehensive validation and test statistics across batches:
-* Accuracy, Precision, Recall, Macro/Weighted F1 Score.
-* **Quadratic Weighted Kappa (QWK)**: Primary medical metric for DR grading severity.
-* Multi-class confusion matrices and normalized confusion heatmaps.
+
+- Accuracy, Precision, Recall, Macro/Weighted F1 Score.
+- **Quadratic Weighted Kappa (QWK)**: Primary medical metric for DR grading severity.
+- Multi-class confusion matrices and normalized confusion heatmaps.
 
 ### 2. `ErrorAnalyzer` (`error_analysis.py`)
+
 Diagnostic module for inspecting model failure modes:
-* Extracts top misclassifications (false positives, false negatives).
-* Analyzes off-by-one errors (e.g. Mild NPDR vs Moderate NPDR) vs severe off-by-N errors.
-* Generates JSON and Markdown error reports with sample IDs for follow-up explainability (Grad-CAM).
+
+- Extracts top misclassifications (false positives, false negatives).
+- Analyzes off-by-one errors (e.g. Mild NPDR vs Moderate NPDR) vs severe off-by-N errors.
+- Generates JSON and Markdown error reports with sample IDs for follow-up explainability (Grad-CAM).
 
 ### 3. CLI Evaluator (`eval.py`)
+
 Entrypoint for evaluating checkpoints directly from command line arguments or config YAML.
 
 ---
